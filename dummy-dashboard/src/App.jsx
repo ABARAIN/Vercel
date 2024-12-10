@@ -13,13 +13,15 @@ function App() {
 
   const [center, setCenter] = useState(INITIAL_CENTER);
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
+  const [basemap, setBasemap] = useState('mapbox://styles/mapbox/streets-v11');
 
   useEffect(() => {
     mapboxgl.accessToken =
       'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
+
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/streets-v11',
+      style: basemap,
       center: center,
       zoom: zoom,
     });
@@ -45,7 +47,7 @@ function App() {
               type: 'Feature',
               geometry: {
                 type: 'Point',
-                coordinates: [74.31069294510968, 31.473689494603054], // Example coordinates
+                coordinates: [74.31069294510968, 31.473689494603054],
               },
               properties: {
                 title: 'Nespak House',
@@ -56,7 +58,7 @@ function App() {
               type: 'Feature',
               geometry: {
                 type: 'Point',
-                coordinates: [74.30113123415276, 31.479261051114776], // Example coordinates
+                coordinates: [74.30113123415276, 31.479261051114776],
               },
               properties: {
                 title: 'Cholistan Office',
@@ -97,12 +99,36 @@ function App() {
       map.on('mouseleave', 'custom-layer', () => {
         map.getCanvas().style.cursor = '';
       });
+
+      // Add 3D Terrain if basemap is set to 3D
+      if (basemap === 'mapbox://styles/mapbox-map-design/ckhqrf2tz0dt119ny6azh975y') {
+        map.addSource('mapbox-dem', {
+          type: 'raster-dem',
+          url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+          tileSize: 512,
+          maxzoom: 14,
+        });
+
+        // Add the terrain layer
+        map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+
+        // Add a sky layer
+        map.addLayer({
+          id: 'sky',
+          type: 'sky',
+          paint: {
+            'sky-type': 'atmosphere',
+            'sky-atmosphere-sun': [0.0, 0.0],
+            'sky-atmosphere-sun-intensity': 15,
+          },
+        });
+      }
     });
 
     return () => map.remove();
-  }, []);
+  }, [basemap]);
 
-  const handleButtonClick = () => {
+  const handleReset = () => {
     if (mapRef.current) {
       mapRef.current.flyTo({
         center: INITIAL_CENTER,
@@ -111,12 +137,36 @@ function App() {
     }
   };
 
+  const handleBasemapChange = (style) => {
+    setBasemap(style);
+  };
+
   return (
     <>
       <div className="sidebar">
         Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)} | Zoom: {zoom.toFixed(2)}
       </div>
-      <button onClick={handleButtonClick} className="reset-button">
+      <div className="buttons-container">
+        <button
+          className="basemap-button"
+          onClick={() => handleBasemapChange('mapbox://styles/mapbox/streets-v11')}
+        >
+          Streets
+        </button>
+        <button
+          className="basemap-button"
+          onClick={() => handleBasemapChange('mapbox://styles/mapbox/satellite-v9')}
+        >
+          Satellite
+        </button>
+        <button
+          className="basemap-button"
+          onClick={() => handleBasemapChange('mapbox://styles/mapbox-map-design/ckhqrf2tz0dt119ny6azh975y')}
+        >
+          3D Map
+        </button>
+      </div>
+      <button onClick={handleReset} className="reset-button">
         Reset
       </button>
       <div id="map-container" ref={mapContainerRef} />
