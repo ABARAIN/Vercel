@@ -11,7 +11,7 @@ function App() {
   const mapContainerRef = useRef()
 
   useEffect(() => {
-    mapboxgl.accessToken = 'sk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTRpMGhqNm8wYjlzMmpyMGp1OW16Y2gyIn0.QzulSRkiC_REob_-Q3CU5g'
+    mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw'
     mapRef.current = new mapboxgl.Map({
       container: mapContainerRef.current,
     });
