@@ -65,3 +65,39 @@
 .basemap-button:hover {
   background-color: #495057;
 }
+
+.basemap-button, .reset-button, .remove-button {
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #007cbf;
+  color: white;
+  font-size: 14px;
+}
+
+.basemap-button:hover, .reset-button:hover, .remove-button:hover {
+  background-color: #005f8d;
+}
+
+.upload-input {
+  margin: 5px;
+}
+
+.upload-message {
+  margin: 10px;
+  padding: 10px;
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.remove-button {
+  background-color: #ff0000;
+  margin: 5px 0; /* Align with other buttons' spacing */
+  padding: 10px 20px;
+  display: block;
+}

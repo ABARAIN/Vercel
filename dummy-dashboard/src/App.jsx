@@ -16,6 +16,7 @@ function App() {
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
   const [basemap, setBasemap] = useState('mapbox://styles/mapbox/streets-v11');
   const [shapefileLayer, setShapefileLayer] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState('');
 
   useEffect(() => {
     mapboxgl.accessToken =
@@ -70,7 +71,6 @@ function App() {
         },
       });
 
-      // Add a Layer using the source
       map.addLayer({
         id: 'custom-layer',
         type: 'circle',
@@ -81,7 +81,6 @@ function App() {
         },
       });
 
-      // Add Popup to Marker
       map.on('click', 'custom-layer', (e) => {
         const coordinates = e.features[0].geometry.coordinates.slice();
         const { title, description } = e.features[0].properties;
@@ -92,7 +91,6 @@ function App() {
           .addTo(map);
       });
 
-      // Change cursor to pointer when hovering over the layer
       map.on('mouseenter', 'custom-layer', () => {
         map.getCanvas().style.cursor = 'pointer';
       });
@@ -100,27 +98,20 @@ function App() {
       map.on('mouseleave', 'custom-layer', () => {
         map.getCanvas().style.cursor = '';
       });
-      
-      // Add 3D Terrain if basemap is set to 3D
-      if (basemap === 'mapbox://styles/mapbox-map-design/ckhqrf2tz0dt119ny6azh975y') {
-        map.addSource('mapbox-dem', {
-          type: 'raster-dem',
-          url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-          tileSize: 512,
-          maxzoom: 14,
+
+      if (shapefileLayer) {
+        map.addSource('shapefile-layer', {
+          type: 'geojson',
+          data: shapefileLayer.data,
         });
 
-        // Add the terrain layer
-        map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
-
-        // Add a sky layer
         map.addLayer({
-          id: 'sky',
-          type: 'sky',
+          id: 'shapefile-layer',
+          type: 'fill',
+          source: 'shapefile-layer',
           paint: {
-            'sky-type': 'atmosphere',
-            'sky-atmosphere-sun': [0.0, 0.0],
-            'sky-atmosphere-sun-intensity': 15,
+            'fill-color': '#888888',
+            'fill-opacity': 0.5,
           },
         });
       }
@@ -145,40 +136,53 @@ function App() {
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
-    // Read and parse the shapefile
+  
     const arrayBuffer = await file.arrayBuffer();
     const geojson = await shp(arrayBuffer);
-
+  
     if (geojson) {
       const map = mapRef.current;
-
-      // Remove existing shapefile layer
+  
+      // Remove the existing shapefile layer and source if present
       if (shapefileLayer) {
-        map.removeLayer(shapefileLayer);
-        map.removeSource(shapefileLayer);
+        map.removeLayer('shapefile-layer');
+        map.removeSource('shapefile-layer');
       }
-
-      // Add the shapefile data as a GeoJSON source
-      const newLayerId = 'shapefile-layer';
-      map.addSource(newLayerId, {
+  
+      // Add the new shapefile source and layer
+      map.addSource('shapefile-layer', {
         type: 'geojson',
         data: geojson,
       });
-
-      // Add a new layer to display the shapefile
+  
       map.addLayer({
-        id: newLayerId,
+        id: 'shapefile-layer',
         type: 'fill',
-        source: newLayerId,
+        source: 'shapefile-layer',
         paint: {
-          'fill-color': '#888888',
-          'fill-opacity': 0.5,
+          'fill-color': '#070707',
+          'fill-opacity': 0.9,
         },
       });
+  
+      // Update the state with the new shapefile data
+      setShapefileLayer({ id: 'shapefile-layer', data: geojson });
+  
+      // Display success message
+      setUploadMessage('Shapefile uploaded successfully!');
+      setTimeout(() => setUploadMessage(''), 3000);
+    }
+  };
+  
 
-      // Save the current layer ID to state
-      setShapefileLayer(newLayerId);
+  const handleRemoveLayer = () => {
+    const map = mapRef.current;
+  
+    if (shapefileLayer) {
+      // Remove the shapefile layer and source from the map
+      map.removeLayer('shapefile-layer');
+      map.removeSource('shapefile-layer');
+      setShapefileLayer(null); // Clear the state
     }
   };
 
@@ -188,16 +192,10 @@ function App() {
         Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)} | Zoom: {zoom.toFixed(2)}
       </div>
       <div className="buttons-container">
-        <button
-          className="basemap-button"
-          onClick={() => handleBasemapChange('mapbox://styles/mapbox/streets-v11')}
-        >
+        <button className="basemap-button" onClick={() => handleBasemapChange('mapbox://styles/mapbox/streets-v11')}>
           Streets
         </button>
-        <button
-          className="basemap-button"
-          onClick={() => handleBasemapChange('mapbox://styles/mapbox/satellite-v9')}
-        >
+        <button className="basemap-button" onClick={() => handleBasemapChange('mapbox://styles/mapbox/satellite-v9')}>
           Satellite
         </button>
         <button
@@ -206,13 +204,12 @@ function App() {
         >
           3D Map
         </button>
-        <input
-          type="file"
-          accept=".zip"
-          onChange={handleFileUpload}
-          className="upload-input"
-        />
+        <input type="file" accept=".zip" onChange={handleFileUpload} className="upload-input" />
+        <button className="remove-button" onClick={handleRemoveLayer}>
+          Remove Shapefile
+        </button>
       </div>
+      {uploadMessage && <div className="upload-message">{uploadMessage}</div>}
       <button onClick={handleReset} className="reset-button">
         Reset
       </button>
