@@ -19,26 +19,80 @@ function App() {
 
   useEffect(() => {
     mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw'
-    mapRef.current = new mapboxgl.Map({
+    const map = new mapboxgl.Map({
       container: mapContainerRef.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
       center: center,
-      zoom: zoom
+      zoom: zoom,
     });
-
-    mapRef.current.on('move', () => {
-      // get the current center coordinates and zoom level from the map
-      const mapCenter = mapRef.current.getCenter()
-      const mapZoom = mapRef.current.getZoom()
-
-      // update state
-      setCenter([ mapCenter.lng, mapCenter.lat ])
-      setZoom(mapZoom)
-    })
-
-    return () => {
-      mapRef.current.remove()
-    }
-  }, [])
+  
+    map.on('load', () => {
+      // Add GeoJSON Source
+      map.addSource('custom-layer', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.31069294510968, 31.473689494603054], // Example coordinates
+              },
+              properties: {
+                title: 'Nespak House',
+                description: 'This is the main office of Nespak.',
+              },
+            },
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.30113123415276, 31.479261051114776], // Example coordinates
+              },
+              properties: {
+                title: 'Cholistan Office',
+                description: 'This is the project office of Nespak.',
+              },
+            }
+          ],
+        },
+      });
+  
+      // Add a Layer using the source
+      map.addLayer({
+        id: 'custom-layer',
+        type: 'circle',
+        source: 'custom-layer',
+        paint: {
+          'circle-radius': 10,
+          'circle-color': '#007cbf',
+        },
+      });
+  
+      // Add Popup to Marker
+      map.on('click', 'custom-layer', (e) => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const { title, description } = e.features[0].properties;
+  
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(`<h3>${title}</h3><p>${description}</p>`)
+          .addTo(map);
+      });
+  
+      // Change cursor to pointer when hovering over the layer
+      map.on('mouseenter', 'custom-layer', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+  
+      map.on('mouseleave', 'custom-layer', () => {
+        map.getCanvas().style.cursor = '';
+      });
+    });
+  
+    return () => map.remove();
+  }, []);
 
   const handleButtonClick = () => {
     mapRef.current.flyTo({
