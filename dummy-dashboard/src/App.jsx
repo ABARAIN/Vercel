@@ -1,11 +1,12 @@
 import { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import shp from 'shpjs'; // Library to parse shapefiles
 
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './App.css';
 
 const INITIAL_CENTER = [74.30091848275428, 31.479157820992256];
-const INITIAL_ZOOM = 12.90;
+const INITIAL_ZOOM = 12.9;
 
 function App() {
   const mapRef = useRef();
@@ -14,6 +15,7 @@ function App() {
   const [center, setCenter] = useState(INITIAL_CENTER);
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
   const [basemap, setBasemap] = useState('mapbox://styles/mapbox/streets-v11');
+  const [shapefileLayer, setShapefileLayer] = useState(null);
 
   useEffect(() => {
     mapboxgl.accessToken =
@@ -37,7 +39,6 @@ function App() {
     });
 
     map.on('load', () => {
-      // Add GeoJSON Source
       map.addSource('custom-layer', {
         type: 'geojson',
         data: {
@@ -99,7 +100,7 @@ function App() {
       map.on('mouseleave', 'custom-layer', () => {
         map.getCanvas().style.cursor = '';
       });
-
+      
       // Add 3D Terrain if basemap is set to 3D
       if (basemap === 'mapbox://styles/mapbox-map-design/ckhqrf2tz0dt119ny6azh975y') {
         map.addSource('mapbox-dem', {
@@ -141,6 +142,46 @@ function App() {
     setBasemap(style);
   };
 
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Read and parse the shapefile
+    const arrayBuffer = await file.arrayBuffer();
+    const geojson = await shp(arrayBuffer);
+
+    if (geojson) {
+      const map = mapRef.current;
+
+      // Remove existing shapefile layer
+      if (shapefileLayer) {
+        map.removeLayer(shapefileLayer);
+        map.removeSource(shapefileLayer);
+      }
+
+      // Add the shapefile data as a GeoJSON source
+      const newLayerId = 'shapefile-layer';
+      map.addSource(newLayerId, {
+        type: 'geojson',
+        data: geojson,
+      });
+
+      // Add a new layer to display the shapefile
+      map.addLayer({
+        id: newLayerId,
+        type: 'fill',
+        source: newLayerId,
+        paint: {
+          'fill-color': '#888888',
+          'fill-opacity': 0.5,
+        },
+      });
+
+      // Save the current layer ID to state
+      setShapefileLayer(newLayerId);
+    }
+  };
+
   return (
     <>
       <div className="sidebar">
@@ -165,6 +206,12 @@ function App() {
         >
           3D Map
         </button>
+        <input
+          type="file"
+          accept=".zip"
+          onChange={handleFileUpload}
+          className="upload-input"
+        />
       </div>
       <button onClick={handleReset} className="reset-button">
         Reset
