@@ -3,7 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import shp from 'shpjs'; // Library to parse shapefiles
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-
+import * as turf from '@turf/turf';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
