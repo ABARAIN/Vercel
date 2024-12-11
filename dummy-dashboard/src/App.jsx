@@ -1,7 +1,11 @@
 import { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import shp from 'shpjs'; // Library to parse shapefiles
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './App.css';
 
@@ -40,6 +44,7 @@ function App() {
     });
 
     map.on('load', () => {
+      // Add default custom points
       map.addSource('custom-layer', {
         type: 'geojson',
         data: {
@@ -117,6 +122,40 @@ function App() {
       }
     });
 
+    // Add Draw Tool
+    const draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: {
+        polygon: true,
+        line_string: true,
+        point: true,
+        trash: true,
+      },
+    });
+    map.addControl(draw, 'top-right');
+
+    map.on('draw.create', () => {
+      console.log('Drawn features:', draw.getAll());
+    });
+
+    map.on('draw.update', () => {
+      console.log('Updated features:', draw.getAll());
+    });
+
+    // Add Geocoder (Search Bar)
+    const geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl,
+      marker: false,
+    });
+
+    // map.addControl(geocoder, 'top-left');
+    map.addControl(geocoder, 'top-left', )
+    geocoder.on('result', (e) => {
+      const coordinates = e.result.center;
+      map.flyTo({ center: coordinates, zoom: 14 });
+    });
+
     return () => map.remove();
   }, [basemap]);
 
@@ -136,25 +175,23 @@ function App() {
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-  
+
     const arrayBuffer = await file.arrayBuffer();
     const geojson = await shp(arrayBuffer);
-  
+
     if (geojson) {
       const map = mapRef.current;
-  
-      // Remove the existing shapefile layer and source if present
+
       if (shapefileLayer) {
         map.removeLayer('shapefile-layer');
         map.removeSource('shapefile-layer');
       }
-  
-      // Add the new shapefile source and layer
+
       map.addSource('shapefile-layer', {
         type: 'geojson',
         data: geojson,
       });
-  
+
       map.addLayer({
         id: 'shapefile-layer',
         type: 'fill',
@@ -164,33 +201,29 @@ function App() {
           'fill-opacity': 0.9,
         },
       });
-  
-      // Update the state with the new shapefile data
+
       setShapefileLayer({ id: 'shapefile-layer', data: geojson });
-  
-      // Display success message
+
       setUploadMessage('Shapefile uploaded successfully!');
       setTimeout(() => setUploadMessage(''), 3000);
     }
   };
-  
 
   const handleRemoveLayer = () => {
     const map = mapRef.current;
-  
+
     if (shapefileLayer) {
-      // Remove the shapefile layer and source from the map
       map.removeLayer('shapefile-layer');
       map.removeSource('shapefile-layer');
-      setShapefileLayer(null); // Clear the state
+      setShapefileLayer(null);
     }
   };
 
   return (
     <>
-      <div className="sidebar">
+      {/* <div className="sidebar">
         Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)} | Zoom: {zoom.toFixed(2)}
-      </div>
+      </div> */}
       <div className="buttons-container">
         <button className="basemap-button" onClick={() => handleBasemapChange('mapbox://styles/mapbox/streets-v11')}>
           Streets
