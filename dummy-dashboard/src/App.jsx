@@ -1,4 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
+import Papa from 'papaparse'; // For CSV parsing
+import GeoTIFF from 'geotiff';
 import mapboxgl from 'mapbox-gl';
 import shp from 'shpjs'; // Library to parse shapefiles
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
