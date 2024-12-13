@@ -46,7 +46,7 @@ function App() {
     });
 
     map.on('load', () => {
-      // Add default custom points
+      // Add Default Custom Points Layer
       map.addSource('custom-layer', {
         type: 'geojson',
         data: {
@@ -77,7 +77,7 @@ function App() {
           ],
         },
       });
-
+    
       map.addLayer({
         id: 'custom-layer',
         type: 'circle',
@@ -87,38 +87,133 @@ function App() {
           'circle-color': '#007cbf',
         },
       });
-
+    
+      // Add Defaulter Layer
+      map.addSource('defaulter-layer', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.3156, 31.4728],
+              },
+              properties: {
+                title: 'Defaulter Point 1',
+                description: 'Defaulter description 1.',
+              },
+            },
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.3317, 31.3677],
+              },
+              properties: {
+                title: 'House 201 - Sector B',
+                description: 'Owner: Kashif Khan, Status: Defaulter <a href="http://localhost/sms/admin/" target="_blank">View Defaulter Details</a>',
+              },
+            },
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.3317, 31.36805],
+              },
+              properties: {
+                title: 'House 303 - Sector B',
+                description: 'Owner: Muhammad Ali, Status: Defaulter <a href="http://localhost/sms/admin/" target="_blank">View Defaulter Details</a>',
+              },
+            },
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.3367, 31.3720],
+              },
+              properties: {
+                title: 'House 304 - Sector B',
+                description: 'Owner: Abbas Khan, Status: Defaulter <a href="http://localhost/sms/admin/" target="_blank">View Defaulter Details</a>',
+              },
+            },
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.3317, 31.3687],
+              },
+              properties: {
+                title: 'House 305 - Sector B',
+                description: 'Owner: Subhan Kamran, Status: Defaulter <a href="http://localhost/sms/admin/" target="_blank">View Defaulter Details</a>',
+              },
+            },
+          ],
+        },
+      });
+    
+      map.addLayer({
+        id: 'defaulter-layer',
+        type: 'circle',
+        source: 'defaulter-layer',
+        paint: {
+          'circle-radius': 10,
+          'circle-color': '#FF0000', // Red color for defaulters
+        },
+      });
+    
+      // Add Popup and Interaction for Custom Layer
       map.on('click', 'custom-layer', (e) => {
         const coordinates = e.features[0].geometry.coordinates.slice();
         const { title, description } = e.features[0].properties;
-
+    
         new mapboxgl.Popup()
           .setLngLat(coordinates)
           .setHTML(`<h3>${title}</h3><p>${description}</p>`)
           .addTo(map);
       });
-
+    
       map.on('mouseenter', 'custom-layer', () => {
         map.getCanvas().style.cursor = 'pointer';
       });
-
+    
       map.on('mouseleave', 'custom-layer', () => {
         map.getCanvas().style.cursor = '';
       });
-
+    
+      // Add Popup and Interaction for Defaulter Layer
+      map.on('click', 'defaulter-layer', (e) => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const { title, description } = e.features[0].properties;
+    
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(`<h3>${title}</h3><p>${description}</p>`)
+          .addTo(map);
+      });
+    
+      map.on('mouseenter', 'defaulter-layer', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+    
+      map.on('mouseleave', 'defaulter-layer', () => {
+        map.getCanvas().style.cursor = '';
+      });
+    
       if (shapefileLayer) {
         map.addSource('shapefile-layer', {
           type: 'geojson',
           data: shapefileLayer.data,
         });
-
+    
         map.addLayer({
           id: 'shapefile-layer',
           type: 'fill',
           source: 'shapefile-layer',
           paint: {
             'fill-color': '#070707',
-            'fill-opacity': 0.5,
+            'fill-opacity': 0.3,
           },
         });
       }
@@ -152,7 +247,7 @@ function App() {
     });
 
     // map.addControl(geocoder, 'top-left');
-    map.addControl(geocoder, 'top-left', )
+    map.addControl(geocoder, 'top-right', )
     geocoder.on('result', (e) => {
       const coordinates = e.result.center;
       map.flyTo({ center: coordinates, zoom: 14 });
@@ -223,9 +318,9 @@ function App() {
 
   return (
     <>
-      {/* <div className="sidebar">
+      <div className="sidebar">
         Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)} | Zoom: {zoom.toFixed(2)}
-      </div> */}
+      </div>
       <div className="buttons-container">
         <button className="basemap-button" onClick={() => handleBasemapChange('mapbox://styles/mapbox/streets-v11')}>
           Streets
