@@ -117,7 +117,7 @@ function App() {
           type: 'fill',
           source: 'shapefile-layer',
           paint: {
-            'fill-color': '#888888',
+            'fill-color': '#070707',
             'fill-opacity': 0.5,
           },
         });
@@ -200,7 +200,7 @@ function App() {
         source: 'shapefile-layer',
         paint: {
           'fill-color': '#070707',
-          'fill-opacity': 0.9,
+          'fill-opacity': 0.5,
         },
       });
 
