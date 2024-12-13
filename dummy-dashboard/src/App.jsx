@@ -113,7 +113,7 @@ function App() {
               },
               properties: {
                 title: 'House 201 - Sector B',
-                description: 'Owner: Kashif Khan, Status: Defaulter <a href="http://localhost/sms/admin/" target="_blank">View Defaulter Details</a>',
+                description: 'Owner: Kashif Khan, Status: Defaulter <a href="http://localhost/sms/admin/defaulter.html" target="_blank">View Defaulter Details</a>',
               },
             },
             {
@@ -124,7 +124,7 @@ function App() {
               },
               properties: {
                 title: 'House 303 - Sector B',
-                description: 'Owner: Muhammad Ali, Status: Defaulter <a href="http://localhost/sms/admin/" target="_blank">View Defaulter Details</a>',
+                description: 'Owner: Muhammad Ali, Status: Defaulter <a href="http://localhost/sms/admin/defaulter.html" target="_blank">View Defaulter Details</a>',
               },
             },
             {
@@ -135,7 +135,7 @@ function App() {
               },
               properties: {
                 title: 'House 304 - Sector B',
-                description: 'Owner: Abbas Khan, Status: Defaulter <a href="http://localhost/sms/admin/" target="_blank">View Defaulter Details</a>',
+                description: 'Owner: Abbas Khan, Status: Defaulter <a href="http://localhost/sms/admin/defaulter.html" target="_blank">View Defaulter Details</a>',
               },
             },
             {
@@ -146,7 +146,7 @@ function App() {
               },
               properties: {
                 title: 'House 305 - Sector B',
-                description: 'Owner: Subhan Kamran, Status: Defaulter <a href="http://localhost/sms/admin/" target="_blank">View Defaulter Details</a>',
+                description: 'Owner: Subhan Kamran, Status: Defaulter <a href="http://localhost/sms/admin/defaulter.html" target="_blank">View Defaulter Details</a>',
               },
             },
           ],
