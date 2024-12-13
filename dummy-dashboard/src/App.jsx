@@ -11,8 +11,8 @@ import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './App.css';
 
-const INITIAL_CENTER = [74.30091848275428, 31.479157820992256];
-const INITIAL_ZOOM = 12.9;
+const INITIAL_CENTER = [74.3218, 31.3668];
+const INITIAL_ZOOM = 12.25;
 
 function App() {
   const mapRef = useRef();
@@ -113,7 +113,7 @@ function App() {
               },
               properties: {
                 title: 'House 201 - Sector B',
-                description: 'Owner: Kashif Khan, Status: Defaulter <a href="http://localhost/sms/admin/defaulter.html" target="_blank">View Defaulter Details</a>',
+                description: 'Owner: Kashif Khan, Status: Defaulter <a href="http://localhost/sms/admin/individual.php" target="_blank">View Defaulter Details</a>',
               },
             },
             {
