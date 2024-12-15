@@ -10,9 +10,9 @@ const Sidebar = ({
   onReset,
 }) => (
   <div className="sidebar">
-    <div className="info">
+    {/* <div className="info">
       Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)} | Zoom: {zoom.toFixed(2)}
-    </div>
+    </div> */}
 
     <div className="buttons-container">
       <button className="basemap-button" onClick={() => onBasemapChange('mapbox://styles/mapbox/streets-v11')}>
