@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import shp from 'shpjs';
-import GeoTIFF from 'geotiff';
 import * as d3 from 'd3'; // For parsing CSV
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
@@ -21,7 +20,8 @@ function App() {
   const [uploadMessage, setUploadMessage] = useState('');
 
   useEffect(() => {
-    mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
+    mapboxgl.accessToken =
+      'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: basemap,
@@ -37,10 +37,24 @@ function App() {
       setZoom(map.getZoom());
     });
 
+    // Re-add layers on basemap change
+    map.once('styledata', () => {
+      layers.forEach(({ id, source, layer }) => {
+        if (!map.getSource(id)) {
+          map.addSource(id, source);
+        }
+        if (!map.getLayer(id)) {
+          map.addLayer(layer);
+        }
+      });
+    });
+
     return () => map.remove();
   }, [basemap]);
 
-  const handleBasemapChange = (style) => setBasemap(style);
+  const handleBasemapChange = (style) => {
+    setBasemap(style);
+  };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -69,9 +83,6 @@ function App() {
           })),
         };
         addLayer(geojson, 'csv', file.name);
-      } else if (fileType === 'tiff' || fileType === 'tif') {
-        // Raster upload (GeoTIFF)
-        addRasterLayer(file);
       } else {
         setUploadMessage('Unsupported file type.');
       }
@@ -86,9 +97,8 @@ function App() {
   const addLayer = (geojson, type, name) => {
     const map = mapRef.current;
     const id = `${type}-${name}`;
-    map.addSource(id, { type: 'geojson', data: geojson });
-  
-    map.addLayer({
+    const source = { type: 'geojson', data: geojson };
+    const layer = {
       id,
       type: type === 'csv' ? 'circle' : 'fill',
       source: id,
@@ -103,9 +113,16 @@ function App() {
               'fill-opacity': 0.5,
             }),
       },
-    });
-  
-    // Pan and zoom to the extent of the new GeoJSON data
+    };
+
+    if (!map.getSource(id)) {
+      map.addSource(id, source);
+    }
+    if (!map.getLayer(id)) {
+      map.addLayer(layer);
+    }
+
+    // Zoom to GeoJSON bounds
     const bounds = geojson.features
       ? geojson.features.reduce(
           (bounds, feature) => {
@@ -121,78 +138,12 @@ function App() {
           new mapboxgl.LngLatBounds()
         )
       : null;
-  
+
     if (bounds && !bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 20, maxZoom: 15 });
     }
-  
-    setLayers((prev) => [...prev, { id, name, visible: true }]);
-  };
-  
-  const addRasterLayer = async (file) => {
-    const map = mapRef.current;
-    const id = `raster-${file.name}`;
-  
-    try {
-      // Read the GeoTIFF file
-      const tiff = await GeoTIFF.fromFile(file);
-      const image = await tiff.getImage();
-  
-      const [minX, minY, maxX, maxY] = image.getBoundingBox(); // Get the GeoTIFF's bounding box
-      const width = image.getWidth();
-      const height = image.getHeight();
-      const rasters = await image.readRasters();
-  
-      // Create a canvas to render the raster
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      const imageData = ctx.createImageData(width, height);
-  
-      // Populate the canvas with raster data (assuming single-band grayscale)
-      for (let i = 0; i < rasters[0].length; i++) {
-        const value = rasters[0][i];
-        imageData.data[i * 4] = value; // Red
-        imageData.data[i * 4 + 1] = value; // Green
-        imageData.data[i * 4 + 2] = value; // Blue
-        imageData.data[i * 4 + 3] = 255; // Alpha
-      }
-      ctx.putImageData(imageData, 0, 0);
-  
-      // Convert canvas to a data URL for raster display
-      const rasterURL = canvas.toDataURL();
-  
-      // Add the raster as an image source to Mapbox
-      map.addSource(id, {
-        type: 'image',
-        url: rasterURL,
-        coordinates: [
-          [minX, maxY], // Top-left
-          [maxX, maxY], // Top-right
-          [maxX, minY], // Bottom-right
-          [minX, minY], // Bottom-left
-        ],
-      });
-  
-      map.addLayer({
-        id,
-        source: id,
-        type: 'raster',
-        paint: {
-          'raster-opacity': 0.8,
-        },
-      });
-  
-      // Zoom to the raster bounds
-      map.fitBounds([[minX, minY], [maxX, maxY]], { padding: 20 });
-  
-      setLayers((prev) => [...prev, { id, name: file.name, visible: true }]);
-    } catch (error) {
-      console.error('Error loading GeoTIFF:', error);
-      setUploadMessage('Failed to upload GeoTIFF. Please try again.');
-      setTimeout(() => setUploadMessage(''), 3000);
-    }
+
+    setLayers((prev) => [...prev, { id, name, visible: true, source, layer }]);
   };
 
   const toggleLayerVisibility = (layerId) => {
