@@ -24,9 +24,9 @@ function Buttons({ onReset, onBasemapChange, onRemoveLayer }) {
       >
         3D Map
       </button>
-      <button className="remove-button" onClick={onRemoveLayer}>
+      {/* <button className="remove-button" onClick={onRemoveLayer}>
         Remove Shapefile
-      </button>
+      </button> */}
       <button onClick={onReset} className="reset-button">
         Reset
       </button>

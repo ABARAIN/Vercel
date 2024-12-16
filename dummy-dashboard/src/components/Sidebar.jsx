@@ -27,9 +27,9 @@ const Sidebar = ({
 
       <input type="file" accept=".zip" onChange={onFileUpload} className="upload-input" />
 
-      <button className="remove-button" onClick={onRemoveLayer}>
+      {/* <button className="remove-button" onClick={onRemoveLayer}>
         Remove Shapefile
-      </button>
+      </button> */}
     </div>
 
     {uploadMessage && <div className="upload-message">{uploadMessage}</div>}
