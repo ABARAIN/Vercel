@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import shp from 'shpjs';
 import * as d3 from 'd3'; // For parsing CSV
 import Sidebar from './components/Sidebar';
@@ -100,7 +101,7 @@ function App() {
               properties: {
                 title: 'Plot 9',
                 description:
-                  'Plot 9 <a href="http://localhost/fol/plot9.pdf" target="_blank">View Demarcation Details</a>',
+                  'Owner: Muhammad Ali <br> Transfer date: 9/12/2024<br> Category: Commercial<br> Buying Rate: PKR 10,000,000<br> Society: ChaharBagh Phase-1 <br> Block: A<br> Plot: 9 <br> <a href="http://localhost/fol/plot9.pdf" target="_blank">View Demarcation Details</a>',
               },
             },
           ],
