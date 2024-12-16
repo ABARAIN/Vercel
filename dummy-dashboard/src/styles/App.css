@@ -108,3 +108,35 @@
 .reset-button:hover {
   background-color: #e53935;
 }
+/* Mapbox popup styling */
+.mapboxgl-popup {
+  max-width: 300px;
+  font-family: 'Arial', sans-serif;
+  z-index: 10;
+}
+
+.mapboxgl-popup-content {
+  text-align: center;
+  font-size: 14px;
+  padding: 10px;
+}
+
+.mapboxgl-popup-anchor-top .mapboxgl-popup-content {
+  margin-bottom: 15px;
+}
+
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-content {
+  margin-top: 15px;
+}
+
+.mapboxgl-popup-anchor-left .mapboxgl-popup-content {
+  margin-right: 15px;
+}
+
+.mapboxgl-popup-anchor-right .mapboxgl-popup-content {
+  margin-left: 15px;
+}
+
+.mapboxgl-popup-tip {
+  background: rgba(0, 0, 0, 0.7);
+}
