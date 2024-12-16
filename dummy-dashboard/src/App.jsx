@@ -31,6 +31,131 @@ function App() {
 
     mapRef.current = map;
 
+    map.on('load', () => {
+      // Add Custom Points Layer
+      map.addSource('custom-layer', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.31069294510968, 31.473689494603054],
+              },
+              properties: {
+                title: 'Nespak House',
+                description: 'This is the main office of Nespak.',
+              },
+            },
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.30113123415276, 31.479261051114776],
+              },
+              properties: {
+                title: 'Cholistan Office',
+                description: 'This is the project office of Nespak.',
+              },
+            },
+          ],
+        },
+      });
+
+      map.addLayer({
+        id: 'custom-layer',
+        type: 'circle',
+        source: 'custom-layer',
+        paint: {
+          'circle-radius': 10,
+          'circle-color': '#007cbf',
+        },
+      });
+
+      // Add Defaulter Layer
+      map.addSource('defaulter-layer', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.3156, 31.4728],
+              },
+              properties: {
+                title: 'Defaulter Point 1',
+                description: 'Defaulter description 1.',
+              },
+            },
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [74.4286,  31.6067],
+              },
+              properties: {
+                title: 'Plot 9',
+                description:
+                  'Plot 9 <a href="http://localhost/fol/plot9.pdf" target="_blank">View Demarcation Details</a>',
+              },
+            },
+          ],
+        },
+      });
+
+      map.addLayer({
+        id: 'defaulter-layer',
+        type: 'circle',
+        source: 'defaulter-layer',
+        paint: {
+          'circle-radius': 10,
+          'circle-color': '#007cbf', // Red color for defaulters
+        },
+      });
+
+      // Add Popup and Interaction for Custom Layer
+      map.on('click', 'custom-layer', (e) => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const { title, description } = e.features[0].properties;
+
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(`<h3>${title}</h3><p>${description}</p>`)
+          .addTo(map);
+      });
+
+      map.on('mouseenter', 'custom-layer', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'custom-layer', () => {
+        map.getCanvas().style.cursor = '';
+      });
+
+      // Add Popup and Interaction for Defaulter Layer
+      map.on('click', 'defaulter-layer', (e) => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        const { title, description } = e.features[0].properties;
+
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(`<h3>${title}</h3><p>${description}</p>`)
+          .addTo(map);
+      });
+
+      map.on('mouseenter', 'defaulter-layer', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'defaulter-layer', () => {
+        map.getCanvas().style.cursor = '';
+      });
+    });
+
     map.on('move', () => {
       const mapCenter = map.getCenter();
       setCenter([mapCenter.lng, mapCenter.lat]);
@@ -129,7 +254,10 @@ function App() {
             const coordinates = feature.geometry.coordinates;
             if (feature.geometry.type === 'Point') {
               return bounds.extend(coordinates);
-            } else if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+            } else if (
+              feature.geometry.type === 'Polygon' ||
+              feature.geometry.type === 'MultiPolygon'
+            ) {
               const coords = feature.geometry.type === 'Polygon' ? [coordinates] : coordinates;
               coords.flat(2).forEach((coord) => bounds.extend(coord));
             }
