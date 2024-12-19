@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import shp from 'shpjs';
-import * as d3 from 'd3'; // For parsing CSV
+import * as d3 from 'd3';
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 import './App.css';
@@ -33,127 +33,15 @@ function App() {
     mapRef.current = map;
 
     map.on('load', () => {
-      // Add Custom Points Layer
-      map.addSource('custom-layer', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: [74.31069294510968, 31.473689494603054],
-              },
-              properties: {
-                title: 'Nespak House',
-                description: 'This is the main office of Nespak.',
-              },
-            },
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: [74.30113123415276, 31.479261051114776],
-              },
-              properties: {
-                title: 'Cholistan Office',
-                description: 'This is the project office of Nespak.',
-              },
-            },
-          ],
-        },
-      });
-
-      map.addLayer({
-        id: 'custom-layer',
-        type: 'circle',
-        source: 'custom-layer',
-        paint: {
-          'circle-radius': 10,
-          'circle-color': '#007cbf',
-        },
-      });
-
-      // Add Defaulter Layer
-      map.addSource('defaulter-layer', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: [74.3156, 31.4728],
-              },
-              properties: {
-                title: 'Defaulter Point 1',
-                description: 'Defaulter description 1.',
-              },
-            },
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'Point',
-                coordinates: [74.4286,  31.6067],
-              },
-              properties: {
-                title: 'Plot 9',
-                description:
-                  'Owner: Muhammad Ali <br> Transfer date: 9/12/2024<br> Category: Commercial<br> Buying Rate: PKR 10,000,000<br> Society: ChaharBagh Phase-1 <br> Block: A<br> Plot: 9 <br> <a href="http://localhost/fol/plot9.pdf" target="_blank">View Demarcation Details</a>',
-              },
-            },
-          ],
-        },
-      });
-
-      map.addLayer({
-        id: 'defaulter-layer',
-        type: 'circle',
-        source: 'defaulter-layer',
-        paint: {
-          'circle-radius': 10,
-          'circle-color': '#007cbf', // Red color for defaulters
-        },
-      });
-
-      // Add Popup and Interaction for Custom Layer
-      map.on('click', 'custom-layer', (e) => {
-        const coordinates = e.features[0].geometry.coordinates.slice();
-        const { title, description } = e.features[0].properties;
-
-        new mapboxgl.Popup()
-          .setLngLat(coordinates)
-          .setHTML(`<h3>${title}</h3><p>${description}</p>`)
-          .addTo(map);
-      });
-
-      map.on('mouseenter', 'custom-layer', () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-
-      map.on('mouseleave', 'custom-layer', () => {
-        map.getCanvas().style.cursor = '';
-      });
-
-      // Add Popup and Interaction for Defaulter Layer
-      map.on('click', 'defaulter-layer', (e) => {
-        const coordinates = e.features[0].geometry.coordinates.slice();
-        const { title, description } = e.features[0].properties;
-
-        new mapboxgl.Popup()
-          .setLngLat(coordinates)
-          .setHTML(`<h3>${title}</h3><p>${description}</p>`)
-          .addTo(map);
-      });
-
-      map.on('mouseenter', 'defaulter-layer', () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-
-      map.on('mouseleave', 'defaulter-layer', () => {
-        map.getCanvas().style.cursor = '';
+      // Restore uploaded layers on map load
+      layers.forEach(({ id, source, layer }) => {
+        if (!map.getSource(id)) {
+          map.addSource(id, source);
+        }
+        if (!map.getLayer(id)) {
+          map.addLayer(layer);
+          addShapefileInteraction(id); // Re-add click event for restored shapefile layers
+        }
       });
     });
 
@@ -161,18 +49,6 @@ function App() {
       const mapCenter = map.getCenter();
       setCenter([mapCenter.lng, mapCenter.lat]);
       setZoom(map.getZoom());
-    });
-
-    // Re-add layers on basemap change
-    map.once('styledata', () => {
-      layers.forEach(({ id, source, layer }) => {
-        if (!map.getSource(id)) {
-          map.addSource(id, source);
-        }
-        if (!map.getLayer(id)) {
-          map.addLayer(layer);
-        }
-      });
     });
 
     return () => map.remove();
@@ -189,14 +65,12 @@ function App() {
     const fileType = file.name.split('.').pop().toLowerCase();
     try {
       if (fileType === 'zip') {
-        // Shapefile upload
         const arrayBuffer = await file.arrayBuffer();
         const geojson = await shp(arrayBuffer);
-        addLayer(geojson, 'shapefile', file.name);
+        addShapefileLayer(geojson, file.name);
       } else if (fileType === 'csv') {
-        // CSV upload
         const text = await file.text();
-        const csvData = await d3.csvParse(text);
+        const csvData = d3.csvParse(text);
         const geojson = {
           type: 'FeatureCollection',
           features: csvData.map((row) => ({
@@ -220,59 +94,80 @@ function App() {
     }
   };
 
-  const addLayer = (geojson, type, name) => {
+  const addShapefileLayer = (geojson, name) => {
     const map = mapRef.current;
-    const id = `${type}-${name}`;
+    const id = `shapefile-${name}`;
     const source = { type: 'geojson', data: geojson };
+
     const layer = {
       id,
-      type: type === 'csv' ? 'circle' : 'fill',
+      type: 'fill',
       source: id,
       paint: {
-        ...(type === 'csv'
-          ? {
-              'circle-radius': 6,
-              'circle-color': '#ff5722',
-            }
-          : {
-              'fill-color': '#070707',
-              'fill-opacity': 0.5,
-            }),
+        'fill-color': '#070707',
+        'fill-opacity': 0.5,
       },
     };
 
     if (!map.getSource(id)) {
       map.addSource(id, source);
     }
+
     if (!map.getLayer(id)) {
       map.addLayer(layer);
     }
 
-    // Zoom to GeoJSON bounds
-    const bounds = geojson.features
-      ? geojson.features.reduce(
-          (bounds, feature) => {
-            const coordinates = feature.geometry.coordinates;
-            if (feature.geometry.type === 'Point') {
-              return bounds.extend(coordinates);
-            } else if (
-              feature.geometry.type === 'Polygon' ||
-              feature.geometry.type === 'MultiPolygon'
-            ) {
-              const coords = feature.geometry.type === 'Polygon' ? [coordinates] : coordinates;
-              coords.flat(2).forEach((coord) => bounds.extend(coord));
-            }
-            return bounds;
-          },
-          new mapboxgl.LngLatBounds()
-        )
-      : null;
+    // Add popup interaction for attributes
+    addShapefileInteraction(id);
 
-    if (bounds && !bounds.isEmpty()) {
+    // Fit bounds to shapefile
+    const bounds = geojson.features.reduce((bounds, feature) => {
+      if (feature.geometry.type === 'Point') {
+        bounds.extend(feature.geometry.coordinates);
+      } else if (
+        feature.geometry.type === 'Polygon' ||
+        feature.geometry.type === 'MultiPolygon'
+      ) {
+        const coordinates =
+          feature.geometry.type === 'Polygon'
+            ? [feature.geometry.coordinates]
+            : feature.geometry.coordinates;
+        coordinates.flat(2).forEach((coord) => bounds.extend(coord));
+      }
+      return bounds;
+    }, new mapboxgl.LngLatBounds());
+
+    if (!bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 20, maxZoom: 15 });
     }
 
     setLayers((prev) => [...prev, { id, name, visible: true, source, layer }]);
+  };
+
+  const addShapefileInteraction = (id) => {
+    const map = mapRef.current;
+
+    map.on('click', id, (e) => {
+      const properties = e.features[0].properties;
+      const coordinates = e.lngLat;
+
+      new mapboxgl.Popup()
+        .setLngLat(coordinates)
+        .setHTML(
+          Object.keys(properties)
+            .map((key) => `<div><strong>${key}:</strong> ${properties[key]}</div>`)
+            .join('')
+        )
+        .addTo(map);
+    });
+
+    map.on('mouseenter', id, () => {
+      map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', id, () => {
+      map.getCanvas().style.cursor = '';
+    });
   };
 
   const toggleLayerVisibility = (layerId) => {
@@ -305,7 +200,7 @@ function App() {
         onReset={handleReset}
       />
       <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
-      <div id="map-container" ref={mapContainerRef} />
+      <div id="map-container" ref={mapContainerRef}></div>
     </>
   );
 }
