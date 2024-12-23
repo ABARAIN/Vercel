@@ -33,14 +33,13 @@ function App() {
     mapRef.current = map;
 
     map.on('load', () => {
-      // Restore uploaded layers on map load
       layers.forEach(({ id, source, layer }) => {
         if (!map.getSource(id)) {
           map.addSource(id, source);
         }
         if (!map.getLayer(id)) {
           map.addLayer(layer);
-          addShapefileInteraction(id); // Re-add click event for restored shapefile layers
+          addShapefileInteraction(id);
         }
       });
     });
@@ -99,15 +98,33 @@ function App() {
     const id = `shapefile-${name}`;
     const source = { type: 'geojson', data: geojson };
 
-    const layer = {
-      id,
-      type: 'fill',
-      source: id,
-      paint: {
-        'fill-color': '#070707',
-        'fill-opacity': 0.5,
-      },
-    };
+    // Determine layer type based on geometry type
+    const isPointData =
+      geojson.features.length > 0 &&
+      geojson.features.every(
+        (feature) => feature.geometry.type === 'Point'
+      );
+
+    const layer = isPointData
+      ? {
+          id,
+          type: 'circle',
+          source: id,
+          paint: {
+            'circle-radius': 6,
+            'circle-color': '#FF5722',
+            'circle-opacity': 0.8,
+          },
+        }
+      : {
+          id,
+          type: 'fill',
+          source: id,
+          paint: {
+            'fill-color': '#070707',
+            'fill-opacity': 0.5,
+          },
+        };
 
     if (!map.getSource(id)) {
       map.addSource(id, source);
@@ -117,10 +134,8 @@ function App() {
       map.addLayer(layer);
     }
 
-    // Add popup interaction for attributes
     addShapefileInteraction(id);
 
-    // Fit bounds to shapefile
     const bounds = geojson.features.reduce((bounds, feature) => {
       if (feature.geometry.type === 'Point') {
         bounds.extend(feature.geometry.coordinates);
