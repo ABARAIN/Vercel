@@ -5,7 +5,6 @@ import axios from 'axios';
 import shp from 'shpjs';
 import * as d3 from 'd3';
 
-
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 import './App.css';
@@ -108,7 +107,6 @@ function App() {
     const id = `shapefile-${name}`;
     const source = { type: 'geojson', data: geojson };
 
-    // Determine layer type based on geometry type
     const isPointData =
       geojson.features.length > 0 &&
       geojson.features.every(
@@ -237,11 +235,14 @@ function App() {
       .then((response) => {
         const geojson = {
           type: 'FeatureCollection',
-          features: response.data.map((feature) => ({
-            type: 'Feature',
-            geometry: feature.geom,
-            properties: feature,
-          })),
+          features: response.data.map((feature) => {
+            const geom = feature.geom.replace('SRID=4326;', ''); // Strip SRID
+            return {
+              type: 'Feature',
+              geometry: JSON.parse(geom), // Convert to GeoJSON
+              properties: feature,
+            };
+          }),
         };
         addLayer(geojson, 'filtered-layer');
       })
@@ -325,7 +326,7 @@ function App() {
       />
       <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
       <div className="filters">
-        <label>
+      <label>
           District:
           <select onChange={(e) => handleDistrictChange(e.target.value)} value={selectedDistrict}>
             <option value="">Select District</option>
