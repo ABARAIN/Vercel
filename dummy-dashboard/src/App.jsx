@@ -1,8 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import axios from 'axios';
 import shp from 'shpjs';
 import * as d3 from 'd3';
+
+
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 import './App.css';
@@ -19,6 +22,13 @@ function App() {
   const [basemap, setBasemap] = useState('mapbox://styles/mapbox/streets-v11');
   const [layers, setLayers] = useState([]);
   const [uploadMessage, setUploadMessage] = useState('');
+
+  const [districts, setDistricts] = useState([]);
+  const [tehsils, setTehsils] = useState([]);
+  const [mauzas, setMauzas] = useState([]);
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedTehsil, setSelectedTehsil] = useState('');
+  const [selectedMauza, setSelectedMauza] = useState('');
 
   useEffect(() => {
     mapboxgl.accessToken =
@@ -204,6 +214,105 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    // Fetch available districts from the backend
+    axios.get('http://localhost:8000/api/joined-mauza-districts/')
+      .then((response) => {
+        const uniqueDistricts = [
+          ...new Set(response.data.map((feature) => feature.district)),
+        ];
+        setDistricts(uniqueDistricts);
+      })
+      .catch((error) => console.error('Error fetching districts:', error));
+  }, []);
+
+  const fetchFilteredData = () => {
+    const params = {};
+    if (selectedDistrict) params.district = selectedDistrict;
+    if (selectedTehsil) params.tehsil = selectedTehsil;
+    if (selectedMauza) params.mauza = selectedMauza;
+
+    axios
+      .get('http://localhost:8000/api/joined-mauza-districts/', { params })
+      .then((response) => {
+        const geojson = {
+          type: 'FeatureCollection',
+          features: response.data.map((feature) => ({
+            type: 'Feature',
+            geometry: feature.geom,
+            properties: feature,
+          })),
+        };
+        addLayer(geojson, 'filtered-layer');
+      })
+      .catch((error) => console.error('Error fetching filtered data:', error));
+  };
+
+  const addLayer = (geojson, layerId) => {
+    const map = mapRef.current;
+
+    if (map.getSource(layerId)) {
+      map.getSource(layerId).setData(geojson);
+    } else {
+      map.addSource(layerId, { type: 'geojson', data: geojson });
+      map.addLayer({
+        id: layerId,
+        type: 'fill',
+        source: layerId,
+        paint: {
+          'fill-color': '#088',
+          'fill-opacity': 0.5,
+        },
+      });
+    }
+
+    const bounds = geojson.features.reduce((bounds, feature) => {
+      if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+        feature.geometry.coordinates.flat(2).forEach((coord) => bounds.extend(coord));
+      }
+      return bounds;
+    }, new mapboxgl.LngLatBounds());
+
+    if (!bounds.isEmpty()) {
+      map.fitBounds(bounds, { padding: 20, maxZoom: 15 });
+    }
+  };
+
+  const handleDistrictChange = (district) => {
+    setSelectedDistrict(district);
+    setSelectedTehsil('');
+    setSelectedMauza('');
+
+    axios
+      .get('http://localhost:8000/api/joined-mauza-districts/', {
+        params: { district },
+      })
+      .then((response) => {
+        const uniqueTehsils = [
+          ...new Set(response.data.map((feature) => feature.tehsil)),
+        ];
+        setTehsils(uniqueTehsils);
+      })
+      .catch((error) => console.error('Error fetching tehsils:', error));
+  };
+
+  const handleTehsilChange = (tehsil) => {
+    setSelectedTehsil(tehsil);
+    setSelectedMauza('');
+
+    axios
+      .get('http://localhost:8000/api/joined-mauza-districts/', {
+        params: { district: selectedDistrict, tehsil },
+      })
+      .then((response) => {
+        const uniqueMauzas = [
+          ...new Set(response.data.map((feature) => feature.mauza)),
+        ];
+        setMauzas(uniqueMauzas);
+      })
+      .catch((error) => console.error('Error fetching mauzas:', error));
+  };
+
   return (
     <>
       <Sidebar
@@ -215,6 +324,46 @@ function App() {
         onReset={handleReset}
       />
       <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
+      <div className="filters">
+        <label>
+          District:
+          <select onChange={(e) => handleDistrictChange(e.target.value)} value={selectedDistrict}>
+            <option value="">Select District</option>
+            {districts.map((district) => (
+              <option key={district} value={district}>
+                {district}
+              </option>
+            ))}
+          </select>
+        </label>
+        {selectedDistrict && (
+          <label>
+            Tehsil:
+            <select onChange={(e) => handleTehsilChange(e.target.value)} value={selectedTehsil}>
+              <option value="">Select Tehsil</option>
+              {tehsils.map((tehsil) => (
+                <option key={tehsil} value={tehsil}>
+                  {tehsil}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {selectedTehsil && (
+          <label>
+            Mauza:
+            <select onChange={(e) => setSelectedMauza(e.target.value)} value={selectedMauza}>
+              <option value="">Select Mauza</option>
+              {mauzas.map((mauza) => (
+                <option key={mauza} value={mauza}>
+                  {mauza}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <button onClick={fetchFilteredData}>Apply Filters</button>
+      </div>
       <div id="map-container" ref={mapContainerRef}></div>
     </>
   );
