@@ -4,7 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import axios from 'axios';
 import shp from 'shpjs';
 import * as d3 from 'd3';
-
+import wkt from 'wkt';
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 import './App.css';
@@ -239,7 +239,7 @@ function App() {
             const geom = feature.geom.replace('SRID=4326;', ''); // Strip SRID
             return {
               type: 'Feature',
-              geometry: JSON.parse(geom), // Convert to GeoJSON
+              geometry: wkt.parse(geom), 
               properties: feature,
             };
           }),
