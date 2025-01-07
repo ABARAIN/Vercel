@@ -129,7 +129,7 @@ function App() {
           type: 'fill',
           source: id,
           paint: {
-            'fill-color': '#070707',
+            'fill-color': '#ffd400',
             'fill-opacity': 0.5,
           },
         };

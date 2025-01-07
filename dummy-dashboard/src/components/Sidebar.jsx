@@ -18,7 +18,7 @@ const Sidebar = ({
       <button className="basemap-button" onClick={() => onBasemapChange('mapbox://styles/mapbox/streets-v11')}>
         Streets
       </button>
-      <button className="basemap-button" onClick={() => onBasemapChange('mapbox://styles/mapbox/satellite-v9')}>
+      <button className="basemap-button" onClick={() => onBasemapChange('mapbox://styles/mapbox/satellite-streets-v12')}>
         Satellite
       </button>
       <button className="basemap-button" onClick={() => onBasemapChange('mapbox://styles/mapbox-map-design/ckhqrf2tz0dt119ny6azh975y')}>
