@@ -8,8 +8,8 @@ import wkt from 'wkt';
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 // import app.css from styles
-// import './styles/App.css';
-import './App.css';
+import './styles/App.css';
+// import './App.css';
 
 const INITIAL_CENTER = [74.3218, 31.3668];
 const INITIAL_ZOOM = 12.25;
