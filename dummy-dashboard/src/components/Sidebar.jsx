@@ -1,43 +1,60 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const Sidebar = ({
   center,
   zoom,
   onBasemapChange,
   onFileUpload,
-  onRemoveLayer,
   uploadMessage,
   onReset,
-}) => (
-  <div className="sidebar">
-    {/* <div className="info">
-      Longitude: {center[0].toFixed(4)} | Latitude: {center[1].toFixed(4)} | Zoom: {zoom.toFixed(2)}
-    </div> */}
+}) => {
+  const [activeTab, setActiveTab] = useState('basemaps');
+  const basemaps = [
+    { label: 'Streets', style: 'mapbox://styles/mapbox/streets-v11' },
+    { label: 'Satellite', style: 'mapbox://styles/mapbox/satellite-v9' },
+    { label: 'Dark', style: 'mapbox://styles/mapbox/dark-v10' },
+    { label: 'Light', style: 'mapbox://styles/mapbox/light-v10' },
+  ];
 
-    <div className="buttons-container">
-      <button className="basemap-button" onClick={() => onBasemapChange('mapbox://styles/mapbox/streets-v11')}>
-        Streets
-      </button>
-      <button className="basemap-button" onClick={() => onBasemapChange('mapbox://styles/mapbox/satellite-streets-v12')}>
-        Satellite
-      </button>
-      <button className="basemap-button" onClick={() => onBasemapChange('mapbox://styles/mapbox-map-design/ckhqrf2tz0dt119ny6azh975y')}>
-        3D Map
-      </button>
-
-      <input type="file" accept=".zip" onChange={onFileUpload} className="upload-input" />
-
-      {/* <button className="remove-button" onClick={onRemoveLayer}>
-        Remove Shapefile
-      </button> */}
+  return (
+    <div className="sidebar">
+      <div className="tabs">
+        <button
+          className={activeTab === 'basemaps' ? 'active' : ''}
+          onClick={() => setActiveTab('basemaps')}
+        >
+          Basemaps
+        </button>
+        <button
+          className={activeTab === 'layers' ? 'active' : ''}
+          onClick={() => setActiveTab('layers')}
+        >
+          Layers
+        </button>
+      </div>
+      <div className="tab-content">
+        {activeTab === 'basemaps' && (
+          <div className="basemap-options">
+            {basemaps.map((basemap) => (
+              <button
+                key={basemap.label}
+                onClick={() => onBasemapChange(basemap.style)}
+              >
+                {basemap.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {activeTab === 'layers' && (
+          <div className="layer-options">
+            <input type="file" onChange={onFileUpload} />
+            {uploadMessage && <p>{uploadMessage}</p>}
+          </div>
+        )}
+      </div>
+      <button onClick={onReset}>Reset View</button>
     </div>
-
-    {uploadMessage && <div className="upload-message">{uploadMessage}</div>}
-
-    <button onClick={onReset} className="reset-button">
-      Reset
-    </button>
-  </div>
-);
+  );
+};
 
 export default Sidebar;
