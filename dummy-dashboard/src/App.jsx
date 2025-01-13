@@ -108,44 +108,66 @@ function App() {
     const map = mapRef.current;
     const id = `shapefile-${name}`;
     const source = { type: 'geojson', data: geojson };
-
+  
     const isPointData =
       geojson.features.length > 0 &&
-      geojson.features.every(
-        (feature) => feature.geometry.type === 'Point'
-      );
-
-    const layer = isPointData
-      ? {
-          id,
-          type: 'circle',
-          source: id,
-          paint: {
-            'circle-radius': 6,
-            'circle-color': '#FF5722',
-            'circle-opacity': 0.8,
-          },
-        }
-      : {
-          id,
-          type: 'fill',
-          source: id,
-          paint: {
-            'fill-color': '#ffd400',
-            'fill-opacity': 0.5,
-          },
-        };
-
+      geojson.features.every((feature) => feature.geometry.type === 'Point');
+  
+    const fillLayer = {
+      id: `${id}-fill`,
+      type: 'fill',
+      source: id,
+      paint: {
+        'fill-color': '#ffd400',
+        'fill-opacity': 0.5,
+      },
+    };
+  
+    const lineLayer = {
+      id: `${id}-line`,
+      type: 'line',
+      source: id,
+      paint: {
+        'line-color': '#000000', // Dark black boundary
+        'line-width': 2,
+      },
+    };
+  
+    const circleLayer = {
+      id,
+      type: 'circle',
+      source: id,
+      paint: {
+        'circle-radius': 6,
+        'circle-color': '#FF5722',
+        'circle-opacity': 0.8,
+      },
+    };
+  
     if (!map.getSource(id)) {
       map.addSource(id, source);
     }
-
-    if (!map.getLayer(id)) {
-      map.addLayer(layer);
+  
+    if (isPointData) {
+      if (!map.getLayer(id)) {
+        map.addLayer(circleLayer);
+      }
+    } else {
+      if (!map.getLayer(`${id}-fill`)) {
+        map.addLayer(fillLayer);
+      }
+      if (!map.getLayer(`${id}-line`)) {
+        map.addLayer(lineLayer);
+      }
     }
-
-    addShapefileInteraction(id);
-
+  
+    // Bind click interactions to the fill layer for polygons
+    if (!isPointData) {
+      addShapefileInteraction(`${id}-fill`);
+    } else {
+      addShapefileInteraction(id); // For points
+    }
+  
     const bounds = geojson.features.reduce((bounds, feature) => {
       if (feature.geometry.type === 'Point') {
         bounds.extend(feature.geometry.coordinates);
@@ -161,13 +183,24 @@ function App() {
       }
       return bounds;
     }, new mapboxgl.LngLatBounds());
-
+  
     if (!bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 20, maxZoom: 15 });
     }
-
-    setLayers((prev) => [...prev, { id, name, visible: true, source, layer }]);
+  
+    setLayers((prev) => [
+      ...prev,
+      {
+        id,
+        name,
+        visible: true,
+        source,
+        layer: isPointData ? circleLayer : fillLayer,
+        relatedLayers: isPointData ? [] : [`${id}-fill`, `${id}-line`], // Track related layers
+      },
+    ]);
   };
+  
 
   const addShapefileInteraction = (id) => {
     const map = mapRef.current;
@@ -198,12 +231,22 @@ function App() {
   const toggleLayerVisibility = (layerId) => {
     const map = mapRef.current;
     const layer = layers.find((l) => l.id === layerId);
-
+  
     if (layer) {
       const visibility = layer.visible ? 'none' : 'visible';
-      map.setLayoutProperty(layerId, 'visibility', visibility);
+  
+      // Toggle visibility for the main layer and any related layers
+      const layersToToggle = layer.relatedLayers ? [layerId, ...layer.relatedLayers] : [layerId];
+      layersToToggle.forEach((id) => {
+        if (map.getLayer(id)) {
+          map.setLayoutProperty(id, 'visibility', visibility);
+        }
+      });
+  
       setLayers((prev) =>
-        prev.map((l) => (l.id === layerId ? { ...l, visible: !l.visible } : l))
+        prev.map((l) =>
+          l.id === layerId ? { ...l, visible: !l.visible } : l
+        )
       );
     }
   };
