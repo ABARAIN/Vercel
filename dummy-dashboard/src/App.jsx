@@ -318,6 +318,7 @@ function App() {
 
   return (
     <>
+      <div className="map-title">Central Monitoring Dashboard Map</div>
       <Sidebar
         center={center}
         zoom={zoom}
