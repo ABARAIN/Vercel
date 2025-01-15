@@ -43,6 +43,9 @@ function App() {
 
     map.on('load', () => {
       restoreLayersAndInteractions();
+      if (selectedDistrict || selectedTehsil || selectedMauza) {
+        fetchFilteredData();
+      }
     });
 
     map.on('move', () => {
