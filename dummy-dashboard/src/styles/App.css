@@ -104,7 +104,7 @@
 /* New Filters Styling */
 .filters {
   position: absolute;
-  top: 300px; /* Adjust this to position below the layers panel */
+  top: 10px; /* Adjust this to position below the layers panel */
   right: 12px; /* Position on the right side */
   background-color: rgba(255, 255, 255, 0.9);
   padding: 10px 15px;
