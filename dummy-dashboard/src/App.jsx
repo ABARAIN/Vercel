@@ -7,9 +7,7 @@ import * as d3 from 'd3';
 import wkt from 'wkt';
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
-// import app.css from styles
 import './styles/App.css';
-// import './App.css';
 
 const INITIAL_CENTER = [74.3218, 31.3668];
 const INITIAL_ZOOM = 12.25;
@@ -44,15 +42,7 @@ function App() {
     mapRef.current = map;
 
     map.on('load', () => {
-      layers.forEach(({ id, source, layer }) => {
-        if (!map.getSource(id)) {
-          map.addSource(id, source);
-        }
-        if (!map.getLayer(id)) {
-          map.addLayer(layer);
-          addShapefileInteraction(id);
-        }
-      });
+      restoreLayersAndInteractions();
     });
 
     map.on('move', () => {
@@ -63,6 +53,30 @@ function App() {
 
     return () => map.remove();
   }, [basemap]);
+
+  const restoreLayersAndInteractions = () => {
+    const map = mapRef.current;
+    layers.forEach(({ id, source, layer, relatedLayers }) => {
+      if (!map.getSource(id)) {
+        map.addSource(id, source);
+      }
+
+      if (!map.getLayer(layer.id)) {
+        map.addLayer(layer);
+      }
+
+      if (relatedLayers) {
+        relatedLayers.forEach((relatedLayer) => {
+          if (!map.getLayer(relatedLayer.id)) {
+            map.addLayer(relatedLayer);
+          }
+        });
+      }
+
+      // Reattach interactions
+      addShapefileInteraction(layer.id);
+    });
+  };
 
   const handleBasemapChange = (style) => {
     setBasemap(style);
@@ -108,11 +122,11 @@ function App() {
     const map = mapRef.current;
     const id = `shapefile-${name}`;
     const source = { type: 'geojson', data: geojson };
-  
+
     const isPointData =
       geojson.features.length > 0 &&
       geojson.features.every((feature) => feature.geometry.type === 'Point');
-  
+
     const fillLayer = {
       id: `${id}-fill`,
       type: 'fill',
@@ -122,17 +136,17 @@ function App() {
         'fill-opacity': 0.5,
       },
     };
-  
+
     const lineLayer = {
       id: `${id}-line`,
       type: 'line',
       source: id,
       paint: {
-        'line-color': '#000000', // Dark black boundary
+        'line-color': '#000000', // Black boundary
         'line-width': 2,
       },
     };
-  
+
     const circleLayer = {
       id,
       type: 'circle',
@@ -143,31 +157,31 @@ function App() {
         'circle-opacity': 0.8,
       },
     };
-  
+
     if (!map.getSource(id)) {
       map.addSource(id, source);
     }
-  
+
     if (isPointData) {
       if (!map.getLayer(id)) {
         map.addLayer(circleLayer);
       }
     } else {
-      if (!map.getLayer(`${id}-fill`)) {
+      if (!map.getLayer(fillLayer.id)) {
         map.addLayer(fillLayer);
       }
-      if (!map.getLayer(`${id}-line`)) {
+      if (!map.getLayer(lineLayer.id)) {
         map.addLayer(lineLayer);
       }
     }
-  
-    // Bind click interactions to the fill layer for polygons
+
+    // Add interactions
     if (!isPointData) {
-      addShapefileInteraction(`${id}-fill`);
+      addShapefileInteraction(fillLayer.id);
     } else {
-      addShapefileInteraction(id); // For points
+      addShapefileInteraction(id);
     }
-  
+
     const bounds = geojson.features.reduce((bounds, feature) => {
       if (feature.geometry.type === 'Point') {
         bounds.extend(feature.geometry.coordinates);
@@ -183,11 +197,11 @@ function App() {
       }
       return bounds;
     }, new mapboxgl.LngLatBounds());
-  
+
     if (!bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 20, maxZoom: 15 });
     }
-  
+
     setLayers((prev) => [
       ...prev,
       {
@@ -196,11 +210,10 @@ function App() {
         visible: true,
         source,
         layer: isPointData ? circleLayer : fillLayer,
-        relatedLayers: isPointData ? [] : [`${id}-fill`, `${id}-line`], // Track related layers
+        relatedLayers: isPointData ? [] : [lineLayer],
       },
     ]);
   };
-  
 
   const addShapefileInteraction = (id) => {
     const map = mapRef.current;
@@ -236,13 +249,14 @@ function App() {
       const visibility = layer.visible ? 'none' : 'visible';
   
       // Toggle visibility for the main layer and any related layers
-      const layersToToggle = layer.relatedLayers ? [layerId, ...layer.relatedLayers] : [layerId];
+      const layersToToggle = [layer.layer.id, ...(layer.relatedLayers?.map((l) => l.id) || [])];
       layersToToggle.forEach((id) => {
         if (map.getLayer(id)) {
           map.setLayoutProperty(id, 'visibility', visibility);
         }
       });
   
+      // Update state to reflect the new visibility
       setLayers((prev) =>
         prev.map((l) =>
           l.id === layerId ? { ...l, visible: !l.visible } : l
@@ -250,6 +264,7 @@ function App() {
       );
     }
   };
+  
 
   const handleReset = () => {
     if (mapRef.current) {

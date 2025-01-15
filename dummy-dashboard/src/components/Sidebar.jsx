@@ -11,7 +11,7 @@ const Sidebar = ({
   const [activeTab, setActiveTab] = useState('basemaps');
   const basemaps = [
     { label: 'Streets', style: 'mapbox://styles/mapbox/streets-v11' },
-    { label: 'Satellite', style: 'mapbox://styles/mapbox/satellite-v9' },
+    { label: 'Satellite', style: 'mapbox://styles/mapbox/satellite-streets-v12' },
     { label: 'Dark', style: 'mapbox://styles/mapbox/dark-v10' },
     { label: 'Light', style: 'mapbox://styles/mapbox/light-v10' },
   ];
