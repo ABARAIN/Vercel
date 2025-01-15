@@ -56,19 +56,21 @@ function App() {
 
   const restoreLayersAndInteractions = () => {
     const map = mapRef.current;
-    layers.forEach(({ id, source, layer, relatedLayers }) => {
+    layers.forEach(({ id, source, layer, relatedLayers, visible }) => {
       if (!map.getSource(id)) {
         map.addSource(id, source);
       }
 
       if (!map.getLayer(layer.id)) {
         map.addLayer(layer);
+        map.setLayoutProperty(layer.id, 'visibility', visible ? 'visible' : 'none');
       }
 
       if (relatedLayers) {
         relatedLayers.forEach((relatedLayer) => {
           if (!map.getLayer(relatedLayer.id)) {
             map.addLayer(relatedLayer);
+            map.setLayoutProperty(relatedLayer.id, 'visibility', visible ? 'visible' : 'none');
           }
         });
       }
@@ -77,7 +79,7 @@ function App() {
       addShapefileInteraction(layer.id);
     });
   };
-
+  
   const handleBasemapChange = (style) => {
     setBasemap(style);
   };
