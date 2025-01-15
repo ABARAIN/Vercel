@@ -310,6 +310,15 @@ function App() {
           'fill-opacity': 0.5,
         },
       });
+      map.addLayer({
+        id: `${layerId}-line`,
+        type: 'line',
+        source: layerId,
+        paint: {
+          'line-color': '#000', // Black color for the boundaries
+          'line-width': 2, // Adjust the width as needed
+        },
+      });
     }
 
     const bounds = geojson.features.reduce((bounds, feature) => {
