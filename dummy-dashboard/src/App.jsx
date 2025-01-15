@@ -326,8 +326,8 @@ function App() {
         type: 'fill',
         source: layerId,
         paint: {
-          'fill-color': '#088',
-          'fill-opacity': 0.5,
+          'fill-color': '#007bff',
+          'fill-opacity': 0.3,
         },
       });
       map.addLayer({
