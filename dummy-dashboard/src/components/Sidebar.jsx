@@ -14,6 +14,7 @@ const Sidebar = ({
     { label: 'Satellite', style: 'mapbox://styles/mapbox/satellite-streets-v12' },
     { label: 'Dark', style: 'mapbox://styles/mapbox/dark-v10' },
     { label: 'Light', style: 'mapbox://styles/mapbox/light-v10' },
+    { label: 'Drone Imagery', style: 'mapbox://styles/ibrahimmalik2002/cm6909iji006b01qzduu40iha' },
   ];
 
   return (
