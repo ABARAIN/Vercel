@@ -24,10 +24,12 @@ function App() {
 
   const [districts, setDistricts] = useState([]);
   const [tehsils, setTehsils] = useState([]);
-  const [mauzas, setMauzas] = useState([]);
+  const [societies, setSocieties] = useState([]);
+  // const [mauzas, setMauzas] = useState([]);
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedTehsil, setSelectedTehsil] = useState('');
-  const [selectedMauza, setSelectedMauza] = useState('');
+  const [selectedSociety, setSelectedSociety] = useState('');
+  // const [selectedMauza, setSelectedMauza] = useState('');
 
   useEffect(() => {
     mapboxgl.accessToken =
@@ -43,7 +45,8 @@ function App() {
 
     map.on('load', () => {
       restoreLayersAndInteractions();
-      if (selectedDistrict || selectedTehsil || selectedMauza) {
+      // if (selectedDistrict || selectedTehsil || selectedMauza) {
+      if (selectedDistrict || selectedTehsil || selectedSociety) {
         fetchFilteredData();
       }
     });
@@ -279,7 +282,8 @@ function App() {
 
   useEffect(() => {
     // Fetch available districts from the backend
-    axios.get('http://localhost:8000/api/joined-mauza-districts/')
+    // axios.get('http://localhost:8000/api/joined-mauza-districts/')
+    axios.get('http://localhost:8000/api/societies/')
       .then((response) => {
         const uniqueDistricts = [
           ...new Set(response.data.map((feature) => feature.district)),
@@ -293,10 +297,12 @@ function App() {
     const params = {};
     if (selectedDistrict) params.district = selectedDistrict;
     if (selectedTehsil) params.tehsil = selectedTehsil;
-    if (selectedMauza) params.mauza = selectedMauza;
+    // if (selectedMauza) params.mauza = selectedMauza;
+    if (selectedSociety) params.society = selectedSociety;
 
     axios
-      .get('http://localhost:8000/api/joined-mauza-districts/', { params })
+      // .get('http://localhost:8000/api/joined-mauza-districts/', { params })
+      .get('http://localhost:8000/api/societies/', { params })
       .then((response) => {
         const geojson = {
           type: 'FeatureCollection',
@@ -356,10 +362,12 @@ function App() {
   const handleDistrictChange = (district) => {
     setSelectedDistrict(district);
     setSelectedTehsil('');
-    setSelectedMauza('');
+    // setSelectedMauza('');
+    setSelectedSociety('');
 
     axios
-      .get('http://localhost:8000/api/joined-mauza-districts/', {
+      // .get('http://localhost:8000/api/joined-mauza-districts/', {
+      .get('http://localhost:8000/api/societies/',{
         params: { district },
       })
       .then((response) => {
@@ -373,19 +381,25 @@ function App() {
 
   const handleTehsilChange = (tehsil) => {
     setSelectedTehsil(tehsil);
-    setSelectedMauza('');
+    // setSelectedMauza('');
+    setSelectedSociety('');
 
     axios
-      .get('http://localhost:8000/api/joined-mauza-districts/', {
+      // .get('http://localhost:8000/api/joined-mauza-districts/', {
+      .get('http://localhost:8000/api/societies/', {
         params: { district: selectedDistrict, tehsil },
       })
       .then((response) => {
-        const uniqueMauzas = [
-          ...new Set(response.data.map((feature) => feature.mauza)),
+        // const uniqueMauzas = [
+        //   ...new Set(response.data.map((feature) => feature.mauza)),
+        // ];
+        // setMauzas(uniqueMauzas);
+        const uniqueSocieties = [
+          ...new Set(response.data.map((feature) => feature.society)),
         ];
-        setMauzas(uniqueMauzas);
+        setSocieties(uniqueSocieties);
       })
-      .catch((error) => console.error('Error fetching mauzas:', error));
+      .catch((error) => console.error('Error fetching soc:', error));
   };
 
   return (
@@ -427,12 +441,21 @@ function App() {
         )}
         {selectedTehsil && (
           <label>
-            Mauza:
+            {/* Mauza:
             <select onChange={(e) => setSelectedMauza(e.target.value)} value={selectedMauza}>
               <option value="">Select Mauza</option>
               {mauzas.map((mauza) => (
                 <option key={mauza} value={mauza}>
                   {mauza}
+                </option>
+              ))}
+            </select> */}
+            Society:
+            <select onChange={(e) => setSelectedSociety(e.target.value)} value={selectedSociety}>
+              <option value="">Select Society</option>
+              {societies.map((society) => (
+                <option key={society} value={society}>
+                  {society}
                 </option>
               ))}
             </select>
