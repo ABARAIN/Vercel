@@ -31,6 +31,13 @@ function App() {
   const [selectedSociety, setSelectedSociety] = useState('');
   // const [selectedMauza, setSelectedMauza] = useState('');
 
+  const [newdistricts, setNewdistricts] = useState([]);
+  const [newtehsils, setNewtehsils] = useState([]);
+  const [mauzas, setMauzas] = useState([]);
+  const [selectedNewdistrict, setSelectedNewdistrict] = useState('');
+  const [selectedNewtehsil, setSelectedNewtehsil] = useState('');
+  const [selectedMauza, setSelectedMauza] = useState('');
+
   useEffect(() => {
     mapboxgl.accessToken =
       'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
@@ -48,6 +55,9 @@ function App() {
       // if (selectedDistrict || selectedTehsil || selectedMauza) {
       if (selectedDistrict || selectedTehsil || selectedSociety) {
         fetchFilteredData();
+      }
+      if (selectedNewdistrict || selectedNewtehsil || selectedMauza) {
+        fetchNewFilteredData();
       }
     });
 
@@ -293,6 +303,16 @@ function App() {
       .catch((error) => console.error('Error fetching districts:', error));
   }, []);
 
+  useEffect(() => {
+    axios.get('http://localhost:8000/api/joined-mauza-districts/')
+    .then((response) => {
+      const newUniqueDistricts = [
+        ...new Set(response.data.map((feature) => feature.district)),
+      ];
+      setNewdistricts(newUniqueDistricts);
+    })
+    .catch((error) => console.error('Error fetching districts:', error));
+  })
   const fetchFilteredData = () => {
     const params = {};
     if (selectedDistrict) params.district = selectedDistrict;
@@ -320,6 +340,30 @@ function App() {
       .catch((error) => console.error('Error fetching filtered data:', error));
   };
 
+  const fetchNewFilteredData = () => {
+    const params = {};
+    if (selectedNewdistrict) params.district = selectedNewdistrict;
+    if (selectedNewtehsil) params.tehsil = selectedNewtehsil;
+    if (selectedMauza) params.mauza = selectedMauza;
+
+    axios
+      .get('http://localhost:8000/api/joined-mauza-districts/', { params })
+      .then((response) => {
+        const geojson = {
+          type: 'FeatureCollection',
+          features: response.data.map((feature) => {
+            const geom = feature.geom.replace('SRID=4326;', ''); // Strip SRID
+            return {
+              type: 'Feature',
+              geometry: wkt.parse(geom), 
+              properties: feature,
+            };
+          }),
+        };
+        addLayer(geojson, 'filtered-layer');
+      })
+      .catch((error) => console.error('Error fetching filtered data:', error));
+  }
   const addLayer = (geojson, layerId) => {
     const map = mapRef.current;
 
@@ -379,6 +423,24 @@ function App() {
       .catch((error) => console.error('Error fetching tehsils:', error));
   };
 
+  const handleNewDistrictChange = (district) => {
+    setSelectedNewdistrict(district);
+    setSelectedNewtehsil('');
+    setSelectedMauza('');
+
+    axios
+    .get('http://localhost:8000/api/joined-mauza-districts/', {
+      params: {district},
+    })
+    .then((response) => {
+      const newUniqueTehsils = [
+        ...new Set(response.data.map((feature) => feature.tehsil)),
+      ];
+      setNewtehsils(newUniqueTehsils);
+    })
+    .catch((error) => console.error('Error fetching tehsils:', error));
+  };
+
   const handleTehsilChange = (tehsil) => {
     setSelectedTehsil(tehsil);
     // setSelectedMauza('');
@@ -400,6 +462,23 @@ function App() {
         setSocieties(uniqueSocieties);
       })
       .catch((error) => console.error('Error fetching soc:', error));
+  };
+
+  const handleNewTehsilChange = (tehsil) => {
+    setSelectedNewtehsil(tehsil);
+    setSelectedMauza('');
+
+    axios
+      .get('http://localhost:8000/api/joined-mauza-districts/', {
+        params: { district: selectedDistrict, tehsil },
+      })
+      .then((response) => {
+        const uniqueMauzas = [
+          ...new Set(response.data.map((feature) => feature.mauza)),
+        ];
+        setMauzas(uniqueMauzas);
+      })
+      .catch((error) => console.error('Error fetching mauzas:', error));
   };
 
   return (
@@ -462,6 +541,46 @@ function App() {
           </label>
         )}
         <button onClick={fetchFilteredData}>Apply Filters</button>
+      </div>
+      <div className="filters2">
+      <label>
+          District:
+          <select onChange={(e) => handleNewDistrictChange(e.target.value)} value={selectedNewdistrict}>
+            <option value="">Select District</option>
+            {newdistricts.map((district) => (
+              <option key={district} value={district}>
+                {district}
+              </option>
+            ))}
+          </select>
+        </label>
+        {selectedNewdistrict && (
+          <label>
+            Tehsil:
+            <select onChange={(e) => handleNewTehsilChange(e.target.value)} value={selectedNewtehsil}>
+              <option value="">Select Tehsil</option>
+              {newtehsils.map((tehsil) => (
+                <option key={tehsil} value={tehsil}>
+                  {tehsil}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {selectedNewtehsil && (
+          <label>
+            Mauza:
+            <select onChange={(e) => setSelectedMauza(e.target.value)} value={selectedMauza}>
+              <option value="">Select Mauza</option>
+              {mauzas.map((mauza) => (
+                <option key={mauza} value={mauza}>
+                  {mauza}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <button onClick={fetchNewFilteredData}>Apply Filters</button>
       </div>
       <div id="map-container" ref={mapContainerRef}></div>
     </>
