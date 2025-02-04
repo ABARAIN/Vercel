@@ -262,3 +262,28 @@
 .filters2 button:hover {
   background-color: #005f8d;
 }
+.custom-popup {
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  color: #333;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 250px;
+  text-align: left;
+}
+
+.custom-popup h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #007bff;
+}
+
+.custom-popup p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.custom-popup strong {
+  color: #555;
+}

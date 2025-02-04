@@ -75,9 +75,22 @@ function App() {
         console.log("Land Parcel Data:", data);
 
         // Display popup with information
-        new mapboxgl.Popup()
+        new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
           .setLngLat([lng, lat])
-          .setHTML(`<h3>${data.society}</h3><p>${JSON.stringify(data)}</p>`)
+          .setHTML(`
+            <div class="custom-popup">
+              <h3>${data.society}</h3>
+              <p><strong>Town Name:</strong> ${data.town_name}</p>
+              <p><strong>Landuse:</strong> ${data.landuse}</p>
+              <p><strong>Plot Number:</strong> ${data.plotno}</p>
+              <p><strong>Society Type:</strong> ${data.societytyp}</p>
+              <p><strong>District:</strong> ${data.district}</p>
+              <p><strong>Tehsil:</strong> ${data.tehsil}</p>
+              <p><strong>Source:</strong> ${data.source}</p>
+              <p><strong>Coordinates:</strong> ${data.geom}</p>
+              <p><strong>Demarcation: <a href="http://localhost/fol/plot693.pdf">Link</a></strong></p>
+            </div>
+          `)
           .addTo(map);
       } else {
         console.warn("No data found:", data.error);
