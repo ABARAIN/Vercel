@@ -60,6 +60,32 @@ function App() {
         fetchNewFilteredData();
       }
     });
+       // Add click event listener
+   map.on("click", async (e) => {
+    const { lng, lat } = e.lngLat; // Get clicked coordinates
+    console.log("Clicked coordinates:", lng, lat);
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/land-parcel/?lat=${lat}&lon=${lng}`
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Land Parcel Data:", data);
+
+        // Display popup with information
+        new mapboxgl.Popup()
+          .setLngLat([lng, lat])
+          .setHTML(`<h3>${data.society}</h3><p>${JSON.stringify(data)}</p>`)
+          .addTo(map);
+      } else {
+        console.warn("No data found:", data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching parcel data:", error);
+    }
+  });
 
     map.on('move', () => {
       const mapCenter = map.getCenter();
@@ -481,9 +507,11 @@ function App() {
       .catch((error) => console.error('Error fetching mauzas:', error));
   };
 
+
+
   return (
     <>
-      <div className="map-title">Central Monitoring Dashboard Map</div>
+      {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
       <Sidebar
         center={center}
         zoom={zoom}
@@ -520,15 +548,6 @@ function App() {
         )}
         {selectedTehsil && (
           <label>
-            {/* Mauza:
-            <select onChange={(e) => setSelectedMauza(e.target.value)} value={selectedMauza}>
-              <option value="">Select Mauza</option>
-              {mauzas.map((mauza) => (
-                <option key={mauza} value={mauza}>
-                  {mauza}
-                </option>
-              ))}
-            </select> */}
             Society:
             <select onChange={(e) => setSelectedSociety(e.target.value)} value={selectedSociety}>
               <option value="">Select Society</option>
@@ -540,7 +559,7 @@ function App() {
             </select>
           </label>
         )}
-        <button onClick={fetchFilteredData}>Apply Filters</button>
+        <button onClick={fetchFilteredData}>Apply Society Filters</button>
       </div>
       <div className="filters2">
       <label>
@@ -580,7 +599,7 @@ function App() {
             </select>
           </label>
         )}
-        <button onClick={fetchNewFilteredData}>Apply Filters</button>
+        <button onClick={fetchNewFilteredData}>Apply Mauza Filters</button>
       </div>
       <div id="map-container" ref={mapContainerRef}></div>
     </>
