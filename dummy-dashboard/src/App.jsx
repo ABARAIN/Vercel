@@ -312,7 +312,7 @@ function App() {
       setNewdistricts(newUniqueDistricts);
     })
     .catch((error) => console.error('Error fetching districts:', error));
-  })
+  }, []);
   const fetchFilteredData = () => {
     const params = {};
     if (selectedDistrict) params.district = selectedDistrict;
@@ -363,7 +363,7 @@ function App() {
         addLayer(geojson, 'filtered-layer');
       })
       .catch((error) => console.error('Error fetching filtered data:', error));
-  }
+  };
   const addLayer = (geojson, layerId) => {
     const map = mapRef.current;
 
