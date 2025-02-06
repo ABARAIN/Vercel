@@ -88,7 +88,7 @@ function App() {
               <p><strong>Tehsil:</strong> ${data.tehsil}</p>
               <p><strong>Source:</strong> ${data.source}</p>
               <p><strong>Coordinates:</strong> ${data.geom}</p>
-              <p><strong>Demarcation: <a href="http://localhost/fol/plot693.pdf">Link</a></strong></p>
+              <p><stromg>Property Details: <a href="http://localhost:3000/login">View Property Details</a></strong></p>
             </div>
           `)
           .addTo(map);
