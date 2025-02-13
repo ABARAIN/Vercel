@@ -190,7 +190,7 @@ function App() {
       source: id,
       paint: {
         'fill-color': '#ffd400',
-        'fill-opacity': 0.5,
+        'fill-opacity': 0,
       },
     };
 
