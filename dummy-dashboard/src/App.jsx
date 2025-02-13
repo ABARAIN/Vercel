@@ -274,18 +274,25 @@ function App() {
 
   const addShapefileInteraction = (id) => {
     const map = mapRef.current;
-
+  
     map.on('click', id, (e) => {
       const properties = e.features[0].properties;
       const coordinates = e.lngLat;
-
-      new mapboxgl.Popup()
+  
+      new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
         .setLngLat(coordinates)
-        .setHTML(
-          Object.keys(properties)
-            .map((key) => `<div><strong>${key}:</strong> ${properties[key]}</div>`)
-            .join('')
-        )
+        .setHTML(`
+          <div class="custom-popup">
+            <h3>Landuse Details</h3>
+            
+              <p><strong>Landuse:</strong> ${properties.Landuse}</p>
+              <p><strong>Plot Number:</strong> ${properties.NAME}</p>
+              <p><strong>Block:</strong> ${properties.Block}</p>
+              <p><strong>Owner:</strong> ${properties.Owner_Name}</p>
+              <p><strong>Contact:</strong> ${properties.Cell_No}</p>
+            
+          </div>
+        `)
         .addTo(map);
     });
 
