@@ -309,9 +309,15 @@ function App() {
               <p><strong>Landuse:</strong> ${properties.Landuse}</p>
               <p><strong>Plot Number:</strong> ${properties.NAME}</p>
               <p><strong>Block:</strong> ${properties.Block}</p>
-              <p><strong>Owner:</strong> ${properties.Owner_Na_1}</p>
-              <p><strong>Father/Husband Name:</strong> ${properties.Owner_Fath}</p>
-              <p><strong>CNIC:</strong> ${properties.CNIC}</p>
+              <p><strong>Plot Area:</strong> ${properties.plot_area}</p>
+              <p><strong>Plot Area TP:</strong> ${properties.plot_area_}</p>
+              <p><strong>File Number:</strong> ${properties.file_no}</p>
+              <p><strong>Covered Area:</strong> ${properties.covered_ar}</p>
+              <p><strong>BA/BP Number:</strong> ${properties.ba_no}</p>
+              <p><strong>Completion Date:</strong> ${properties.completion}</p>
+              <p><strong>Owner:</strong> ${properties.owner_na_1}</p>
+              <p><strong>Father/Husband Name:</strong> ${properties.fath_name}</p>
+              <p><strong>CNIC:</strong> ${properties.new_CNIC}</p>
               <p><strong>Contact:</strong> ${properties.Cell_No}</p>
             
           </div>
