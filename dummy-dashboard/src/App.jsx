@@ -38,6 +38,16 @@ function App() {
   const [selectedNewtehsil, setSelectedNewtehsil] = useState('');
   const [selectedMauza, setSelectedMauza] = useState('');
 
+  const selectedDistrictRef = useRef('');
+  const selectedTehsilRef = useRef('');
+  const selectedSocietyRef = useRef('');
+
+  useEffect(() => {
+    selectedDistrictRef.current = selectedDistrict;
+    selectedTehsilRef.current = selectedTehsil;
+    selectedSocietyRef.current = selectedSociety;
+  }, [selectedDistrict, selectedTehsil, selectedSociety]);
+  
   useEffect(() => {
     mapboxgl.accessToken =
       'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
@@ -61,44 +71,55 @@ function App() {
       }
     });
        // Add click event listener
-   map.on("click", async (e) => {
-    const { lng, lat } = e.lngLat; // Get clicked coordinates
-    console.log("Clicked coordinates:", lng, lat);
-
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/land-parcel/?lat=${lat}&lon=${lng}`
-      );
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log("Land Parcel Data:", data);
-
-        // Display popup with information
-        new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
-          .setLngLat([lng, lat])
-          .setHTML(`
-            <div class="custom-popup">
-              <h3>${data.society}</h3>
-              <p><strong>Town Name:</strong> ${data.town_name}</p>
-              <p><strong>Landuse:</strong> ${data.landuse}</p>
-              <p><strong>Plot Number:</strong> ${data.plotno}</p>
-              <p><strong>Society Type:</strong> ${data.societytyp}</p>
-              <p><strong>District:</strong> ${data.district}</p>
-              <p><strong>Tehsil:</strong> ${data.tehsil}</p>
-              <p><strong>Source:</strong> ${data.source}</p>
-              <p><strong>Coordinates:</strong> ${data.geom}</p>
-              <p><stromg>Property Details: <a href="http://localhost:3000/login">View Property Details</a></strong></p>
-            </div>
-          `)
-          .addTo(map);
-      } else {
-        console.warn("No data found:", data.error);
-      }
-    } catch (error) {
-      console.error("Error fetching parcel data:", error);
-    }
-  });
+       map.on("click", async (e) => {
+        console.log("Selected Filters:", { 
+          selectedDistrict: selectedDistrictRef.current, 
+          selectedTehsil: selectedTehsilRef.current, 
+          selectedSociety: selectedSocietyRef.current 
+        });
+      
+        if (!selectedDistrictRef.current && !selectedTehsilRef.current && !selectedSocietyRef.current) {
+          console.log("No filter applied. Popup will not appear.");
+          return;
+        }
+      
+        const { lng, lat } = e.lngLat; // Get clicked coordinates
+        console.log("Clicked coordinates:", lng, lat);
+      
+        try {
+          const response = await fetch(
+            `http://127.0.0.1:8000/api/land-parcel/?lat=${lat}&lon=${lng}`
+          );
+          const data = await response.json();
+      
+          if (response.ok) {
+            console.log("Land Parcel Data:", data);
+      
+            new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
+              .setLngLat([lng, lat])
+              .setHTML(`
+                <div class="custom-popup">
+                  <h3>${data.society}</h3>
+                  <p><strong>Town Name:</strong> ${data.town_name}</p>
+                  <p><strong>Landuse:</strong> ${data.landuse}</p>
+                  <p><strong>Plot Number:</strong> ${data.plotno}</p>
+                  <p><strong>Society Type:</strong> ${data.societytyp}</p>
+                  <p><strong>District:</strong> ${data.district}</p>
+                  <p><strong>Tehsil:</strong> ${data.tehsil}</p>
+                  <p><strong>Source:</strong> ${data.source}</p>
+                  <p><strong>Coordinates:</strong> ${data.geom}</p>
+                  <p><strong>Property Details: <a href="http://localhost:3000/login">View Property Details</a></strong></p>
+                </div>
+              `)
+              .addTo(map);
+          } else {
+            console.warn("No data found:", data.error);
+          }
+        } catch (error) {
+          console.error("Error fetching parcel data:", error);
+        }
+      });
+      
 
     map.on('move', () => {
       const mapCenter = map.getCenter();
