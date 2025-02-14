@@ -288,7 +288,9 @@ function App() {
               <p><strong>Landuse:</strong> ${properties.Landuse}</p>
               <p><strong>Plot Number:</strong> ${properties.NAME}</p>
               <p><strong>Block:</strong> ${properties.Block}</p>
-              <p><strong>Owner:</strong> ${properties.Owner_Name}</p>
+              <p><strong>Owner:</strong> ${properties.Owner_Na_1}</p>
+              <p><strong>Father/Husband Name:</strong> ${properties.Owner_Fath}</p>
+              <p><strong>CNIC:</strong> ${properties.CNIC}</p>
               <p><strong>Contact:</strong> ${properties.Cell_No}</p>
             
           </div>
