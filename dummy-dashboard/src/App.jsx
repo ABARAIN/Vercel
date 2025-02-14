@@ -550,8 +550,6 @@ function App() {
       .catch((error) => console.error('Error fetching mauzas:', error));
   };
 
-
-
   return (
     <>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
