@@ -452,7 +452,7 @@ function App() {
         source: layerId,
         paint: {
           'fill-color': '#007bff',
-          'fill-opacity': 0.3,
+          'fill-opacity': 0,
         },
       });
       map.addLayer({
