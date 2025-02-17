@@ -309,10 +309,10 @@ function App() {
               <p><strong>Landuse:</strong> ${properties.Landuse}</p>
               <p><strong>Plot Number:</strong> ${properties.NAME}</p>
               <p><strong>Block:</strong> ${properties.Block}</p>
-              <p><strong>Plot Area (as per property file):</strong> ${properties.plot_area}</p>
-              <p><strong>Plot Area (as per demarcation/part plan):</strong> ${properties.plot_area_}</p>
+              <p><strong style="color: blue;">Plot Area (as per property file):</strong> ${properties.plot_area}</p>
+              <p><strong style="color: green;">Plot Area (as per demarcation/part plan):</strong> ${properties.plot_area_}</p>
               <p><strong>File Number:</strong> ${properties.file_no}</p>
-              <p><strong>Covered Area (as per building plan approval):</strong> ${properties.covered_ar}</p>
+              <p><strong style="color: red;">Covered Area in sq. ft (as per building plan approval):</strong> ${properties.covered_ar}</p>
               <p><strong>BA/BP Number:</strong> ${properties.ba_no}</p>
               <p><strong>Completion Date:</strong> ${properties.completion}</p>
               <p><strong>Owner:</strong> ${properties.owner_na_1}</p>
