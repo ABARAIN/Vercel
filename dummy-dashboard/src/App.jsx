@@ -309,9 +309,6 @@ function App() {
               <p><strong>Landuse:</strong> ${properties.Landuse}</p>
               <p><strong>Plot Number:</strong> ${properties.NAME}</p>
               <p><strong>Block:</strong> ${properties.Block}</p>
-              <p><strong style="color: blue;">Plot Area (as per property file):</strong> ${properties.plot_area}</p>
-              <p><strong style="color: green;">Plot Area (as per demarcation/part plan):</strong> ${properties.plot_area_}</p>
-              <p><strong>Digitized Area:</strong> ${properties.Area_Digit}</p>
               <p><strong>File Number:</strong> ${properties.file_no}</p>
               <p><strong style="color: red;">Covered Area in sq. ft (as per building plan approval):</strong> ${properties.covered_ar}</p>
               <p><strong>BA/BP Number:</strong> ${properties.ba_no}</p>
@@ -320,7 +317,23 @@ function App() {
               <p><strong>Father/Husband Name:</strong> ${properties.fath_name}</p>
               <p><strong>CNIC:</strong> ${properties.new_CNIC}</p>
               <p><strong>Contact:</strong> ${properties.Cell_No}</p>
-            
+              <table border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
+                <tr>
+                  <th style ="background-color: lightgreen; padding: 5px;">Plot Area</th>
+                  <td style="padding: 5px;">In Marlas</td>
+                <tr>
+                  <th style="background-color: lightgray; padding: 5px;">As per Property File</th>
+                  <td style="padding: 5px;">${properties.plot_area}</td>
+                </tr>
+                <tr>
+                  <th style="background-color: lightblue; padding: 5px;">As per Demarcation/Part Plan</th>
+                  <td style="padding: 5px;">${properties.plot_area_}</td>
+                </tr>
+                <tr>
+                  <th style="background-color: lightcoral; padding: 5px;">Footprint</th>
+                  <td style="padding: 5px;">${properties.Area_Digit}</td>
+                </tr>
+              </table>
           </div>
         `)
         .addTo(map);
