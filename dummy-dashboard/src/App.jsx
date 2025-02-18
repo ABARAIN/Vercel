@@ -311,7 +311,7 @@ function App() {
               <p><strong>Block:</strong> ${properties.Block}</p>
               <p><strong style="color: blue;">Plot Area (as per property file):</strong> ${properties.plot_area}</p>
               <p><strong style="color: green;">Plot Area (as per demarcation/part plan):</strong> ${properties.plot_area_}</p>
-              <p><strong>Digitized Area:</strong> ${properties.area_lengt}</p>
+              <p><strong>Digitized Area:</strong> ${properties.Area_Digit}</p>
               <p><strong>File Number:</strong> ${properties.file_no}</p>
               <p><strong style="color: red;">Covered Area in sq. ft (as per building plan approval):</strong> ${properties.covered_ar}</p>
               <p><strong>BA/BP Number:</strong> ${properties.ba_no}</p>
