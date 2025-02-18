@@ -5,79 +5,287 @@
   bottom: 0;
   left: 0;
 }
+body {
+  font-family: 'Arial', sans-serif; 
+}
 
 #map-container {
-  height: 100%;
-  width: 100%;
-  background-color: lightgrey;
+  margin-top: 10px;
+  margin-left: 6px;
+  height: calc(105% - 160px); 
+  width: calc(100% - 350px); 
+  background-color: #f0f0f0; 
+  border: 2px solid #007bbf; 
+  border-radius: 4px; 
+  float: left; 
+  position: absolute; 
+  top: 100px; 
+  z-index: 1; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+.search-bar {
+  position: absolute;
+  top: 120px; 
+  left: 18%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 1000; 
+  width: 500px; 
 }
 
-.sidebar {
-  color: #fff;
-  padding: 6px 12px;
-  font-family: monospace;
-  z-index: 1;
+.search-input {
+  padding: 10px 10px 10px 40px; 
+  border: 1px solid #ccc;
+  border-radius: 20px; 
+  flex: 1; 
+  font-size: 16px; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  outline: none; 
+}
+
+.search-icon {
   position: absolute;
-  top: 0;
-  left: 0;
-  margin: 12px;
+  left: 10px; 
+  color: #000204; 
+  font-size: 16px; 
+  pointer-events: none; 
+}
+
+.control-wrapper {
+  display: flex;
+  flex-direction: column; 
+  width: 40px; 
+}
+.custom-control {
+  display: flex;
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: flex-end; 
+  gap: 0px; 
+  margin-top: 2px; 
+  margin-right: 10px; 
+  flex-wrap: nowrap; 
+}
+.custom-control-button {
+  position: relative;
+  border: none; 
+  background-color: #ffffff; 
+  color: #01060b; 
+  padding: 8px; 
+  border-radius: 2px; 
+  border: 1px solid #e4e8ea;
+  cursor: pointer; 
+  transition: background-color 0.3s ease;
+  min-width: 30px; 
+  max-width: 50px; 
+}
+
+.custom-control-button:hover {
+  background-color: #e2e6ea;
+}
+
+.custom-control-button i {
+  font-size: 14px; 
+}
+
+.tooltip {
+  position: absolute;
+  background-color: #333;
+  color: #fff;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000; 
+  display: none; 
+}
+.custom-control-button:hover .tooltip {
+  display: block; 
+  top: -30px; 
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer; 
+}
+.sidebar {
+  background-color: #f8f9fa; 
+  color: #333;
+  padding: 15px; 
+  z-index: 2; 
+  position: absolute;
+  top: 100px; 
+  right: 0;
+  width: 300px; 
+  height: calc(100% - 130px); 
+  overflow-y: auto; 
+  border-left: 1px solid #ccc; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
+
+.sidebar-menu {
+  margin-bottom: 10px; 
+}
+
+.sidebar-menu-header {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 15px; 
+  border-radius: 1px; 
+  background-color: #ffffff; 
+  border: 1px solid #033636; 
+}
+
+.sidebar-menu-header:hover {
+  background-color: #dee2e6; 
+}
+
+.sidebar-menu-content {
+  overflow: hidden;
+  transition: height 0.3s ease; 
+  background-color: #f9f9f9; 
+}
+
+.sidebar-menu-content.open {
+  background-color: #ffffff; 
+}
+.file-upload {
+  margin-top: 20px; 
+}
+.layer-header {
+  cursor: pointer;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border: 1px solid #ffffff;
+  margin-bottom: 2px;
   border-radius: 4px;
 }
 
+.layer-header:hover {
+  background-color: #e2e6ea;
+}
+
+.layer-content {
+  padding-left: 15px; 
+  background-color: #f9f9f9;
+}
 .reset-button {
-  position: absolute;
-  top: 100px;
-  z-index: 1;
-  left: 12px;
-  padding: 6px 12px;
-  background-color: #007cbf;
+  margin-top: 10px; 
+  padding: 8px 12px;
+  background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 14px;
 }
 
 .reset-button:hover {
-  background-color: #005f8c;
+  background-color: #0056b3; 
 }
 
 .buttons-container {
   position: absolute;
-  top: 150px;
+  top: 50px;
   left: 12px;
   z-index: 1;
 }
-
-.basemap-button {
-  display: block;
-  margin-bottom: 8px;
-  padding: 6px 12px;
-  background-color: #343a40;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
+/*
+.basemap-option {
+  display: flex;
+  align-items: center; 
+  padding: 10px; 
+  cursor: pointer; 
+  transition: background-color 0.3s;
 }
 
-.basemap-button:hover {
-  background-color: #495057;
+.basemap-option:hover {
+  background-color: #f0f0f0; 
 }
 
-.basemap-button, .reset-button, .remove-button {
-  padding: 10px 20px;
+.basemap-icon {
+  width: 30px; 
+  height: auto; 
+  margin-right: 10px; 
+}*/
+
+.basemap-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; 
+}
+
+.basemap-selector button {
   margin: 5px;
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+  background: transparent; 
+  color: rgb(2, 2, 2);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.basemap-selector button:hover {
+  background-color: transparent;
+}
+.basemap-button.active {
+  background-color: #0056b3; 
+}
+.basemap-button {
+  padding: 12px 10px;
+  background-color: #007bff;
+  color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  background-color: #007cbf;
-  color: white;
-  font-size: 14px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  font-size: 16px; 
+}
+.basemap-button:hover {
+  background-color: #0056b3; 
+}
+.basemap-button img {
+  width: 40px; 
+  height: auto; 
+  margin-right: 10px; 
+}
+.basemap-button.streets {
+  background-image: url('./assets/icons/street.png');
+  background-size: 24px; 
+  background-repeat: no-repeat;
+  background-position: left center; 
 }
 
-.basemap-button:hover, .reset-button:hover, .remove-button:hover {
-  background-color: #005f8d;
+.basemap-button.satellite {
+  background-image: url('./assets/icons/satellite.png');
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: left center;
+}
+
+.basemap-button.dark {
+  background-image: url('./assets/icons/dark.png');
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: left center;
+}
+
+.basemap-button.light {
+  background-image: url('./assets/icons/light.png');
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: left center;
+}
+
+.basemap-button.drone {
+  background-image: url('./assets/icons/drone.png');
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: left center;
 }
 
 .upload-input {
@@ -95,24 +303,28 @@
 }
 
 .remove-button {
-  background-color: #ff0000;
+  padding: 10px 15px;
   margin: 5px 0;
-  padding: 10px 20px;
-  display: block;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #007bff; 
+  color: white;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
 }
-
-/* New Filters Styling */
+/*
 .filters {
   position: absolute;
-  top: 10px; /* Adjust this to position below the layers panel */
-  right: 12px; /* Position on the right side */
+  top: 50px;  
+  right: 12px; 
   background-color: rgba(255, 255, 255, 0.9);
   padding: 10px 15px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 2;
   display: flex;
-  flex-direction: column; /* Stack elements vertically */
+  flex-direction: column;
   gap: 10px;
 }
 
@@ -169,8 +381,9 @@
   z-index: 3;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
-}
+}*/
 .sidebar .tabs {
+  margin-top: 50px;
   display: flex;
   justify-content: space-around;
   margin-bottom: 10px;
@@ -209,17 +422,17 @@
 .layer-options input:hover {
   background-color: #e0e0e0;
 }
-.filters2 {
+/*.filters2 {
   position: absolute;
-  bottom: 10px; /* Adjust this to position below the layers panel */
-  right: 12px; /* Position on the right side */
+  bottom: 10px;
+  right: 12px; 
   background-color: rgba(255, 255, 255, 0.9);
   padding: 10px 15px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 2;
   display: flex;
-  flex-direction: column; /* Stack elements vertically */
+  flex-direction: column; 
   gap: 10px;
 }
 
@@ -261,7 +474,7 @@
 
 .filters2 button:hover {
   background-color: #005f8d;
-}
+}*/
 .custom-popup {
   font-family: Arial, sans-serif;
   background-color: #ffffff;

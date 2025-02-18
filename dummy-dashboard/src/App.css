@@ -97,7 +97,7 @@
 
 .remove-button {
   background-color: #ff0000;
-  margin: 5px 0; /* Align with other buttons' spacing */
+  margin: 5px 0; 
   padding: 10px 20px;
   display: block;
 }

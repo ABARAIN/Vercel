@@ -8,6 +8,10 @@ import wkt from 'wkt';
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 import './styles/App.css';
+import Header from './components/Header'; 
+import Navbar from './components/Navbar';
+import BasemapSelector from './components/BasemapSelector';
+import SearchBar from './components/SearchBar'; 
 
 const INITIAL_CENTER = [74.3218, 31.3668];
 const INITIAL_ZOOM = 12.25;
@@ -22,21 +26,32 @@ function App() {
   const [layers, setLayers] = useState([]);
   const [uploadMessage, setUploadMessage] = useState('');
 
+  //const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [tehsils, setTehsils] = useState([]);
   const [societies, setSocieties] = useState([]);
-  // const [mauzas, setMauzas] = useState([]);
+  const [blocks, setBlocks] = useState([]);
+  const [mauzas, setMauzas] = useState([]);
+ // const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedTehsil, setSelectedTehsil] = useState('');
   const [selectedSociety, setSelectedSociety] = useState('');
-  // const [selectedMauza, setSelectedMauza] = useState('');
+  const [selectedBlock, setSelectedBlock] = useState('');
+   const [selectedMauza, setSelectedMauza] = useState('');
 
+  //const [newdivisions, setNewdivisions] = useState([]);
   const [newdistricts, setNewdistricts] = useState([]);
   const [newtehsils, setNewtehsils] = useState([]);
-  const [mauzas, setMauzas] = useState([]);
+  const [newblocks, setNewblocks] = useState([]);
+
+  //const [mauzas, setMauzas] = useState([]);
+  const [selectedNewdivision, setSelectedNewdivision] = useState('');
   const [selectedNewdistrict, setSelectedNewdistrict] = useState('');
   const [selectedNewtehsil, setSelectedNewtehsil] = useState('');
-  const [selectedMauza, setSelectedMauza] = useState('');
+  const [selectedNewblock, setSelectedNewblock] = useState('');
+
+  //const [selectedMauza, setSelectedMauza] = useState('');
+  
 
   const selectedDistrictRef = useRef('');
   const selectedTehsilRef = useRef('');
@@ -63,12 +78,18 @@ function App() {
     map.on('load', () => {
       restoreLayersAndInteractions();
       // if (selectedDistrict || selectedTehsil || selectedMauza) {
-      if (selectedDistrict || selectedTehsil || selectedSociety) {
+      if ( selectedDistrict || selectedTehsil || selectedSociety || selectedBlock) {
         fetchFilteredData();
       }
-      if (selectedNewdistrict || selectedNewtehsil || selectedMauza) {
+      if ( selectedNewdistrict || selectedNewtehsil || selectedMauza || selectedNewblock) {
         fetchNewFilteredData();
       }
+
+     // map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    const controlWrapper = createControlWrapper();
+      map.addControl(controlWrapper, 'top-right');
+
     });
        // Add click event listener
        map.on("click", async (e) => {
@@ -130,6 +151,93 @@ function App() {
     return () => map.remove();
   }, [basemap]);
 
+  const createControlWrapper = () => {
+    class ControlWrapper {
+      onAdd(map) {
+        this._map = map;
+        this._container = document.createElement("div");
+        this._container.className = "control-wrapper";
+
+        
+        const navControl = new mapboxgl.NavigationControl();
+        this._container.appendChild(navControl.onAdd(map));
+
+        
+        const customControl = createCustomControl();
+        this._container.appendChild(customControl.onAdd(map));
+
+        return this._container;
+      }
+
+      onRemove() {
+        this._container.parentNode.removeChild(this._container);
+        this._map = undefined;
+      }
+    }
+
+    return new ControlWrapper();
+  };
+
+  const createCustomControl = () => {
+    class CustomControl {
+      onAdd(map) {
+        this._map = map;
+        this._container = document.createElement("div");
+        this._container.className = "custom-control"; 
+  
+        const actions = [
+          { icon: "fa-map-marker-alt", tooltip: "Draw Point (m)", onClick: () => alert("Draw Point") },
+          { icon: "fa-grip-lines", tooltip: "Draw Line (l)", onClick: () => alert("Draw Line") },
+          { icon: "fa-draw-polygon", tooltip: "Draw Polygon (p)", onClick: () => alert("Draw Polygon") },
+          { icon: "fa-vector-square", tooltip: "Draw Rectangular (r)", onClick: () => alert("Draw Rectangle") },
+          { icon: "fa-circle", tooltip: "Draw Circle (c)", onClick: () => alert("Draw Circle") },
+          { icon: "fa-edit", tooltip: "Edit Geometries", onClick: () => alert("Edit Mode") },
+        ];
+  
+        actions.forEach(action => {
+          const button = document.createElement("button");
+          button.className = "custom-control-button"; 
+          button.onclick = action.onClick;
+  
+          const icon = document.createElement("i");
+          icon.className = `fas ${action.icon}`;
+  
+          // Tooltip element
+          const tooltip = document.createElement("div");
+          tooltip.className = "tooltip";
+          tooltip.innerText = action.tooltip;
+          tooltip.style.display = "none"; 
+  
+          button.appendChild(icon);
+          button.appendChild(tooltip);
+          this._container.appendChild(button);
+  
+          // Show tooltip on mouse over
+          button.addEventListener('mouseenter', () => {
+            tooltip.style.display = "block";
+            const rect = button.getBoundingClientRect();
+            tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
+            tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
+          });
+  
+          // Hide tooltip on mouse leave
+          button.addEventListener('mouseleave', () => {
+            tooltip.style.display = "none";
+          });
+        });
+  
+        return this._container;
+      }
+  
+      onRemove() {
+        this._container.parentNode.removeChild(this._container);
+        this._map = undefined;
+      }
+    }
+  
+    return new CustomControl();
+  };
+  
   const restoreLayersAndInteractions = () => {
     const map = mapRef.current;
     layers.forEach(({ id, source, layer, relatedLayers, visible }) => {
@@ -158,6 +266,9 @@ function App() {
   
   const handleBasemapChange = (style) => {
     setBasemap(style);
+    if (mapRef.current) {
+      mapRef.current.setStyle(style); 
+    }
   };
 
   const handleFileUpload = async (event) => {
@@ -497,6 +608,7 @@ function App() {
   };
 
   const handleDistrictChange = (district) => {
+    
     setSelectedDistrict(district);
     setSelectedTehsil('');
     // setSelectedMauza('');
@@ -519,7 +631,7 @@ function App() {
   const handleNewDistrictChange = (district) => {
     setSelectedNewdistrict(district);
     setSelectedNewtehsil('');
-    setSelectedMauza('');
+   // setSelectedMauza('');
 
     axios
     .get('http://localhost:8000/api/joined-mauza-districts/', {
@@ -559,7 +671,7 @@ function App() {
 
   const handleNewTehsilChange = (tehsil) => {
     setSelectedNewtehsil(tehsil);
-    setSelectedMauza('');
+    //setSelectedMauza('');
 
     axios
       .get('http://localhost:8000/api/joined-mauza-districts/', {
@@ -573,12 +685,66 @@ function App() {
       })
       .catch((error) => console.error('Error fetching mauzas:', error));
   };
+  const handleSearch = (query) => {
+    
+    console.log('Searching for:', query);
+    
+  };
 
+  const handleMauzaChange = (mauza) => {
+    setSelectedMauza(mauza);
+  };
+
+  // const handleApplyFilters = () => {
+    
+  //   fetchFilteredData();
+  // };
+
+  const handleApplyFilters = () => {
+    if (selectedNewdistrict || selectedNewtehsil || selectedMauza) {
+      fetchNewFilteredData(); 
+    } else {
+      fetchFilteredData(); 
+    }
+  };
   return (
     <>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
+      <Header />
+      <Navbar 
+       // divisions={divisions}
+       districts={districts}
+        tehsils={tehsils}
+        mauzas={mauzas}
+        societies={societies}
+        newdistricts={newdistricts} 
+        selectedDistrict={selectedDistrict}
+        selectedTehsil={selectedTehsil}
+        selectedSociety={selectedSociety} 
+        selectedMauza={selectedMauza} 
+        selectedNewdistrict={selectedNewdistrict} 
+        selectedNewtehsil={selectedNewtehsil}
+        onDistrictChange={handleDistrictChange}
+        onTehsilChange={handleTehsilChange}
+        onMauzaChange={handleMauzaChange} 
+        onSocietyChange={setSelectedSociety}
+        onApplyFilters={handleApplyFilters}
+        onNewDistrictChange={handleNewDistrictChange} 
+        onNewTehsilChange={handleNewTehsilChange} 
+        fetchNewFilteredData={fetchNewFilteredData}
+     />
+       <SearchBar onSearch={handleSearch} />
+       
+      <div id="map-container" ref={mapContainerRef}></div>
       <Sidebar
-        center={center}
+       onBasemapChange={handleBasemapChange}
+       onFileUpload={handleFileUpload} 
+       onReset={handleReset}
+       />
+      <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
+   
+
+     {/*   center={center}
         zoom={zoom}
         onBasemapChange={handleBasemapChange}
         onFileUpload={handleFileUpload}
@@ -665,8 +831,8 @@ function App() {
           </label>
         )}
         <button onClick={fetchNewFilteredData}>Apply Mauza Filters</button>
-      </div>
-      <div id="map-container" ref={mapContainerRef}></div>
+      </div>*/}
+      
     </>
   );
 }
