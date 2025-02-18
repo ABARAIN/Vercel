@@ -26,27 +26,31 @@ function App() {
   const [layers, setLayers] = useState([]);
   const [uploadMessage, setUploadMessage] = useState('');
 
+  //const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [tehsils, setTehsils] = useState([]);
   const [societies, setSocieties] = useState([]);
   const [blocks, setBlocks] = useState([]);
-  // const [mauzas, setMauzas] = useState([]);
+  const [mauzas, setMauzas] = useState([]);
+ // const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedTehsil, setSelectedTehsil] = useState('');
   const [selectedSociety, setSelectedSociety] = useState('');
   const [selectedBlock, setSelectedBlock] = useState('');
-  // const [selectedMauza, setSelectedMauza] = useState('');
+   const [selectedMauza, setSelectedMauza] = useState('');
 
+  //const [newdivisions, setNewdivisions] = useState([]);
   const [newdistricts, setNewdistricts] = useState([]);
   const [newtehsils, setNewtehsils] = useState([]);
   const [newblocks, setNewblocks] = useState([]);
 
-  const [mauzas, setMauzas] = useState([]);
+  //const [mauzas, setMauzas] = useState([]);
+  const [selectedNewdivision, setSelectedNewdivision] = useState('');
   const [selectedNewdistrict, setSelectedNewdistrict] = useState('');
   const [selectedNewtehsil, setSelectedNewtehsil] = useState('');
   const [selectedNewblock, setSelectedNewblock] = useState('');
 
-  const [selectedMauza, setSelectedMauza] = useState('');
+  //const [selectedMauza, setSelectedMauza] = useState('');
 
   useEffect(() => {
     mapboxgl.accessToken =
@@ -63,10 +67,10 @@ function App() {
     map.on('load', () => {
       restoreLayersAndInteractions();
       // if (selectedDistrict || selectedTehsil || selectedMauza) {
-      if (selectedDistrict || selectedTehsil || selectedSociety || selectedBlock) {
+      if ( selectedDistrict || selectedTehsil || selectedSociety || selectedBlock) {
         fetchFilteredData();
       }
-      if (selectedNewdistrict || selectedNewtehsil || selectedMauza || selectedNewblock) {
+      if ( selectedNewdistrict || selectedNewtehsil || selectedMauza || selectedNewblock) {
         fetchNewFilteredData();
       }
 
@@ -556,6 +560,7 @@ function App() {
   };
 
   const handleDistrictChange = (district) => {
+    
     setSelectedDistrict(district);
     setSelectedTehsil('');
     // setSelectedMauza('');
@@ -638,16 +643,44 @@ function App() {
     
   };
 
+  const handleMauzaChange = (mauza) => {
+    setSelectedMauza(mauza);
+  };
+
+  // const handleApplyFilters = () => {
+    
+  //   fetchFilteredData();
+  // };
+
+  const handleApplyFilters = () => {
+    if (selectedNewdistrict || selectedNewtehsil || selectedMauza) {
+      fetchNewFilteredData(); 
+    } else {
+      fetchFilteredData(); 
+    }
+  };
   return (
     <>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
       <Header />
       <Navbar 
-        districts={districts}
-        tehsils={tehsils}
-        societies={societies}
-        blocks={blocks}
-      />
+       // divisions={divisions}
+       districts={districts}
+       tehsils={tehsils}
+       mauzas={mauzas} 
+       societies={societies}
+      // blocks={blocks}
+       selectedDistrict={selectedDistrict}
+       selectedTehsil={selectedTehsil}
+       selectedMauza={selectedMauza}
+       selectedSociety={selectedSociety} 
+       onDistrictChange={handleDistrictChange}
+       onTehsilChange={handleTehsilChange}
+       onMauzaChange={handleMauzaChange}
+       onSocietyChange={setSelectedSociety}
+       onApplyFilters={handleApplyFilters}
+       
+     />
        <SearchBar onSearch={handleSearch} />
       <div id="map-container" ref={mapContainerRef}></div>
       <Sidebar
