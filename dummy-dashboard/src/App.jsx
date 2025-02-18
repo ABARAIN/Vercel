@@ -321,7 +321,11 @@ function App() {
                 <tr>
                   <th style ="background-color: lightgreen; padding: 5px;">Plot Area</th>
                   <td style="padding: 5px;">In Marlas</td>
-                <tr>
+                  <tr>
+                    <th style="background-color: lightblue; padding: 5px;">As per Master Plan</th>
+                    <td style="padding: 5px;">${properties.mp_area}</td>
+                  </tr>
+                  <tr>
                   <th style="background-color: lightgray; padding: 5px;">As per Property File</th>
                   <td style="padding: 5px;">${properties.plot_area}</td>
                 </tr>
