@@ -733,7 +733,7 @@ function App() {
         onNewTehsilChange={handleNewTehsilChange} 
         fetchNewFilteredData={fetchNewFilteredData}
      />
-       <SearchBar onSearch={handleSearch} />
+       {/* <SearchBar onSearch={handleSearch} /> */}
        
       <div id="map-container" ref={mapContainerRef}></div>
       <Sidebar
