@@ -42,6 +42,7 @@ const Sidebar = ({ onBasemapChange, onFileUpload, uploadMessage, onReset }) => {
     <div className="file-upload">
       <input type="file" onChange={onFileUpload} />
       {uploadMessage && <p>{uploadMessage}</p>}
+      
     </div>
     <button className="reset-button" onClick={onReset}>Reset View</button>
   </div>

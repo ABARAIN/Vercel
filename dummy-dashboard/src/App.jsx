@@ -51,6 +51,7 @@ function App() {
   const [selectedNewblock, setSelectedNewblock] = useState('');
 
   //const [selectedMauza, setSelectedMauza] = useState('');
+  
 
   useEffect(() => {
     mapboxgl.accessToken =
@@ -583,7 +584,7 @@ function App() {
   const handleNewDistrictChange = (district) => {
     setSelectedNewdistrict(district);
     setSelectedNewtehsil('');
-    setSelectedMauza('');
+   // setSelectedMauza('');
 
     axios
     .get('http://localhost:8000/api/joined-mauza-districts/', {
@@ -623,7 +624,7 @@ function App() {
 
   const handleNewTehsilChange = (tehsil) => {
     setSelectedNewtehsil(tehsil);
-    setSelectedMauza('');
+    //setSelectedMauza('');
 
     axios
       .get('http://localhost:8000/api/joined-mauza-districts/', {
@@ -666,26 +667,35 @@ function App() {
       <Navbar 
        // divisions={divisions}
        districts={districts}
-       tehsils={tehsils}
-       mauzas={mauzas} 
-       societies={societies}
-      // blocks={blocks}
-       selectedDistrict={selectedDistrict}
-       selectedTehsil={selectedTehsil}
-       selectedMauza={selectedMauza}
-       selectedSociety={selectedSociety} 
-       onDistrictChange={handleDistrictChange}
-       onTehsilChange={handleTehsilChange}
-       onMauzaChange={handleMauzaChange}
-       onSocietyChange={setSelectedSociety}
-       onApplyFilters={handleApplyFilters}
-       
+        tehsils={tehsils}
+        mauzas={mauzas}
+        societies={societies}
+        newdistricts={newdistricts} 
+        selectedDistrict={selectedDistrict}
+        selectedTehsil={selectedTehsil}
+        selectedSociety={selectedSociety} 
+        selectedMauza={selectedMauza} 
+        selectedNewdistrict={selectedNewdistrict} 
+        selectedNewtehsil={selectedNewtehsil}
+        onDistrictChange={handleDistrictChange}
+        onTehsilChange={handleTehsilChange}
+        onMauzaChange={handleMauzaChange} 
+        onSocietyChange={setSelectedSociety}
+        onApplyFilters={handleApplyFilters}
+        onNewDistrictChange={handleNewDistrictChange} 
+        onNewTehsilChange={handleNewTehsilChange} 
+        fetchNewFilteredData={fetchNewFilteredData}
      />
        <SearchBar onSearch={handleSearch} />
+       
       <div id="map-container" ref={mapContainerRef}></div>
       <Sidebar
-       onBasemapChange={handleBasemapChange} />
-
+       onBasemapChange={handleBasemapChange}
+       onFileUpload={handleFileUpload} 
+       onReset={handleReset}
+       />
+      <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
+   
 
      {/*   center={center}
         zoom={zoom}

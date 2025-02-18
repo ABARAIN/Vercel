@@ -313,7 +313,7 @@ body {
   font-size: 14px;
   transition: background-color 0.3s ease;
 }
-
+/*
 .filters {
   position: absolute;
   top: 50px;  
@@ -381,7 +381,7 @@ body {
   z-index: 3;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
-}
+}*/
 .sidebar .tabs {
   margin-top: 50px;
   display: flex;
@@ -422,17 +422,17 @@ body {
 .layer-options input:hover {
   background-color: #e0e0e0;
 }
-.filters2 {
+/*.filters2 {
   position: absolute;
-  bottom: 10px; /* Adjust this to position below the layers panel */
-  right: 12px; /* Position on the right side */
+  bottom: 10px;
+  right: 12px; 
   background-color: rgba(255, 255, 255, 0.9);
   padding: 10px 15px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 2;
   display: flex;
-  flex-direction: column; /* Stack elements vertically */
+  flex-direction: column; 
   gap: 10px;
 }
 
@@ -474,7 +474,7 @@ body {
 
 .filters2 button:hover {
   background-color: #005f8d;
-}
+}*/
 .custom-popup {
   font-family: Arial, sans-serif;
   background-color: #ffffff;
