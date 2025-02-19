@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import SidebarMenu from './SidebarMenu';
 import BasemapSelector from './BasemapSelector';
 import LayerItem from './LayerItem'; 
+import LayerSwitcher from './LayerSwitcher';
+import '../styles/LayerSwitcher.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faLayerGroup, faBuilding, faUsers } from '@fortawesome/free-solid-svg-icons';
 
-const Sidebar = ({ onBasemapChange, onFileUpload, uploadMessage, onReset }) => {
+const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset, toggleLayerVisibility }) => {
   const [activeIcon, setActiveIcon] = useState(null);
   const [iconTitle, setIconTitle] = useState('');
 
+  const [showLayers, setShowLayers] = useState(false);
+  
   const handleIconClick = (icon, title) => {
     setActiveIcon(icon);
     setIconTitle(title);
@@ -18,7 +22,12 @@ const Sidebar = ({ onBasemapChange, onFileUpload, uploadMessage, onReset }) => {
     }, 2000); 
   };
 
-
+  const handleFileUpload = (event) => {
+    onFileUpload(event);
+    if (event.target.files.length > 0) {
+      setShowLayers(true); 
+    }
+  };
 
   return (
     <div className="sidebar">
@@ -74,6 +83,19 @@ const Sidebar = ({ onBasemapChange, onFileUpload, uploadMessage, onReset }) => {
       <LayerItem title="Settlement Operations">
         <div>Layer details or controls for Settlement Operations</div>
       </LayerItem>
+      <LayerItem title="Upload File">
+          <div className="file-upload">
+            <input type="file" onChange={handleFileUpload} />
+            {uploadMessage && <p>{uploadMessage}</p>}
+            {showLayers && ( 
+              <LayerSwitcher 
+                layers={layers} 
+                onToggleLayer={toggleLayerVisibility}
+                
+              />
+            )}
+          </div>
+        </LayerItem>
     </SidebarMenu>
     <SidebarMenu title="Basemap">
       <BasemapSelector onBasemapChange={onBasemapChange} />
@@ -82,12 +104,9 @@ const Sidebar = ({ onBasemapChange, onFileUpload, uploadMessage, onReset }) => {
       <div>Legend Item 1</div>
       <div>Legend Item 2</div>
     </SidebarMenu>
-    <div className="file-upload">
-      <input type="file" onChange={onFileUpload} />
-      {uploadMessage && <p>{uploadMessage}</p>}
-      
-    </div>
-    <button className="reset-button" onClick={onReset}>Reset View</button>
+    
+      <button className="reset-button" onClick={onReset}>Reset View</button>
+   
   </div>
   );
 };

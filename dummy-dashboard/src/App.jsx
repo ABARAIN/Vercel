@@ -840,11 +840,15 @@ return () => {
        
       <div id="map-container" ref={mapContainerRef}></div>
       <Sidebar
-       onBasemapChange={handleBasemapChange}
-       onFileUpload={handleFileUpload} 
-       onReset={handleReset}
-       />
-      <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
+        layers={layers} 
+        onBasemapChange={handleBasemapChange}
+        onFileUpload={handleFileUpload} 
+        uploadMessage={uploadMessage}
+        onReset={handleReset}
+        toggleLayerVisibility={toggleLayerVisibility}
+        
+      />
+      {/* <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} /> */}
       {mapInstance && <MapWithDraw map={mapInstance} draw={drawRef.current}/>}
 
    
