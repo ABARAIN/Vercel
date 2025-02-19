@@ -13,7 +13,7 @@ import Navbar from './components/Navbar';
 import BasemapSelector from './components/BasemapSelector';
 import SearchBar from './components/SearchBar'; 
 
-const INITIAL_CENTER = [74.3218, 31.3668];
+const INITIAL_CENTER = [74.1984366152605, 31.406322333747173];
 const INITIAL_ZOOM = 12.25;
 
 function App() {
