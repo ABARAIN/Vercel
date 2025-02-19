@@ -435,22 +435,22 @@ function App() {
               <p><strong>Contact:</strong> ${properties.Cell_No}</p>
               <table border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
                 <tr>
-                  <th style ="background-color: lightgreen; padding: 5px;">Plot Area</th>
-                  <td style="padding: 5px;">In Marlas</td>
+                  <th style ="background-color: lightgray; padding: 5px;">Plot Area</th>
+                  <td style="padding: 5px;">Marlas</td>
                   <tr>
-                    <th style="background-color: lightblue; padding: 5px;">As per Master Plan</th>
+                    <th style="background-color: lightgreen; padding: 5px;">As per Master Plan</th>
                     <td style="padding: 5px;">${properties.mp_area}</td>
                   </tr>
                   <tr>
-                  <th style="background-color: lightgray; padding: 5px;">As per Property File</th>
+                  <th style="background-color: lightblue; padding: 5px;">As per Property File</th>
                   <td style="padding: 5px;">${properties.plot_area}</td>
                 </tr>
                 <tr>
-                  <th style="background-color: lightblue; padding: 5px;">As per Demarcation/Part Plan</th>
+                  <th style="background-color: yellow; padding: 5px;">As per Demarcation/Part Plan</th>
                   <td style="padding: 5px;">${properties.plot_area_}</td>
                 </tr>
                 <tr>
-                  <th style="background-color: lightcoral; padding: 5px;">Footprint</th>
+                  <th style="background-color: red; padding: 5px;">Footprint</th>
                   <td style="padding: 5px;">${properties.Area_Digit}</td>
                 </tr>
               </table>
