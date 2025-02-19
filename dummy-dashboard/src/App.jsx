@@ -12,6 +12,7 @@ import Header from './components/Header';
 import Navbar from './components/Navbar';
 import BasemapSelector from './components/BasemapSelector';
 import SearchBar from './components/SearchBar'; 
+import MapWithDraw from './components/MapWithDraw';
 
 const INITIAL_CENTER = [74.1984366152605, 31.406322333747173];
 const INITIAL_ZOOM = 12.25;
@@ -52,6 +53,8 @@ function App() {
 
   //const [selectedMauza, setSelectedMauza] = useState('');
   const [filtersApplied, setFiltersApplied] = useState(false);
+  const [mapInstance, setMapInstance] = useState(null); // State to hold the map instance
+
 
   const [showTehsil, setShowTehsil] = useState(false);
   const [showSocietyDropdown, setShowSocietyDropdown] = useState(false);
@@ -79,6 +82,8 @@ function App() {
     });
 
     mapRef.current = map;
+    setMapInstance(map); // Set the map instance in state
+
 
     map.on('load', () => {
       restoreLayersAndInteractions();
@@ -183,65 +188,65 @@ function App() {
     return new ControlWrapper();
   };
 
-  const createCustomControl = () => {
-    class CustomControl {
-      onAdd(map) {
-        this._map = map;
-        this._container = document.createElement("div");
-        this._container.className = "custom-control"; 
+  // const createCustomControl = () => {
+  //   class CustomControl {
+  //     onAdd(map) {
+  //       this._map = map;
+  //       this._container = document.createElement("div");
+  //       this._container.className = "custom-control"; 
   
-        const actions = [
-          { icon: "fa-map-marker-alt", tooltip: "Draw Point (m)", onClick: () => alert("Draw Point") },
-          { icon: "fa-grip-lines", tooltip: "Draw Line (l)", onClick: () => alert("Draw Line") },
-          { icon: "fa-draw-polygon", tooltip: "Draw Polygon (p)", onClick: () => alert("Draw Polygon") },
-          { icon: "fa-vector-square", tooltip: "Draw Rectangular (r)", onClick: () => alert("Draw Rectangle") },
-          { icon: "fa-circle", tooltip: "Draw Circle (c)", onClick: () => alert("Draw Circle") },
-          { icon: "fa-edit", tooltip: "Edit Geometries", onClick: () => alert("Edit Mode") },
-        ];
+  //       const actions = [
+  //         { icon: "fa-map-marker-alt", tooltip: "Draw Point (m)", onClick: () => alert("Draw Point") },
+  //         { icon: "fa-grip-lines", tooltip: "Draw Line (l)", onClick: () => alert("Draw Line") },
+  //         { icon: "fa-draw-polygon", tooltip: "Draw Polygon (p)", onClick: () => alert("Draw Polygon") },
+  //         { icon: "fa-vector-square", tooltip: "Draw Rectangular (r)", onClick: () => alert("Draw Rectangle") },
+  //         { icon: "fa-circle", tooltip: "Draw Circle (c)", onClick: () => alert("Draw Circle") },
+  //         { icon: "fa-edit", tooltip: "Edit Geometries", onClick: () => alert("Edit Mode") },
+  //       ];
   
-        actions.forEach(action => {
-          const button = document.createElement("button");
-          button.className = "custom-control-button"; 
-          button.onclick = action.onClick;
+  //       actions.forEach(action => {
+  //         const button = document.createElement("button");
+  //         button.className = "custom-control-button"; 
+  //         button.onclick = action.onClick;
   
-          const icon = document.createElement("i");
-          icon.className = `fas ${action.icon}`;
+  //         const icon = document.createElement("i");
+  //         icon.className = `fas ${action.icon}`;
   
-          // Tooltip element
-          const tooltip = document.createElement("div");
-          tooltip.className = "tooltip";
-          tooltip.innerText = action.tooltip;
-          tooltip.style.display = "none"; 
+  //         // Tooltip element
+  //         const tooltip = document.createElement("div");
+  //         tooltip.className = "tooltip";
+  //         tooltip.innerText = action.tooltip;
+  //         tooltip.style.display = "none"; 
   
-          button.appendChild(icon);
-          button.appendChild(tooltip);
-          this._container.appendChild(button);
+  //         button.appendChild(icon);
+  //         button.appendChild(tooltip);
+  //         this._container.appendChild(button);
   
-          // Show tooltip on mouse over
-          button.addEventListener('mouseenter', () => {
-            tooltip.style.display = "block";
-            const rect = button.getBoundingClientRect();
-            tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
-            tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
-          });
+  //         // Show tooltip on mouse over
+  //         button.addEventListener('mouseenter', () => {
+  //           tooltip.style.display = "block";
+  //           const rect = button.getBoundingClientRect();
+  //           tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
+  //           tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
+  //         });
   
-          // Hide tooltip on mouse leave
-          button.addEventListener('mouseleave', () => {
-            tooltip.style.display = "none";
-          });
-        });
+  //         // Hide tooltip on mouse leave
+  //         button.addEventListener('mouseleave', () => {
+  //           tooltip.style.display = "none";
+  //         });
+  //       });
   
-        return this._container;
-      }
+  //       return this._container;
+  //     }
   
-      onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
-      }
-    }
+  //     onRemove() {
+  //       this._container.parentNode.removeChild(this._container);
+  //       this._map = undefined;
+  //     }
+  //   }
   
-    return new CustomControl();
-  };
+  //   return new CustomControl();
+  // };
   
   const restoreLayersAndInteractions = () => {
     const map = mapRef.current;
@@ -783,6 +788,8 @@ function App() {
        onReset={handleReset}
        />
       <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
+      {mapInstance && <MapWithDraw map={mapInstance} />}
+
    
 
      {/*   center={center}

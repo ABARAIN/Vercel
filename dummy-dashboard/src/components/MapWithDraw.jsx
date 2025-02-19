@@ -70,7 +70,7 @@ const MapWithDraw = ({ map }) => {
     <div
       style={{
         position: "absolute",
-        top: 10,
+        top: 150,
         left: 10,
         backgroundColor: "white",
         padding: "10px",
@@ -78,7 +78,7 @@ const MapWithDraw = ({ map }) => {
         zIndex: 1000,
       }}
     >
-      <h4>Measurements</h4>
+      <h7>Measurements</h7>
       <ul>
         {measurements.map((m, index) => (
           <li key={index}>{m}</li>
