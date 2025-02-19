@@ -51,6 +51,11 @@ function App() {
   const [selectedNewblock, setSelectedNewblock] = useState('');
 
   //const [selectedMauza, setSelectedMauza] = useState('');
+  const [filtersApplied, setFiltersApplied] = useState(false);
+
+  const [showTehsil, setShowTehsil] = useState(false);
+  const [showSocietyDropdown, setShowSocietyDropdown] = useState(false);
+  const [showMauzaDropdown, setShowMauzaDropdown] = useState(false);
   
 
   useEffect(() => {
@@ -584,7 +589,7 @@ function App() {
   const handleNewDistrictChange = (district) => {
     setSelectedNewdistrict(district);
     setSelectedNewtehsil('');
-   // setSelectedMauza('');
+    setSelectedMauza('');
 
     axios
     .get('http://localhost:8000/api/joined-mauza-districts/', {
@@ -624,7 +629,7 @@ function App() {
 
   const handleNewTehsilChange = (tehsil) => {
     setSelectedNewtehsil(tehsil);
-    //setSelectedMauza('');
+    setSelectedMauza('');
 
     axios
       .get('http://localhost:8000/api/joined-mauza-districts/', {
@@ -659,7 +664,37 @@ function App() {
     } else {
       fetchFilteredData(); 
     }
+    setFiltersApplied(true);
   };
+
+  const handleRemoveFilters = () => {
+    setSelectedDistrict('');
+    setSelectedTehsil('');
+    setSelectedSociety('');
+    setSelectedMauza('');
+    setTehsils([]);
+    setSocieties([]);
+    setMauzas([]);
+    setFiltersApplied(false); 
+    setShowTehsil(false); 
+    setShowSocietyDropdown(false); 
+    setShowMauzaDropdown(false); 
+};
+
+  const fetchMauzas = (district, tehsil) => {
+    axios
+      .get('http://localhost:8000/api/joined-mauza-districts/', {
+        params: { district, tehsil },
+      })
+      .then((response) => {
+        const uniqueMauzas = [
+          ...new Set(response.data.map((feature) => feature.mauza)),
+        ];
+        setMauzas(uniqueMauzas);
+      })
+      .catch((error) => console.error('Error fetching mauzas:', error));
+  };
+
   return (
     <>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
@@ -681,10 +716,16 @@ function App() {
         onTehsilChange={handleTehsilChange}
         onMauzaChange={handleMauzaChange} 
         onSocietyChange={setSelectedSociety}
-        onApplyFilters={handleApplyFilters}
+        onApplyFilters={handleApplyFilters} 
         onNewDistrictChange={handleNewDistrictChange} 
         onNewTehsilChange={handleNewTehsilChange} 
         fetchNewFilteredData={fetchNewFilteredData}
+        fetchMauzas={fetchMauzas}
+        onRemoveFilters={handleRemoveFilters}
+        showTehsil={showTehsil} 
+        showSocietyDropdown={showSocietyDropdown} 
+        showMauzaDropdown={showMauzaDropdown}
+        
      />
        <SearchBar onSearch={handleSearch} />
        

@@ -122,7 +122,6 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 
-
 .sidebar-menu {
   margin-bottom: 10px; 
 }
@@ -151,6 +150,46 @@ body {
 .sidebar-menu-content.open {
   background-color: #ffffff; 
 }
+.sidebar-icons {
+  display: flex;
+  flex-direction: row;
+  align-items: center; 
+  margin-bottom: 10px; 
+  gap: 10px;
+}
+
+.icon-container {
+  background-color: #007bbf;
+  color: white;
+  padding: 10px;
+  margin-bottom: 10px; 
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.icon-container:last-child {
+  margin-right: 0;
+}
+.icon-container:hover {
+  background-color: #0056b3; 
+}
+
+.icon-container.active {
+  background-color: #28a745; 
+}
+
+.icon-title {
+  font-size: 16px;
+  color: #007bbf; 
+  margin-bottom: 10px; 
+  animation: blink 1s infinite; 
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 .file-upload {
   margin-top: 20px; 
 }
