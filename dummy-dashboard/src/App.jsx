@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback} from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import axios from 'axios';
@@ -13,13 +13,18 @@ import Navbar from './components/Navbar';
 import BasemapSelector from './components/BasemapSelector';
 import SearchBar from './components/SearchBar'; 
 import MapWithDraw from './components/MapWithDraw';
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import * as turf from "@turf/turf";
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 const INITIAL_CENTER = [74.1984366152605, 31.406322333747173];
 const INITIAL_ZOOM = 12.25;
 
 function App() {
-  const mapRef = useRef();
-  const mapContainerRef = useRef();
+  const mapRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const drawRef = useRef(null); // Ref for MapboxDraw instance
+
 
   const [center, setCenter] = useState(INITIAL_CENTER);
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
@@ -71,19 +76,39 @@ function App() {
     selectedSocietyRef.current = selectedSociety;
   }, [selectedDistrict, selectedTehsil, selectedSociety]);
   
+
+  const handleBasemapChange = useCallback((style) => {
+    setBasemap(style);
+}, []); // useCallback, no dependencies
+
   useEffect(() => {
     mapboxgl.accessToken =
       'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: basemap,
-      center,
-      zoom,
-    });
+      let map = null; // Initialize map variable outside
+      let draw = null; // Important: Keep a separate draw variable
+
+      const initializeMap = () => {  // Separate function for map initialization
+          map = new mapboxgl.Map({
+              container: mapContainerRef.current,
+              style: basemap,
+              center: INITIAL_CENTER,
+              zoom: INITIAL_ZOOM,
+          });
 
     mapRef.current = map;
     setMapInstance(map); // Set the map instance in state
-
+    
+    draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: {
+        point: true,
+        line_string: true,
+        polygon: true,
+        trash: true,
+      },
+    });
+    drawRef.current = draw; // Assign draw instance to the ref
+    map.addControl(draw); // Add it to the map
 
     map.on('load', () => {
       restoreLayersAndInteractions();
@@ -97,8 +122,8 @@ function App() {
 
      // map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    const controlWrapper = createControlWrapper();
-      map.addControl(controlWrapper, 'top-right');
+    // const controlWrapper = createControlWrapper();
+    //   map.addControl(controlWrapper, 'top-right');
 
     });
        // Add click event listener
@@ -152,41 +177,73 @@ function App() {
       });
       
 
-    map.on('move', () => {
-      const mapCenter = map.getCenter();
-      setCenter([mapCenter.lng, mapCenter.lat]);
-      setZoom(map.getZoom());
+      map.on('move', () => {
+        if (mapRef.current) {
+            const mapCenter = mapRef.current.getCenter();
+            const currentZoom = mapRef.current.getZoom();
+            setCenter([mapCenter.lng, mapCenter.lat]);
+            setZoom(currentZoom);
+        }
     });
+};
 
-    return () => map.remove();
-  }, [basemap]);
+initializeMap(); // Initialize map on the first render
 
-  const createControlWrapper = () => {
-    class ControlWrapper {
-      onAdd(map) {
-        this._map = map;
-        this._container = document.createElement("div");
-        this._container.className = "control-wrapper";
 
-        
-        const navControl = new mapboxgl.NavigationControl();
-        this._container.appendChild(navControl.onAdd(map));
-
-        
-        const customControl = createCustomControl();
-        this._container.appendChild(customControl.onAdd(map));
-
-        return this._container;
-      }
-
-      onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
-      }
+return () => {
+  if (mapRef.current) {
+    if (drawRef.current) {
+      mapRef.current.removeControl(drawRef.current); // Remove draw control if it exists
     }
+    mapRef.current.remove(); // Remove the map
+  }
+  map = null;
+  draw = null;
+};
+}, [basemap]);
 
-    return new ControlWrapper();
-  };
+  useEffect(() => {
+    if (mapRef.current && drawRef.current) {
+      mapRef.current.removeControl(drawRef.current);
+      drawRef.current = new MapboxDraw({
+        displayControlsDefault: false,
+        controls: {
+          point: true,
+          line_string: true,
+          polygon: true,
+          trash: true,
+        },
+      });
+      mapRef.current.addControl(drawRef.current);
+    }
+  }, [basemap])
+
+  // const createControlWrapper = () => {
+  //   class ControlWrapper {
+  //     onAdd(map) {
+  //       this._map = map;
+  //       this._container = document.createElement("div");
+  //       this._container.className = "control-wrapper";
+
+        
+  //       const navControl = new mapboxgl.NavigationControl();
+  //       this._container.appendChild(navControl.onAdd(map));
+
+        
+  //       const customControl = createCustomControl();
+  //       this._container.appendChild(customControl.onAdd(map));
+
+  //       return this._container;
+  //     }
+
+  //     onRemove() {
+  //       this._container.parentNode.removeChild(this._container);
+  //       this._map = undefined;
+  //     }
+  //   }
+
+  //   return new ControlWrapper();
+  // };
 
   // const createCustomControl = () => {
   //   class CustomControl {
@@ -274,12 +331,12 @@ function App() {
     });
   };
   
-  const handleBasemapChange = (style) => {
-    setBasemap(style);
-    if (mapRef.current) {
-      mapRef.current.setStyle(style); 
-    }
-  };
+  // const handleBasemapChange = (style) => {
+  //   setBasemap(style);
+  //   if (mapRef.current) {
+  //     mapRef.current.setStyle(style); 
+  //   }
+  // };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -788,7 +845,7 @@ function App() {
        onReset={handleReset}
        />
       <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
-      {mapInstance && <MapWithDraw map={mapInstance} />}
+      {mapInstance && <MapWithDraw map={mapInstance} draw={drawRef.current}/>}
 
    
 
