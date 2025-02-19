@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback} from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import axios from 'axios';
@@ -12,13 +12,19 @@ import Header from './components/Header';
 import Navbar from './components/Navbar';
 import BasemapSelector from './components/BasemapSelector';
 import SearchBar from './components/SearchBar'; 
+import MapWithDraw from './components/MapWithDraw';
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import * as turf from "@turf/turf";
+import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
-const INITIAL_CENTER = [74.3218, 31.3668];
+const INITIAL_CENTER = [74.1984366152605, 31.406322333747173];
 const INITIAL_ZOOM = 12.25;
 
 function App() {
-  const mapRef = useRef();
-  const mapContainerRef = useRef();
+  const mapRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const drawRef = useRef(null); // Ref for MapboxDraw instance
+
 
   const [center, setCenter] = useState(INITIAL_CENTER);
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
@@ -52,23 +58,57 @@ function App() {
 
   //const [selectedMauza, setSelectedMauza] = useState('');
   const [filtersApplied, setFiltersApplied] = useState(false);
+  const [mapInstance, setMapInstance] = useState(null); // State to hold the map instance
+
 
   const [showTehsil, setShowTehsil] = useState(false);
   const [showSocietyDropdown, setShowSocietyDropdown] = useState(false);
   const [showMauzaDropdown, setShowMauzaDropdown] = useState(false);
   
 
+  const selectedDistrictRef = useRef('');
+  const selectedTehsilRef = useRef('');
+  const selectedSocietyRef = useRef('');
+
+  useEffect(() => {
+    selectedDistrictRef.current = selectedDistrict;
+    selectedTehsilRef.current = selectedTehsil;
+    selectedSocietyRef.current = selectedSociety;
+  }, [selectedDistrict, selectedTehsil, selectedSociety]);
+  
+
+  const handleBasemapChange = useCallback((style) => {
+    setBasemap(style);
+}, []); // useCallback, no dependencies
+
   useEffect(() => {
     mapboxgl.accessToken =
       'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: basemap,
-      center,
-      zoom,
-    });
+      let map = null; // Initialize map variable outside
+      let draw = null; // Important: Keep a separate draw variable
+
+      const initializeMap = () => {  // Separate function for map initialization
+          map = new mapboxgl.Map({
+              container: mapContainerRef.current,
+              style: basemap,
+              center: INITIAL_CENTER,
+              zoom: INITIAL_ZOOM,
+          });
 
     mapRef.current = map;
+    setMapInstance(map); // Set the map instance in state
+    
+    draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: {
+        point: true,
+        line_string: true,
+        polygon: true,
+        trash: true,
+      },
+    });
+    drawRef.current = draw; // Assign draw instance to the ref
+    map.addControl(draw); // Add it to the map
 
     map.on('load', () => {
       restoreLayersAndInteractions();
@@ -82,145 +122,188 @@ function App() {
 
      // map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    const controlWrapper = createControlWrapper();
-      map.addControl(controlWrapper, 'top-right');
+    // const controlWrapper = createControlWrapper();
+    //   map.addControl(controlWrapper, 'top-right');
 
     });
        // Add click event listener
-   map.on("click", async (e) => {
-    const { lng, lat } = e.lngLat; // Get clicked coordinates
-    console.log("Clicked coordinates:", lng, lat);
-
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/land-parcel/?lat=${lat}&lon=${lng}`
-      );
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log("Land Parcel Data:", data);
-
-        // Display popup with information
-        new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
-          .setLngLat([lng, lat])
-          .setHTML(`
-            <div class="custom-popup">
-              <h3>${data.society}</h3>
-              <p><strong>Town Name:</strong> ${data.town_name}</p>
-              <p><strong>Landuse:</strong> ${data.landuse}</p>
-              <p><strong>Plot Number:</strong> ${data.plotno}</p>
-              <p><strong>Society Type:</strong> ${data.societytyp}</p>
-              <p><strong>District:</strong> ${data.district}</p>
-              <p><strong>Tehsil:</strong> ${data.tehsil}</p>
-              <p><strong>Source:</strong> ${data.source}</p>
-              <p><strong>Coordinates:</strong> ${data.geom}</p>
-              <p><stromg>Property Details: <a href="http://localhost:3000/login">View Property Details</a></strong></p>
-            </div>
-          `)
-          .addTo(map);
-      } else {
-        console.warn("No data found:", data.error);
-      }
-    } catch (error) {
-      console.error("Error fetching parcel data:", error);
-    }
-  });
-
-    map.on('move', () => {
-      const mapCenter = map.getCenter();
-      setCenter([mapCenter.lng, mapCenter.lat]);
-      setZoom(map.getZoom());
-    });
-
-    return () => map.remove();
-  }, [basemap]);
-
-  const createControlWrapper = () => {
-    class ControlWrapper {
-      onAdd(map) {
-        this._map = map;
-        this._container = document.createElement("div");
-        this._container.className = "control-wrapper";
-
-        
-        const navControl = new mapboxgl.NavigationControl();
-        this._container.appendChild(navControl.onAdd(map));
-
-        
-        const customControl = createCustomControl();
-        this._container.appendChild(customControl.onAdd(map));
-
-        return this._container;
-      }
-
-      onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
-      }
-    }
-
-    return new ControlWrapper();
-  };
-
-  const createCustomControl = () => {
-    class CustomControl {
-      onAdd(map) {
-        this._map = map;
-        this._container = document.createElement("div");
-        this._container.className = "custom-control"; 
-  
-        const actions = [
-          { icon: "fa-map-marker-alt", tooltip: "Draw Point (m)", onClick: () => alert("Draw Point") },
-          { icon: "fa-grip-lines", tooltip: "Draw Line (l)", onClick: () => alert("Draw Line") },
-          { icon: "fa-draw-polygon", tooltip: "Draw Polygon (p)", onClick: () => alert("Draw Polygon") },
-          { icon: "fa-vector-square", tooltip: "Draw Rectangular (r)", onClick: () => alert("Draw Rectangle") },
-          { icon: "fa-circle", tooltip: "Draw Circle (c)", onClick: () => alert("Draw Circle") },
-          { icon: "fa-edit", tooltip: "Edit Geometries", onClick: () => alert("Edit Mode") },
-        ];
-  
-        actions.forEach(action => {
-          const button = document.createElement("button");
-          button.className = "custom-control-button"; 
-          button.onclick = action.onClick;
-  
-          const icon = document.createElement("i");
-          icon.className = `fas ${action.icon}`;
-  
-          // Tooltip element
-          const tooltip = document.createElement("div");
-          tooltip.className = "tooltip";
-          tooltip.innerText = action.tooltip;
-          tooltip.style.display = "none"; 
-  
-          button.appendChild(icon);
-          button.appendChild(tooltip);
-          this._container.appendChild(button);
-  
-          // Show tooltip on mouse over
-          button.addEventListener('mouseenter', () => {
-            tooltip.style.display = "block";
-            const rect = button.getBoundingClientRect();
-            tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
-            tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
-          });
-  
-          // Hide tooltip on mouse leave
-          button.addEventListener('mouseleave', () => {
-            tooltip.style.display = "none";
-          });
+       map.on("click", async (e) => {
+        console.log("Selected Filters:", { 
+          selectedDistrict: selectedDistrictRef.current, 
+          selectedTehsil: selectedTehsilRef.current, 
+          selectedSociety: selectedSocietyRef.current 
         });
-  
-        return this._container;
-      }
-  
-      onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
-      }
+      
+        if (!selectedDistrictRef.current && !selectedTehsilRef.current && !selectedSocietyRef.current) {
+          console.log("No filter applied. Popup will not appear.");
+          return;
+        }
+      
+        const { lng, lat } = e.lngLat; // Get clicked coordinates
+        console.log("Clicked coordinates:", lng, lat);
+      
+        try {
+          const response = await fetch(
+            `http://127.0.0.1:8000/api/land-parcel/?lat=${lat}&lon=${lng}`
+          );
+          const data = await response.json();
+      
+          if (response.ok) {
+            console.log("Land Parcel Data:", data);
+      
+            new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
+              .setLngLat([lng, lat])
+              .setHTML(`
+                <div class="custom-popup">
+                  <h3>${data.society}</h3>
+                  <p><strong>Town Name:</strong> ${data.town_name}</p>
+                  <p><strong>Landuse:</strong> ${data.landuse}</p>
+                  <p><strong>Plot Number:</strong> ${data.plotno}</p>
+                  <p><strong>Society Type:</strong> ${data.societytyp}</p>
+                  <p><strong>District:</strong> ${data.district}</p>
+                  <p><strong>Tehsil:</strong> ${data.tehsil}</p>
+                  <p><strong>Source:</strong> ${data.source}</p>
+                  <p><strong>Coordinates:</strong> ${data.geom}</p>
+                  <p><strong>Property Details: <a href="http://localhost:3000/login">View Property Details</a></strong></p>
+                </div>
+              `)
+              .addTo(map);
+          } else {
+            console.warn("No data found:", data.error);
+          }
+        } catch (error) {
+          console.error("Error fetching parcel data:", error);
+        }
+      });
+      
+
+      map.on('move', () => {
+        if (mapRef.current) {
+            const mapCenter = mapRef.current.getCenter();
+            const currentZoom = mapRef.current.getZoom();
+            setCenter([mapCenter.lng, mapCenter.lat]);
+            setZoom(currentZoom);
+        }
+    });
+};
+
+initializeMap(); // Initialize map on the first render
+
+
+return () => {
+  if (mapRef.current) {
+    if (drawRef.current) {
+      mapRef.current.removeControl(drawRef.current); // Remove draw control if it exists
     }
+    mapRef.current.remove(); // Remove the map
+  }
+  map = null;
+  draw = null;
+};
+}, [basemap]);
+
+  useEffect(() => {
+    if (mapRef.current && drawRef.current) {
+      mapRef.current.removeControl(drawRef.current);
+      drawRef.current = new MapboxDraw({
+        displayControlsDefault: false,
+        controls: {
+          point: true,
+          line_string: true,
+          polygon: true,
+          trash: true,
+        },
+      });
+      mapRef.current.addControl(drawRef.current);
+    }
+  }, [basemap])
+
+  // const createControlWrapper = () => {
+  //   class ControlWrapper {
+  //     onAdd(map) {
+  //       this._map = map;
+  //       this._container = document.createElement("div");
+  //       this._container.className = "control-wrapper";
+
+        
+  //       const navControl = new mapboxgl.NavigationControl();
+  //       this._container.appendChild(navControl.onAdd(map));
+
+        
+  //       const customControl = createCustomControl();
+  //       this._container.appendChild(customControl.onAdd(map));
+
+  //       return this._container;
+  //     }
+
+  //     onRemove() {
+  //       this._container.parentNode.removeChild(this._container);
+  //       this._map = undefined;
+  //     }
+  //   }
+
+  //   return new ControlWrapper();
+  // };
+
+  // const createCustomControl = () => {
+  //   class CustomControl {
+  //     onAdd(map) {
+  //       this._map = map;
+  //       this._container = document.createElement("div");
+  //       this._container.className = "custom-control"; 
   
-    return new CustomControl();
-  };
+  //       const actions = [
+  //         { icon: "fa-map-marker-alt", tooltip: "Draw Point (m)", onClick: () => alert("Draw Point") },
+  //         { icon: "fa-grip-lines", tooltip: "Draw Line (l)", onClick: () => alert("Draw Line") },
+  //         { icon: "fa-draw-polygon", tooltip: "Draw Polygon (p)", onClick: () => alert("Draw Polygon") },
+  //         { icon: "fa-vector-square", tooltip: "Draw Rectangular (r)", onClick: () => alert("Draw Rectangle") },
+  //         { icon: "fa-circle", tooltip: "Draw Circle (c)", onClick: () => alert("Draw Circle") },
+  //         { icon: "fa-edit", tooltip: "Edit Geometries", onClick: () => alert("Edit Mode") },
+  //       ];
+  
+  //       actions.forEach(action => {
+  //         const button = document.createElement("button");
+  //         button.className = "custom-control-button"; 
+  //         button.onclick = action.onClick;
+  
+  //         const icon = document.createElement("i");
+  //         icon.className = `fas ${action.icon}`;
+  
+  //         // Tooltip element
+  //         const tooltip = document.createElement("div");
+  //         tooltip.className = "tooltip";
+  //         tooltip.innerText = action.tooltip;
+  //         tooltip.style.display = "none"; 
+  
+  //         button.appendChild(icon);
+  //         button.appendChild(tooltip);
+  //         this._container.appendChild(button);
+  
+  //         // Show tooltip on mouse over
+  //         button.addEventListener('mouseenter', () => {
+  //           tooltip.style.display = "block";
+  //           const rect = button.getBoundingClientRect();
+  //           tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
+  //           tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
+  //         });
+  
+  //         // Hide tooltip on mouse leave
+  //         button.addEventListener('mouseleave', () => {
+  //           tooltip.style.display = "none";
+  //         });
+  //       });
+  
+  //       return this._container;
+  //     }
+  
+  //     onRemove() {
+  //       this._container.parentNode.removeChild(this._container);
+  //       this._map = undefined;
+  //     }
+  //   }
+  
+  //   return new CustomControl();
+  // };
   
   const restoreLayersAndInteractions = () => {
     const map = mapRef.current;
@@ -248,12 +331,12 @@ function App() {
     });
   };
   
-  const handleBasemapChange = (style) => {
-    setBasemap(style);
-    if (mapRef.current) {
-      mapRef.current.setStyle(style); 
-    }
-  };
+  // const handleBasemapChange = (style) => {
+  //   setBasemap(style);
+  //   if (mapRef.current) {
+  //     mapRef.current.setStyle(style); 
+  //   }
+  // };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -404,9 +487,35 @@ function App() {
               <p><strong>Landuse:</strong> ${properties.Landuse}</p>
               <p><strong>Plot Number:</strong> ${properties.NAME}</p>
               <p><strong>Block:</strong> ${properties.Block}</p>
-              <p><strong>Owner:</strong> ${properties.Owner_Name}</p>
+              <p><strong>File Number:</strong> ${properties.file_no}</p>
+              <p><strong style="color: red;">Covered Area in sq. ft (as per building plan approval):</strong> ${properties.covered_ar}</p>
+              <p><strong>BA/BP Number:</strong> ${properties.ba_no}</p>
+              <p><strong>Completion Date:</strong> ${properties.completion}</p>
+              <p><strong>Owner:</strong> ${properties.owner_na_1}</p>
+              <p><strong>Father/Husband Name:</strong> ${properties.fath_name}</p>
+              <p><strong>CNIC:</strong> ${properties.new_CNIC}</p>
               <p><strong>Contact:</strong> ${properties.Cell_No}</p>
-            
+              <table border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
+                <tr>
+                  <th style ="background-color: lightgray; padding: 5px;">Plot Area</th>
+                  <td style="padding: 5px;">Marlas</td>
+                  <tr>
+                    <th style="background-color: lightgreen; padding: 5px;">As per Master Plan</th>
+                    <td style="padding: 5px;">${properties.mp_area}</td>
+                  </tr>
+                  <tr>
+                  <th style="background-color: lightblue; padding: 5px;">As per Property File</th>
+                  <td style="padding: 5px;">${properties.plot_area}</td>
+                </tr>
+                <tr>
+                  <th style="background-color: yellow; padding: 5px;">As per Demarcation/Part Plan</th>
+                  <td style="padding: 5px;">${properties.plot_area_}</td>
+                </tr>
+                <tr>
+                  <th style="background-color: red; padding: 5px;">Footprint</th>
+                  <td style="padding: 5px;">${properties.Area_Digit}</td>
+                </tr>
+              </table>
           </div>
         `)
         .addTo(map);
@@ -539,7 +648,7 @@ function App() {
         source: layerId,
         paint: {
           'fill-color': '#007bff',
-          'fill-opacity': 0.3,
+          'fill-opacity': 0,
         },
       });
       map.addLayer({
@@ -731,15 +840,13 @@ function App() {
        
       <div id="map-container" ref={mapContainerRef}></div>
       <Sidebar
-        layers={layers} 
-        onBasemapChange={handleBasemapChange}
-        onFileUpload={handleFileUpload} 
-        uploadMessage={uploadMessage}
-        onReset={handleReset}
-        toggleLayerVisibility={toggleLayerVisibility}
-        
-      />
-      {/* <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} /> */}
+       onBasemapChange={handleBasemapChange}
+       onFileUpload={handleFileUpload} 
+       onReset={handleReset}
+       />
+      <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
+      {mapInstance && <MapWithDraw map={mapInstance} draw={drawRef.current}/>}
+
    
 
      {/*   center={center}
