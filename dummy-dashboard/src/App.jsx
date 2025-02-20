@@ -501,10 +501,14 @@ return () => {
               <p><strong>Father/Husband Name:</strong> ${properties.fath_name}</p>
               <p><strong>CNIC:</strong> ${properties.new_CNIC}</p>
               <p><strong>Contact:</strong> ${properties.Cell_No}</p>
+              <p><strong>Owner (if commercial):</strong> ${properties.Owner_Name}</p>
+              <p><strong>Commercial Entity:</strong> ${properties.Commercial}</p>
+              <p><strong>Contact No (Commercial):</strong> ${properties.Contact_Nu}</p>
+              <p><strong>View Image (if commercial):</strong> <a href="${properties.img}" target="_blank">Image</a></p>
               <table border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
                 <tr>
                   <th style ="background-color: lightgray; padding: 5px;">Plot Area</th>
-                  <td style="padding: 5px;">Marlas</td>
+                  <td style="padding: 5px;">K-M-Sqft</td>
                   <tr>
                     <th style="background-color: lightgreen; padding: 5px;">As per Master Plan</th>
                     <td style="padding: 5px;">${properties.mp_area}</td>
