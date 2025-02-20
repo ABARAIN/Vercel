@@ -3,11 +3,11 @@ import SidebarMenu from './SidebarMenu';
 import BasemapSelector from './BasemapSelector';
 import LayerItem from './LayerItem'; 
 import LayerSwitcher from './LayerSwitcher';
-import '../styles/LayerSwitcher.css';
+// import '../styles/LayerSwitcher.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faLayerGroup, faBuilding, faUsers } from '@fortawesome/free-solid-svg-icons';
 
-const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset, toggleLayerVisibility }) => {
+const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset, toggleLayerVisibility, measurements }) => {
   const [activeIcon, setActiveIcon] = useState(null);
   const [iconTitle, setIconTitle] = useState('');
 
@@ -106,7 +106,15 @@ const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset
     </SidebarMenu>
     
       <button className="reset-button" onClick={onReset}>Reset View</button>
-   
+      {/* Display measurements at the bottom */}
+      <div style={{ marginTop: '20px' }}>
+        <h4>Measurements</h4>
+        <ul>
+          {measurements.map((m, index) => (
+            <li key={index}>{m}</li>
+          ))}
+        </ul>
+      </div>
   </div>
   );
 };
