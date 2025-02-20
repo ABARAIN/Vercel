@@ -9,7 +9,7 @@ const MapWithDraw = ({ map, draw }) => {  // Receive draw as a prop
     useEffect(() => {
       if (!map || !draw) return; // Ensure both map and draw are available
   
-      const metersToFeet = (meters) => meters * 3.28084;
+       const metersToFeet = (meters) => meters * 3.28084;
   
       function updateMeasurements() {
         const data = draw.getAll(); // Use the draw instance passed as a prop
@@ -61,6 +61,7 @@ const MapWithDraw = ({ map, draw }) => {  // Receive draw as a prop
         backgroundColor: "white",
         padding: "10px",
         borderRadius: "5px",
+        border: "2px solid black", 
         zIndex: 1000,
       }}
     >

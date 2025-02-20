@@ -204,34 +204,40 @@ body {
 }
 
 .layer-header {
-  cursor: pointer;
-  padding: 8px;
-  background-color: #f0f0f0;
-  border: 1px solid #ffffff;
-  margin-bottom: 2px;
-  border-radius: 4px;
-  z-index: 1;
-  white-space: nowrap; 
+  display: flex; 
+  align-items: center; 
+  cursor: pointer; 
+  padding: 10px;
+  background-color: #f0f0f0; 
+  border: 1px solid #ccc; 
+  border-radius: 4px; 
+  width: 100%; 
+  
 }
 
 .layer-header:hover {
-  background-color: #e2e6ea;
+  background-color: #e0e0e0;
 }
 
 .layer-content {
-  
-  padding-left: 15px; 
+  /* padding-left: 15px;  */
   background-color: #f9f9f9;
   position: relative; 
   z-index: 2; 
-  text-align: left;
+  display: block; 
+  margin-top: 10px; 
+
   
+}
+.layer-item {
+  margin: 5px 0; 
 }
 
 .layer-item-open .layer-content {
-  max-height: 500px; /* Set a max-height (adjust as needed) */
-  opacity: 1; /* Fully visible */
+  max-height: 500px; 
+  opacity: 1; 
 }
+
 .layer-switcher-container {
   margin-top: 10px; 
   z-index: 2; 

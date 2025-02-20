@@ -65,7 +65,9 @@ function App() {
   const [showSocietyDropdown, setShowSocietyDropdown] = useState(false);
   const [showMauzaDropdown, setShowMauzaDropdown] = useState(false);
   
-
+  const [measurements, setMeasurements] = useState([]);
+  const metersToFeet = (meters) => meters * 3.28084; 
+  
   const selectedDistrictRef = useRef('');
   const selectedTehsilRef = useRef('');
   const selectedSocietyRef = useRef('');
@@ -110,6 +112,10 @@ function App() {
     drawRef.current = draw; // Assign draw instance to the ref
     map.addControl(draw); // Add it to the map
 
+    map.on("draw.create", updateMeasurements);
+    map.on("draw.update", updateMeasurements);
+    map.on("draw.delete", () => setMeasurements([]));
+    
     map.on('load', () => {
       restoreLayersAndInteractions();
       // if (selectedDistrict || selectedTehsil || selectedMauza) {
@@ -804,6 +810,36 @@ return () => {
       .catch((error) => console.error('Error fetching mauzas:', error));
   };
 
+  const updateMeasurements = () => {
+    if (drawRef.current) {
+      const data = drawRef.current.getAll();
+      const newMeasurements = [];
+
+      data.features.forEach((feature) => {
+        const coords = feature.geometry.coordinates;
+        let measurementText = '';
+
+        if (feature.geometry.type === 'Point') {
+          measurementText = `Point: [${coords[0].toFixed(6)}, ${coords[1].toFixed(6)}]`;
+        } else if (feature.geometry.type === 'LineString') {
+          let lengthMeters = 0;
+          for (let i = 0; i < coords.length - 1; i++) {
+            const from = coords[i];
+            const to = coords[i + 1];
+            lengthMeters += turf.distance(turf.point(from), turf.point(to), { units: 'meters' });
+          }
+          measurementText = `Line Length: ${metersToFeet(lengthMeters).toFixed(2)} ft`;
+        } else if (feature.geometry.type === 'Polygon') {
+          let areaMeters = turf.area(feature);
+          measurementText = `Polygon Area: ${metersToFeet(areaMeters).toFixed(2)} sq ft`;
+        }
+
+        newMeasurements.push(measurementText);
+      });
+
+      setMeasurements(newMeasurements);
+    }
+  };
   return (
     <>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
@@ -840,18 +876,23 @@ return () => {
        
       <div id="map-container" ref={mapContainerRef}></div>
       <Sidebar
-        layers={layers} 
-        onBasemapChange={handleBasemapChange}
-        onFileUpload={handleFileUpload} 
-        uploadMessage={uploadMessage}
-        onReset={handleReset}
-        toggleLayerVisibility={toggleLayerVisibility}
-        
-      />
+      layers={layers} 
+       onBasemapChange={handleBasemapChange}
+       onFileUpload={handleFileUpload} 
+       onReset={handleReset}
+       toggleLayerVisibility={toggleLayerVisibility}
+       measurements={measurements}
+       />
       {/* <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} /> */}
-      {mapInstance && <MapWithDraw map={mapInstance} draw={drawRef.current}/>}
-
-   
+      {/* {mapInstance && <MapWithDraw map={mapInstance} draw={drawRef.current}/>} */}
+      {/* {mapInstance && (
+        <MapWithDraw 
+          map={mapInstance} 
+          draw={drawRef.current}
+          setMeasurements={setMeasurements} // Pass setter for measurements
+        />
+      )} */}
+    
 
      {/*   center={center}
         zoom={zoom}

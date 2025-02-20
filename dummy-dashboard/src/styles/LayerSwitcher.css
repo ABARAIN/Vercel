@@ -16,10 +16,11 @@
   }
   
   .layer-item {
-    display: flex;
+    /* display: flex; */
     align-items: center;
     gap: 10px;
     margin-bottom: 5px;
+    margin: 5px 0; 
   }
   
   .layer-item input[type='checkbox'] {

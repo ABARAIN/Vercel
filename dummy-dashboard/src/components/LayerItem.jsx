@@ -33,10 +33,12 @@ const LayerItem = ({ title, children }) => {
   return (
     <div className={`layer-item ${isOpen ? 'layer-item-open' : ''}`}>
       <div className="layer-header" onClick={toggleLayer}>
-        <span>{isOpen ? '▼' : '►'}</span> {/* Arrow for toggle */}
+        <span>{isOpen ? '▼' : '►'}</span>
         <strong>{title}</strong>
       </div>
-      {isOpen && <div className="layer-content">{children}</div>}
+      {isOpen && (
+        <div className="layer-content">{children}</div>
+      )}
     </div>
   );
 };
