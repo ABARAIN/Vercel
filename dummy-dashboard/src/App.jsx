@@ -488,7 +488,7 @@ return () => {
               <p><strong>Plot Number:</strong> ${properties.NAME}</p>
               <p><strong>Block:</strong> ${properties.Block}</p>
               <p><strong>File Number:</strong> ${properties.file_no}</p>
-              <p><strong style="color: red;">Covered Area in sq. ft (as per building plan approval):</strong> ${properties.covered_ar}</p>
+              <p><strong style="color: red;">Covered Area (as per building plan approval):</strong> ${properties.covered_ar} sq. ft.</p>
               <p><strong>BA/BP Number:</strong> ${properties.ba_no}</p>
               <p><strong>Completion Date:</strong> ${properties.completion}</p>
               <p><strong>Owner:</strong> ${properties.owner_na_1}</p>
