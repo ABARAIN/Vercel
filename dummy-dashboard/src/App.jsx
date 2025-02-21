@@ -37,7 +37,7 @@ function App() {
   const [tehsils, setTehsils] = useState([]);
   const [societies, setSocieties] = useState([]);
   const [blocks, setBlocks] = useState([]);
-  const [plots, setPlots] = useState([]);
+  const [plot_no, setPlots] = useState([]);
   const [mauzas, setMauzas] = useState([]);
  // const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
@@ -880,7 +880,7 @@ const handleBlockChange = (blocks) => {
   axios
     // .get('http://localhost:8000/api/joined-mauza-districts/', {
     .get('http://localhost:8000/api/societies/', {
-      params: { blocks: selectedBlock, plots },
+      params: { blocks: selectedBlock, plot_no },
     })
     .then((response) => {
       // const uniqueMauzas = [
@@ -907,7 +907,7 @@ const handleBlockChange = (blocks) => {
         mauzas={mauzas}
         societies={societies}
         blocks={blocks} 
-        plots={plots}
+        plot_no={plot_no}
         newdistricts={newdistricts} 
         selectedDistrict={selectedDistrict}
         selectedTehsil={selectedTehsil}

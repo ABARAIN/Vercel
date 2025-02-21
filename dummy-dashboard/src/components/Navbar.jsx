@@ -10,7 +10,7 @@ const Navbar = ({
   mauzas, 
   societies, 
   blocks,
-  plots,
+  plot_no,
   selectedDistrict, 
   selectedTehsil, 
   selectedMauza, 
@@ -129,7 +129,7 @@ const Navbar = ({
 {showSocietyDropdown && selectedBlock && (
   <div className="dropdown">
     <Select
-      options={plots.map(plot => ({ value: plot, label: plot }))} 
+      options={plot_no.map(plot_no => ({ value: plot_no, label: plot_no }))} 
       onChange={(selectedOption) => onPlotChange(selectedOption.value)}
       value={selectedPlot ? { value: selectedPlot, label: selectedPlot } : null}
       placeholder="Select Plot No"
