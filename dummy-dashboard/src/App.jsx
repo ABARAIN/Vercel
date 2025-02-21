@@ -414,10 +414,34 @@ return () => {
       type: 'circle',
       source: id,
       paint: {
-        'circle-radius': 6,
-        'circle-color': '#FF5722',
+        'circle-radius': [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          10, 6,  // At zoom level 10, radius = 6
+          15, 12  // At zoom level 15, radius = 12
+        ],
+        'circle-color': '#FF0000', // Bright red
         'circle-opacity': 0.8,
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ff0000',
+        'circle-blur': 0.5,  // Gives a glowing effect
       },
+    };
+    
+    // Function to animate the pulsating effect
+    const animatePulsatingPoints = () => {
+      let growing = true;
+      let radius = 6;
+    
+      setInterval(() => {
+        radius = growing ? 12 : 6; // Toggle between 6 and 12
+    
+        map.setPaintProperty(id, 'circle-radius', radius);
+        map.setPaintProperty(id, 'circle-opacity', growing ? 1 : 0.6);
+    
+        growing = !growing;
+      }, 700); // Animation speed (700ms)
     };
 
     if (!map.getSource(id)) {
@@ -442,6 +466,7 @@ return () => {
       addShapefileInteraction(fillLayer.id);
     } else {
       addShapefileInteraction(id);
+      animatePulsatingPoints();
     }
 
     const bounds = geojson.features.reduce((bounds, feature) => {
@@ -487,47 +512,120 @@ return () => {
       new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
         .setLngLat(coordinates)
         .setHTML(`
-          <div class="custom-popup">
-            <h3>Landuse Details</h3>
-            
-              <p><strong>Landuse:</strong> ${properties.Landuse}</p>
-              <p><strong>Plot Number:</strong> ${properties.NAME}</p>
-              <p><strong>Block:</strong> ${properties.Block}</p>
-              <p><strong>File Number:</strong> ${properties.file_no}</p>
-              <p><strong style="color: red;">Covered Area (as per building plan approval):</strong> ${properties.covered_ar} sq. ft.</p>
-              <p><strong>BA/BP Number:</strong> ${properties.ba_no}</p>
-              <p><strong>Completion Date:</strong> ${properties.completion}</p>
-              <p><strong>Owner:</strong> ${properties.owner_na_1}</p>
-              <p><strong>Father/Husband Name:</strong> ${properties.fath_name}</p>
-              <p><strong>CNIC:</strong> ${properties.new_CNIC}</p>
-              <p><strong>Contact:</strong> ${properties.Cell_No}</p>
-              <p><strong>Owner (if commercial):</strong> ${properties.Owner_Name}</p>
-              <p><strong>Commercial Entity:</strong> ${properties.Commercial}</p>
-              <p><strong>Contact No (Commercial):</strong> ${properties.Contact_Nu}</p>
-              <p><strong>View Image (if commercial):</strong> <a href="${properties.img}" target="_blank">Image</a></p>
-              <table border="1" style="border-collapse: collapse; width: 100%; text-align: left;">
-                <tr>
-                  <th style ="background-color: lightgray; padding: 5px;">Plot Area</th>
-                  <td style="padding: 5px;">K-M-Sqft</td>
-                  <tr>
-                    <th style="background-color: lightgreen; padding: 5px;">As per Master Plan</th>
-                    <td style="padding: 5px;">${properties.mp_area}</td>
-                  </tr>
-                  <tr>
-                  <th style="background-color: lightblue; padding: 5px;">As per Property File</th>
-                  <td style="padding: 5px;">${properties.plot_area}</td>
-                </tr>
-                <tr>
-                  <th style="background-color: yellow; padding: 5px;">As per Demarcation/Part Plan</th>
-                  <td style="padding: 5px;">${properties.plot_area_}</td>
-                </tr>
-                <tr>
-                  <th style="background-color: red; padding: 5px;">Footprint</th>
-                  <td style="padding: 5px;">${properties.Area_Digit}</td>
-                </tr>
-              </table>
-          </div>
-        `)
+          <div class="custom-popup" style="max-height: 400px; overflow-y: auto; padding: 10px; width: 550px;">
+                    <h3 style="text-align: center; margin-bottom: 10px;">Plot Details</h3>
+
+                    <table border="1" style="border-collapse: collapse; width: 110%; text-align: left;">
+                        <!-- Basic Information -->
+                        <tr>
+                            <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">Basic Information</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Plot Number</strong></td>
+                            <td style="padding: 8px;">${properties.NAME}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Block</strong></td>
+                            <td style="padding: 8px;">${properties.Block}</td>
+                        </tr>
+
+                        <!-- Ownership Record -->
+                        <tr>
+                            <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">Ownership Record</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Owner</strong></td>
+                            <td style="padding: 8px;">${properties.owner_na_1}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Father/Husband Name</strong></td>
+                            <td style="padding: 8px;">${properties.fath_name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>CNIC</strong></td>
+                            <td style="padding: 8px;">${properties.new_CNIC}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Contact</strong></td>
+                            <td style="padding: 8px;">${properties.Cell_No}</td>
+                        </tr>
+
+                        <!-- File Details -->
+                        <tr>
+                            <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">File Details</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>File Number</strong></td>
+                            <td style="padding: 8px;">${properties.file_no}</td>
+                        </tr>
+
+                        <!-- Land-use Details -->
+                        <tr>
+                            <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">Land-use Details</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Landuse</strong></td>
+                            <td style="padding: 8px;">${properties.Landuse}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Commercial Entity</strong></td>
+                            <td style="padding: 8px;">${properties.Commercial}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Owner (if commercial)</strong></td>
+                            <td style="padding: 8px;">${properties.Owner_Name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Contact No (Commercial)</strong></td>
+                            <td style="padding: 8px;">${properties.Contact_Nu}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>View Image (if commercial)</strong></td>
+                            <td style="padding: 8px;"><a href="${properties.img}" target="_blank">Image</a></td>
+                        </tr>
+
+                        <!-- Area Details -->
+                        <tr>
+                            <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">Area Details</th>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <table border="1" style="border-collapse: collapse; width: 100%;">
+                                    <tr>
+                                        <th style="background-color: lightgreen; padding: 5px;">As per Master Plan</th>
+                                        <td style="padding: 5px;">${properties.mp_area}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="background-color: lightblue; padding: 5px;">As per Property File</th>
+                                        <td style="padding: 5px;">${properties.plot_area}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="background-color: yellow; padding: 5px;">As per Demarcation/Part Plan</th>
+                                        <td style="padding: 5px;">${properties.plot_area_}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="background-color: red; padding: 5px;">Footprint</th>
+                                        <td style="padding: 5px;">${properties.Area_Digit}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+
+                        <!-- Demarcation Plan -->
+                        <tr>
+                            <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">Demarcation Plan</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Coordinates</strong></td>
+                            <td style="padding: 8px;">(${coordinates.lng.toFixed(6)}, ${coordinates.lat.toFixed(6)})</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Print Demarcation Plan</strong></td>
+                            <td style="padding: 8px;"><a href="demarcation_plan_link" target="_blank">Click Here</a></td>
+                        </tr>
+                    </table>
+                </div>
+            `)
         .addTo(map);
     });
 
