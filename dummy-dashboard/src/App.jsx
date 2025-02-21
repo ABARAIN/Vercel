@@ -583,6 +583,10 @@ return () => {
                             <td style="padding: 8px;"><strong>View Image (if commercial)</strong></td>
                             <td style="padding: 8px;"><a href="${properties.img}" target="_blank">Image</a></td>
                         </tr>
+                        <tr>
+                            <td style="padding: 8px;"><strong>Property Remarks</strong></td>
+                            <td style="padding: 8px;">${properties.remarks}</td>
+                        </tr>
 
                         <!-- Area Details -->
                         <tr>
