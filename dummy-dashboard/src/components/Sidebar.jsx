@@ -17,17 +17,19 @@ const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset
     setActiveIcon(icon);
     setIconTitle(title);
     
-    setTimeout(() => {
-      setIconTitle('');
-    }, 2000); 
+    // setTimeout(() => {
+    //   setIconTitle('');
+    // }, 0); 
   };
 
   const handleFileUpload = (event) => {
-    onFileUpload(event);
+    // Immediately reveal the submenu if a file is selected
     if (event.target.files.length > 0) {
-      setShowLayers(true); 
+        setShowLayers(true); 
     }
-  };
+    // Parent upload function
+    onFileUpload(event);
+};
 
   return (
     <div className="sidebar">
@@ -84,18 +86,17 @@ const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset
         <div>Layer details or controls for Settlement Operations</div>
       </LayerItem>
       <LayerItem title="Upload File">
-          <div className="file-upload">
-            <input type="file" onChange={handleFileUpload} />
-            {uploadMessage && <p>{uploadMessage}</p>}
-            {showLayers && ( 
-              <LayerSwitcher 
-                layers={layers} 
-                onToggleLayer={toggleLayerVisibility}
-                
-              />
-            )}
-          </div>
-        </LayerItem>
+        <div className="file-upload">
+          <input type="file" onChange={handleFileUpload} />
+          {uploadMessage && <p>{uploadMessage}</p>}
+          {showLayers && (
+            <LayerSwitcher 
+              layers={layers} 
+              onToggleLayer={toggleLayerVisibility} 
+            />
+          )}
+        </div>
+      </LayerItem>
     </SidebarMenu>
     <SidebarMenu title="Basemap">
       <BasemapSelector onBasemapChange={onBasemapChange} />

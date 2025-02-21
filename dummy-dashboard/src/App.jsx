@@ -37,12 +37,14 @@ function App() {
   const [tehsils, setTehsils] = useState([]);
   const [societies, setSocieties] = useState([]);
   const [blocks, setBlocks] = useState([]);
+  const [plots, setPlots] = useState([]);
   const [mauzas, setMauzas] = useState([]);
  // const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedTehsil, setSelectedTehsil] = useState('');
   const [selectedSociety, setSelectedSociety] = useState('');
   const [selectedBlock, setSelectedBlock] = useState('');
+  const [selectedPlot, setSelectedPlot] = useState('');
    const [selectedMauza, setSelectedMauza] = useState('');
 
   //const [newdivisions, setNewdivisions] = useState([]);
@@ -786,10 +788,16 @@ return () => {
     setSelectedDistrict('');
     setSelectedTehsil('');
     setSelectedSociety('');
+    setSelectedBlock('');
+    setSelectedPlot('');
     setSelectedMauza('');
+
     setTehsils([]);
     setSocieties([]);
+    setBlocks([]);
+    setPlots([]);
     setMauzas([]);
+    
     setFiltersApplied(false); 
     setShowTehsil(false); 
     setShowSocietyDropdown(false); 
@@ -840,6 +848,52 @@ return () => {
       setMeasurements(newMeasurements);
     }
   };
+
+  const handleSocietyChange = (society) => {
+    setSelectedSociety(society);
+    setSelectedBlock('');
+    
+    axios
+      // .get('http://localhost:8000/api/joined-mauza-districts/', {
+      .get('http://localhost:8000/api/societies/', {
+        params: { societies: selectedSociety, blocks },
+      })
+      .then((response) => {
+        // const uniqueMauzas = [
+        //   ...new Set(response.data.map((feature) => feature.mauza)),
+        // ];
+        // setMauzas(uniqueMauzas);
+        const uniqueBlocks = [
+          ...new Set(response.data.map((feature) => feature.block)),
+        ];
+        setBlocks(uniqueBlocks);
+      })
+      .catch((error) => console.error('Error fetching soc:', error));
+};
+
+const handleBlockChange = (blocks) => {
+  setSelectedBlock(blocks);
+  setSelectedPlot('');
+  
+  axios
+    // .get('http://localhost:8000/api/joined-mauza-districts/', {
+    .get('http://localhost:8000/api/societies/', {
+      params: { blocks: selectedBlock, plots },
+    })
+    .then((response) => {
+      // const uniqueMauzas = [
+      //   ...new Set(response.data.map((feature) => feature.mauza)),
+      // ];
+      // setMauzas(uniqueMauzas);
+      const uniquePlots = [
+        ...new Set(response.data.map((feature) => feature.plot_no)),
+      ];
+      setPlots(uniquePlots);
+    })
+    .catch((error) => console.error('Error fetching soc:', error));
+};
+
+
   return (
     <>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
@@ -850,17 +904,25 @@ return () => {
         tehsils={tehsils}
         mauzas={mauzas}
         societies={societies}
+        blocks={blocks} 
+        plots={plots}
         newdistricts={newdistricts} 
         selectedDistrict={selectedDistrict}
         selectedTehsil={selectedTehsil}
         selectedSociety={selectedSociety} 
+        selectedBlock={selectedBlock}
+        selectedPlot={selectedPlot}
         selectedMauza={selectedMauza} 
         selectedNewdistrict={selectedNewdistrict} 
         selectedNewtehsil={selectedNewtehsil}
         onDistrictChange={handleDistrictChange}
         onTehsilChange={handleTehsilChange}
         onMauzaChange={handleMauzaChange} 
-        onSocietyChange={setSelectedSociety}
+        //onSocietyChange={setSelectedSociety}
+        onSocietyChange={handleSocietyChange} 
+        onBlockChange={handleBlockChange}
+        onPlotChange={setSelectedPlot}
+
         onApplyFilters={handleApplyFilters} 
         onNewDistrictChange={handleNewDistrictChange} 
         onNewTehsilChange={handleNewTehsilChange} 

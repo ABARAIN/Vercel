@@ -191,6 +191,8 @@ body {
   50% { opacity: 0; }
 }
 
+
+
 .file-upload {
   margin-top: 10px;
 }
@@ -226,8 +228,8 @@ body {
   z-index: 2; 
   display: block; 
   margin-top: 10px; 
-
-  
+  margin-bottom: 20px;
+  /* transition: opacity 0.3s ease; */
 }
 .layer-item {
   margin: 5px 0; 
