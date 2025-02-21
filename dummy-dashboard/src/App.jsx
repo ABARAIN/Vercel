@@ -592,6 +592,10 @@ return () => {
                             <td colspan="2">
                                 <table border="1" style="border-collapse: collapse; width: 100%;">
                                     <tr>
+                                        <th style="background-color: lightgreen; padding: 5px;">Area Units</th>
+                                        <td style="padding: 5px;">K-M-Sqft</td>
+                                    </tr>
+                                    <tr>
                                         <th style="background-color: lightgreen; padding: 5px;">As per Master Plan</th>
                                         <td style="padding: 5px;">${properties.mp_area}</td>
                                     </tr>
