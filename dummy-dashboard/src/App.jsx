@@ -164,13 +164,11 @@ function App() {
               .setHTML(`
                 <div class="custom-popup">
                   <h3>${data.society}</h3>
-                  <p><strong>Town Name:</strong> ${data.town_name}</p>
+                  <p><strong>Society:</strong> ${data.society}</p>
                   <p><strong>Landuse:</strong> ${data.landuse}</p>
-                  <p><strong>Plot Number:</strong> ${data.plotno}</p>
-                  <p><strong>Society Type:</strong> ${data.societytyp}</p>
+                  <p><strong>Plot Number:</strong> ${data.plot_no}</p>
                   <p><strong>District:</strong> ${data.district}</p>
                   <p><strong>Tehsil:</strong> ${data.tehsil}</p>
-                  <p><strong>Source:</strong> ${data.source}</p>
                   <p><strong>Coordinates:</strong> ${data.geom}</p>
                   <p><strong>Property Details: <a href="http://localhost:3000/login">View Property Details</a></strong></p>
                 </div>
