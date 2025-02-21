@@ -598,6 +598,8 @@ return () => {
     if (selectedTehsil) params.tehsil = selectedTehsil;
     // if (selectedMauza) params.mauza = selectedMauza;
     if (selectedSociety) params.society = selectedSociety;
+    if (selectedBlock) params.block = selectedBlock;
+    if (selectedPlot) params.plot = selectedPlot;
 
     axios
       // .get('http://localhost:8000/api/joined-mauza-districts/', { params })
@@ -797,7 +799,7 @@ return () => {
     setBlocks([]);
     setPlots([]);
     setMauzas([]);
-    
+
     setFiltersApplied(false); 
     setShowTehsil(false); 
     setShowSocietyDropdown(false); 
