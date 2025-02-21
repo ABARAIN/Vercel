@@ -4,7 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import axios from 'axios';
 import shp from 'shpjs';
 import * as d3 from 'd3';
-import wkt from 'wkt';
+import * as wkt from 'wkt';
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 import './styles/App.css';
@@ -596,30 +596,44 @@ return () => {
     const params = {};
     if (selectedDistrict) params.district = selectedDistrict;
     if (selectedTehsil) params.tehsil = selectedTehsil;
-    // if (selectedMauza) params.mauza = selectedMauza;
     if (selectedSociety) params.society = selectedSociety;
     if (selectedBlock) params.block = selectedBlock;
-    if (selectedPlot) params.plot = selectedPlot;
+    if (selectedPlot) params.plot_no = selectedPlot; // Ensure this matches the backend field
 
     axios
-      // .get('http://localhost:8000/api/joined-mauza-districts/', { params })
-      .get('http://localhost:8000/api/societies/', { params })
+      .get('http://127.0.0.1:8000/api/societies/', { params }) 
       .then((response) => {
+        if (!response.data.length) {
+          console.warn('No data returned from the API');
+          return;
+        }
+
         const geojson = {
           type: 'FeatureCollection',
           features: response.data.map((feature) => {
-            const geom = feature.geom.replace('SRID=4326;', ''); // Strip SRID
-            return {
-              type: 'Feature',
-              geometry: wkt.parse(geom), 
-              properties: feature,
-            };
-          }),
+            if (!feature.geom) {
+              console.warn('Feature missing geometry:', feature);
+              return null;
+            }
+
+            try {
+              const geom = feature.geom.replace('SRID=4326;', ''); // Strip SRID
+              return {
+                type: 'Feature',
+                geometry: wkt.parse(geom), 
+                properties: feature,
+              };
+            } catch (error) {
+              console.error('Error parsing geometry:', error, feature.geom);
+              return null;
+            }
+          }).filter(Boolean), // Remove any null values
         };
+
         addLayer(geojson, 'filtered-layer');
       })
       .catch((error) => console.error('Error fetching filtered data:', error));
-  };
+};
 
   const fetchNewFilteredData = () => {
     const params = {};
@@ -853,46 +867,36 @@ return () => {
 
   const handleSocietyChange = (society) => {
     setSelectedSociety(society);
-    setSelectedBlock('');
-    
+    setSelectedBlock('');  // Reset block when society changes
+
     axios
-      // .get('http://localhost:8000/api/joined-mauza-districts/', {
       .get('http://localhost:8000/api/societies/', {
-        params: { societies: selectedSociety, blocks },
+        params: { society },  // Use correct parameter name
       })
       .then((response) => {
-        // const uniqueMauzas = [
-        //   ...new Set(response.data.map((feature) => feature.mauza)),
-        // ];
-        // setMauzas(uniqueMauzas);
         const uniqueBlocks = [
           ...new Set(response.data.map((feature) => feature.block)),
         ];
         setBlocks(uniqueBlocks);
       })
-      .catch((error) => console.error('Error fetching soc:', error));
+      .catch((error) => console.error('Error fetching blocks:', error));
 };
 
-const handleBlockChange = (blocks) => {
-  setSelectedBlock(blocks);
-  setSelectedPlot('');
-  
+const handleBlockChange = (block) => {
+  setSelectedBlock(block);
+  setSelectedPlot('');  // Reset plot when block changes
+
   axios
-    // .get('http://localhost:8000/api/joined-mauza-districts/', {
     .get('http://localhost:8000/api/societies/', {
-      params: { blocks: selectedBlock, plot_no },
+      params: { block },  // Use correct parameter name
     })
     .then((response) => {
-      // const uniqueMauzas = [
-      //   ...new Set(response.data.map((feature) => feature.mauza)),
-      // ];
-      // setMauzas(uniqueMauzas);
       const uniquePlots = [
         ...new Set(response.data.map((feature) => feature.plot_no)),
       ];
       setPlots(uniquePlots);
     })
-    .catch((error) => console.error('Error fetching soc:', error));
+    .catch((error) => console.error('Error fetching plots:', error));
 };
 
 
