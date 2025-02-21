@@ -763,7 +763,7 @@ return () => {
         type: 'fill',
         source: layerId,
         paint: {
-          'fill-color': '#007bff',
+          'fill-color': '#FFFF00',
           'fill-opacity': 0,
         },
       });
@@ -772,7 +772,7 @@ return () => {
         type: 'line',
         source: layerId,
         paint: {
-          'line-color': '#000', // Black color for the boundaries
+          'line-color': '#FFFF00', // Black color for the boundaries
           'line-width': 2, // Adjust the width as needed
         },
       });
