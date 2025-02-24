@@ -432,7 +432,7 @@ return () => {
     // Function to animate the pulsating effect
     const animatePulsatingPoints = () => {
       let growing = true;
-      let radius = 6;
+      let radius = 3;
     
       setInterval(() => {
         radius = growing ? 12 : 6; // Toggle between 6 and 12
@@ -596,7 +596,7 @@ return () => {
                             <td colspan="2">
                                 <table border="1" style="border-collapse: collapse; width: 100%;">
                                     <tr>
-                                        <th style="background-color: lightgreen; padding: 5px;">Area Units</th>
+                                        <th style="background-color: lightgray; padding: 5px;">Area Units</th>
                                         <td style="padding: 5px;">K-M-Sqft</td>
                                     </tr>
                                     <tr>
@@ -612,7 +612,7 @@ return () => {
                                         <td style="padding: 5px;">${properties.plot_area_}</td>
                                     </tr>
                                     <tr>
-                                        <th style="background-color: red; padding: 5px;">Footprint</th>
+                                        <th style="background-color: red; padding: 5px;">Property Footprint</th>
                                         <td style="padding: 5px;">${properties.Area_Digit}</td>
                                     </tr>
                                 </table>
