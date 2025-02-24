@@ -109,7 +109,9 @@ const Navbar = ({
         <select onChange={(e) => onBlockChange(e.target.value)} value={selectedBlock}>
             <option value="">Select Block</option>
             {blocks.map((block) => (
-                <option key={block} value={block}>{block}</option>
+                <option key={block} value={block} style={{ textAlign: 'left' }}>
+                    {block} - Block
+                </option>
             ))}
         </select>
     </div>
