@@ -37,7 +37,7 @@
   color: #ffffff; 
   transition: border-color 0.3s ease, background-color 0.3s ease; 
   appearance: none; 
-  background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"%3E%3Cpath fill="%23ffffff" d="M4 6l4 4 4-4z"/%3E%3C/svg%3E'); /* Custom dropdown arrow */
+  background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"%3E%3Cpath fill="%23ffffff" d="M4 6l4 4 4-4z"/%3E%3C/svg%3E'); 
   background-repeat: no-repeat;
   background-position: right 10px center; 
   background-size: 14px; 

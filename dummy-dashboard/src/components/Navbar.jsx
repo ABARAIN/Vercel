@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Select from 'react-select';
 import '../styles/Navbar.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faLayerGroup, faBuilding, faUsers } from '@fortawesome/free-solid-svg-icons';
@@ -8,14 +9,20 @@ const Navbar = ({
   tehsils, 
   mauzas, 
   societies, 
+  blocks,
+  plot_no,
   selectedDistrict, 
   selectedTehsil, 
   selectedMauza, 
   selectedSociety,
+  selectedBlock,
+  selectedPlot,
   onDistrictChange, 
   onTehsilChange, 
   onMauzaChange, 
   onSocietyChange, 
+  onBlockChange,
+  onPlotChange,
   fetchMauzas,
   onApplyFilters, 
   onRemoveFilters,
@@ -26,6 +33,7 @@ const Navbar = ({
   const [showSocietyDropdown, setShowSocietyDropdown] = useState(false);
   const [showMauzaDropdown, setShowMauzaDropdown] = useState(false);
 
+  
   const handleDistrictChange = (district) => {
     onDistrictChange(district);
     setShowTehsil(true);
@@ -85,27 +93,103 @@ const Navbar = ({
         </div>
       )}
 
-      {showSocietyDropdown && (
-        <div className="dropdown">
-          <select onChange={(e) => onSocietyChange(e.target.value)} value={selectedSociety}>
+{showSocietyDropdown && (
+    <div className="dropdown">
+        <select onChange={(e) => onSocietyChange(e.target.value)} value={selectedSociety}>
             <option value="">Select Society</option>
             {societies.map((society) => (
-              <option key={society} value={society}>{society}</option>
+                <option key={society} value={society}>{society}</option>
             ))}
-          </select>
-        </div>
-      )}
+        </select>
+    </div>
+)}
 
-      {showMauzaDropdown && (
-        <div className="dropdown">
-          <select onChange={(e) => onMauzaChange(e.target.value)} value={selectedMauza}>
+{showSocietyDropdown && selectedSociety && (
+    <div className="dropdown">
+        <select onChange={(e) => onBlockChange(e.target.value)} value={selectedBlock}>
+            <option value="">Select Block</option>
+            {blocks.map((block) => (
+                <option key={block} value={block}>{block}</option>
+            ))}
+        </select>
+    </div>
+)}
+
+{/* {showSocietyDropdown && selectedBlock && (
+    <div className="dropdown">
+        <select onChange={(e) => onPlotChange(e.target.value)} value={selectedPlot}>
+            <option value="">Select Plot No</option>
+            {plots.map((plot_no) => (
+                <option key={plot_no} value={plot_no}>{plot_no}</option>
+            ))}
+        </select>
+    </div>
+)} */}
+
+{showSocietyDropdown && selectedBlock && (
+  <div className="dropdown">
+    <Select
+      options={plot_no.map(plot_no => ({ value: plot_no, label: plot_no }))} 
+      onChange={(selectedOption) => onPlotChange(selectedOption.value)}
+      value={selectedPlot ? { value: selectedPlot, label: selectedPlot } : null}
+      placeholder="Select Plot No"
+      isSearchable
+      styles={{
+        control: (base) => ({
+          ...base,
+          height: '40px', // Adjust height as needed
+          minHeight: '40px',
+          backgroundColor: "#2c2f33", // Match background color
+          color: "#ffffff",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+          zIndex: 5, // Ensure dropdown appears above sidebar
+          "&:hover": {
+            borderColor: "#0056b3",
+            backgroundColor: "#3a3f43",
+          },
+        }),
+        singleValue: (base) => ({
+          ...base,
+          color: "#ffffff",
+        }),
+        menu: (base) => ({
+          ...base,
+          backgroundColor: "#2c2f33", // Match dropdown background color
+          zIndex: 10, // Ensure menu appears above other elements
+        }),
+        option: (base, { isSelected, isFocused }) => ({
+          ...base,
+          backgroundColor: isSelected ? "#007bff" : isFocused ? "#3a3f43" : "#2c2f33",
+          color: "#ffffff",
+          "&:hover": {
+            backgroundColor: "#3a3f43",
+          },
+        }),
+        dropdownIndicator: (base) => ({
+          ...base,
+          color: "#ffffff",
+          "&:hover": {
+            color: "#007bff",
+          },
+        }),
+      }}
+    />
+  </div>
+)}
+
+
+
+{showMauzaDropdown && (
+    <div className="dropdown">
+        <select onChange={(e) => onMauzaChange(e.target.value)} value={selectedMauza}>
             <option value="">Select Mauza</option>
             {mauzas.map((mauza) => (
-              <option key={mauza} value={mauza}>{mauza}</option>
+                <option key={mauza} value={mauza}>{mauza}</option>
             ))}
-          </select>
-        </div>
-      )}
+        </select>
+    </div>
+)}
 
       {(showSocietyDropdown || showMauzaDropdown) && (
         <button onClick={onApplyFilters}>Apply Filters</button>

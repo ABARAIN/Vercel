@@ -4,7 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import axios from 'axios';
 import shp from 'shpjs';
 import * as d3 from 'd3';
-import wkt from 'wkt';
+import * as wkt from 'wkt';
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 import './styles/App.css';
@@ -37,12 +37,14 @@ function App() {
   const [tehsils, setTehsils] = useState([]);
   const [societies, setSocieties] = useState([]);
   const [blocks, setBlocks] = useState([]);
+  const [plot_no, setPlots] = useState([]);
   const [mauzas, setMauzas] = useState([]);
  // const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedTehsil, setSelectedTehsil] = useState('');
   const [selectedSociety, setSelectedSociety] = useState('');
   const [selectedBlock, setSelectedBlock] = useState('');
+  const [selectedPlot, setSelectedPlot] = useState('');
    const [selectedMauza, setSelectedMauza] = useState('');
 
   //const [newdivisions, setNewdivisions] = useState([]);
@@ -162,13 +164,11 @@ function App() {
               .setHTML(`
                 <div class="custom-popup">
                   <h3>${data.society}</h3>
-                  <p><strong>Town Name:</strong> ${data.town_name}</p>
+                  <p><strong>Society:</strong> ${data.society}</p>
                   <p><strong>Landuse:</strong> ${data.landuse}</p>
-                  <p><strong>Plot Number:</strong> ${data.plotno}</p>
-                  <p><strong>Society Type:</strong> ${data.societytyp}</p>
+                  <p><strong>Plot Number:</strong> ${data.plot_no}</p>
                   <p><strong>District:</strong> ${data.district}</p>
                   <p><strong>Tehsil:</strong> ${data.tehsil}</p>
-                  <p><strong>Source:</strong> ${data.source}</p>
                   <p><strong>Coordinates:</strong> ${data.geom}</p>
                   <p><strong>Property Details: <a href="http://localhost:3000/login">View Property Details</a></strong></p>
                 </div>
@@ -704,28 +704,44 @@ return () => {
     const params = {};
     if (selectedDistrict) params.district = selectedDistrict;
     if (selectedTehsil) params.tehsil = selectedTehsil;
-    // if (selectedMauza) params.mauza = selectedMauza;
     if (selectedSociety) params.society = selectedSociety;
+    if (selectedBlock) params.block = selectedBlock;
+    if (selectedPlot) params.plot_no = selectedPlot; // Ensure this matches the backend field
 
     axios
-      // .get('http://localhost:8000/api/joined-mauza-districts/', { params })
-      .get('http://localhost:8000/api/societies/', { params })
+      .get('http://127.0.0.1:8000/api/societies/', { params }) 
       .then((response) => {
+        if (!response.data.length) {
+          console.warn('No data returned from the API');
+          return;
+        }
+
         const geojson = {
           type: 'FeatureCollection',
           features: response.data.map((feature) => {
-            const geom = feature.geom.replace('SRID=4326;', ''); // Strip SRID
-            return {
-              type: 'Feature',
-              geometry: wkt.parse(geom), 
-              properties: feature,
-            };
-          }),
+            if (!feature.geom) {
+              console.warn('Feature missing geometry:', feature);
+              return null;
+            }
+
+            try {
+              const geom = feature.geom.replace('SRID=4326;', ''); // Strip SRID
+              return {
+                type: 'Feature',
+                geometry: wkt.parse(geom), 
+                properties: feature,
+              };
+            } catch (error) {
+              console.error('Error parsing geometry:', error, feature.geom);
+              return null;
+            }
+          }).filter(Boolean), // Remove any null values
         };
+
         addLayer(geojson, 'filtered-layer');
       })
       .catch((error) => console.error('Error fetching filtered data:', error));
-  };
+};
 
   const fetchNewFilteredData = () => {
     const params = {};
@@ -896,10 +912,16 @@ return () => {
     setSelectedDistrict('');
     setSelectedTehsil('');
     setSelectedSociety('');
+    setSelectedBlock('');
+    setSelectedPlot('');
     setSelectedMauza('');
+
     setTehsils([]);
     setSocieties([]);
+    setBlocks([]);
+    setPlots([]);
     setMauzas([]);
+
     setFiltersApplied(false); 
     setShowTehsil(false); 
     setShowSocietyDropdown(false); 
@@ -950,6 +972,42 @@ return () => {
       setMeasurements(newMeasurements);
     }
   };
+
+  const handleSocietyChange = (society) => {
+    setSelectedSociety(society);
+    setSelectedBlock('');  // Reset block when society changes
+
+    axios
+      .get('http://localhost:8000/api/societies/', {
+        params: { society },  // Use correct parameter name
+      })
+      .then((response) => {
+        const uniqueBlocks = [
+          ...new Set(response.data.map((feature) => feature.block)),
+        ];
+        setBlocks(uniqueBlocks);
+      })
+      .catch((error) => console.error('Error fetching blocks:', error));
+};
+
+const handleBlockChange = (block) => {
+  setSelectedBlock(block);
+  setSelectedPlot('');  // Reset plot when block changes
+
+  axios
+    .get('http://localhost:8000/api/societies/', {
+      params: { block },  // Use correct parameter name
+    })
+    .then((response) => {
+      const uniquePlots = [
+        ...new Set(response.data.map((feature) => feature.plot_no)),
+      ];
+      setPlots(uniquePlots);
+    })
+    .catch((error) => console.error('Error fetching plots:', error));
+};
+
+
   return (
     <>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
@@ -960,17 +1018,25 @@ return () => {
         tehsils={tehsils}
         mauzas={mauzas}
         societies={societies}
+        blocks={blocks} 
+        plot_no={plot_no}
         newdistricts={newdistricts} 
         selectedDistrict={selectedDistrict}
         selectedTehsil={selectedTehsil}
         selectedSociety={selectedSociety} 
+        selectedBlock={selectedBlock}
+        selectedPlot={selectedPlot}
         selectedMauza={selectedMauza} 
         selectedNewdistrict={selectedNewdistrict} 
         selectedNewtehsil={selectedNewtehsil}
         onDistrictChange={handleDistrictChange}
         onTehsilChange={handleTehsilChange}
         onMauzaChange={handleMauzaChange} 
-        onSocietyChange={setSelectedSociety}
+        //onSocietyChange={setSelectedSociety}
+        onSocietyChange={handleSocietyChange} 
+        onBlockChange={handleBlockChange}
+        onPlotChange={setSelectedPlot}
+
         onApplyFilters={handleApplyFilters} 
         onNewDistrictChange={handleNewDistrictChange} 
         onNewTehsilChange={handleNewTehsilChange} 
