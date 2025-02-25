@@ -108,11 +108,12 @@ const Navbar = ({
     <div className="dropdown">
         <select onChange={(e) => onBlockChange(e.target.value)} value={selectedBlock}>
             <option value="">Select Block</option>
-            {blocks.map((block) => (
-                <option key={block} value={block} style={{ textAlign: 'left' }}>
-                    {block} - Block
-                </option>
-            ))}
+            {blocks
+                .filter(block => block) // Remove null values
+                .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+                .map((block) => (
+                    <option key={block} value={block}>{block} - Block</option>
+                ))}
         </select>
     </div>
 )}
@@ -131,52 +132,56 @@ const Navbar = ({
 {showSocietyDropdown && selectedBlock && (
   <div className="dropdown">
     <Select
-      options={plot_no.map(plot_no => ({ value: plot_no, label: plot_no }))} 
-      onChange={(selectedOption) => onPlotChange(selectedOption.value)}
-      value={selectedPlot ? { value: selectedPlot, label: selectedPlot } : null}
-      placeholder="Select Plot No"
-      isSearchable
-      styles={{
-        control: (base) => ({
-          ...base,
-          height: '40px', // Adjust height as needed
-          minHeight: '40px',
-          backgroundColor: "#2c2f33", // Match background color
-          color: "#ffffff",
-          border: "1px solid #ccc",
-          borderRadius: "4px",
-          zIndex: 5, // Ensure dropdown appears above sidebar
-          "&:hover": {
-            borderColor: "#0056b3",
-            backgroundColor: "#3a3f43",
-          },
-        }),
-        singleValue: (base) => ({
-          ...base,
-          color: "#ffffff",
-        }),
-        menu: (base) => ({
-          ...base,
-          backgroundColor: "#2c2f33", // Match dropdown background color
-          zIndex: 10, // Ensure menu appears above other elements
-        }),
-        option: (base, { isSelected, isFocused }) => ({
-          ...base,
-          backgroundColor: isSelected ? "#007bff" : isFocused ? "#3a3f43" : "#2c2f33",
-          color: "#ffffff",
-          "&:hover": {
-            backgroundColor: "#3a3f43",
-          },
-        }),
-        dropdownIndicator: (base) => ({
-          ...base,
-          color: "#ffffff",
-          "&:hover": {
-            color: "#007bff",
-          },
-        }),
-      }}
-    />
+  options={plot_no
+    ?.filter(plot => plot !== null && plot !== undefined) // Ensure valid values
+    .sort((a, b) => Number(a) - Number(b)) // Sort numerically
+    .map(plot_no => ({ value: plot_no, label: plot_no }))
+  }
+  onChange={(selectedOption) => onPlotChange(selectedOption.value)}
+  value={selectedPlot ? { value: selectedPlot, label: selectedPlot } : null}
+  placeholder="Select Plot No"
+  isSearchable
+  styles={{
+    control: (base) => ({
+      ...base,
+      height: '40px',
+      minHeight: '40px',
+      backgroundColor: "#2c2f33",
+      color: "#ffffff",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      zIndex: 5,
+      "&:hover": {
+        borderColor: "#0056b3",
+        backgroundColor: "#3a3f43",
+      },
+    }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#ffffff",
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: "#2c2f33",
+      zIndex: 10,
+    }),
+    option: (base, { isSelected, isFocused }) => ({
+      ...base,
+      backgroundColor: isSelected ? "#007bff" : isFocused ? "#3a3f43" : "#2c2f33",
+      color: "#ffffff",
+      "&:hover": {
+        backgroundColor: "#3a3f43",
+      },
+    }),
+    dropdownIndicator: (base) => ({
+      ...base,
+      color: "#ffffff",
+      "&:hover": {
+        color: "#007bff",
+      },
+    }),
+  }}
+/>
   </div>
 )}
 
