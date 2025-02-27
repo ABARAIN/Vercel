@@ -962,8 +962,9 @@ return () => {
           }
           measurementText = `Line Length: ${metersToFeet(lengthMeters).toFixed(2)} ft`;
         } else if (feature.geometry.type === 'Polygon') {
-          let areaMeters = turf.area(feature);
-          measurementText = `Polygon Area: ${metersToFeet(areaMeters).toFixed(2)} sq ft`;
+          let areaMeters = turf.area(feature); // Get area in square meters
+          let areaFeet = areaMeters * 10.7639; // Convert square meters to square feet
+          measurementText = `Polygon Area: ${areaFeet.toFixed(2)} sq ft`;
         }
 
         newMeasurements.push(measurementText);
