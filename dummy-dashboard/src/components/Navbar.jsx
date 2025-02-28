@@ -191,12 +191,16 @@ const Navbar = ({
     <div className="dropdown">
         <select onChange={(e) => onMauzaChange(e.target.value)} value={selectedMauza}>
             <option value="">Select Mauza</option>
-            {mauzas.map((mauza) => (
-                <option key={mauza} value={mauza}>{mauza}</option>
-            ))}
+            {mauzas
+                .filter(mauza => mauza) // Ensure no null/undefined values
+                .sort((a, b) => a.localeCompare(b)) // Sort alphabetically
+                .map((mauza) => (
+                    <option key={mauza} value={mauza}>{mauza}</option>
+                ))}
         </select>
     </div>
 )}
+
 
       {(showSocietyDropdown || showMauzaDropdown) && (
         <button onClick={onApplyFilters}>Apply Filters</button>
