@@ -128,11 +128,6 @@ function App() {
         fetchNewFilteredData();
       }
 
-     // map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    // const controlWrapper = createControlWrapper();
-    //   map.addControl(controlWrapper, 'top-right');
-
     });
        // Add click event listener
        map.on("click", async (e) => {
@@ -162,18 +157,50 @@ function App() {
             new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
               .setLngLat([lng, lat])
               .setHTML(`
-                <div class="custom-popup">
-                  <h3>${data.society}</h3>
-                  <p><strong>Society:</strong> ${data.society}</p>
-                  <p><strong>Landuse:</strong> ${data.landuse}</p>
-                  <p><strong>Plot Number:</strong> ${data.plot_no}</p>
-                  <p><strong>District:</strong> ${data.district}</p>
-                  <p><strong>Tehsil:</strong> ${data.tehsil}</p>
-                  <p><strong>Coordinates:</strong> ${data.geom}</p>
-                  <p><strong>Property Details: <a href="http://localhost:3000/login">View Property Details</a></strong></p>
+                <div class="custom-popup" style="max-height: 400px; overflow-y: auto; padding: 10px; width: 550px;">
+                  <h3 style="text-align: center; margin-bottom: 10px;">Plot Details</h3>
+              
+                  <table border="1" style="border-collapse: collapse; width: 110%; text-align: left;">
+                      <!-- Basic Information -->
+                      <tr>
+                          <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">Basic Information</th>
+                      </tr>
+                      <tr>
+                          <td style="padding: 8px;"><strong>Society</strong></td>
+                          <td style="padding: 8px;">${data.society}</td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 8px;"><strong>Landuse</strong></td>
+                          <td style="padding: 8px;">${data.landuse}</td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 8px;"><strong>Plot Number</strong></td>
+                          <td style="padding: 8px;">${data.plot_no}</td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 8px;"><strong>District</strong></td>
+                          <td style="padding: 8px;">${data.district}</td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 8px;"><strong>Tehsil</strong></td>
+                          <td style="padding: 8px;">${data.tehsil}</td>
+                      </tr>
+              
+                      <!-- Location & Details -->
+                      <tr>
+                          <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">Location & Details</th>
+                      </tr>
+                      <tr>
+                          <td style="padding: 8px;"><strong>Coordinates</strong></td>
+                          <td style="padding: 8px;">${data.geom}</td>
+                      </tr>
+                      <tr>
+                          <td style="padding: 8px;"><strong>View Property Details</strong></td>
+                          <td style="padding: 8px;"><a href="http://localhost:3000/login">Click Here</a></td>
+                      </tr>
+                  </table>
                 </div>
-              `)
-              .addTo(map);
+              `).addTo(map);              
           } else {
             console.warn("No data found:", data.error);
           }
@@ -223,93 +250,6 @@ return () => {
       mapRef.current.addControl(drawRef.current);
     }
   }, [basemap])
-
-  // const createControlWrapper = () => {
-  //   class ControlWrapper {
-  //     onAdd(map) {
-  //       this._map = map;
-  //       this._container = document.createElement("div");
-  //       this._container.className = "control-wrapper";
-
-        
-  //       const navControl = new mapboxgl.NavigationControl();
-  //       this._container.appendChild(navControl.onAdd(map));
-
-        
-  //       const customControl = createCustomControl();
-  //       this._container.appendChild(customControl.onAdd(map));
-
-  //       return this._container;
-  //     }
-
-  //     onRemove() {
-  //       this._container.parentNode.removeChild(this._container);
-  //       this._map = undefined;
-  //     }
-  //   }
-
-  //   return new ControlWrapper();
-  // };
-
-  // const createCustomControl = () => {
-  //   class CustomControl {
-  //     onAdd(map) {
-  //       this._map = map;
-  //       this._container = document.createElement("div");
-  //       this._container.className = "custom-control"; 
-  
-  //       const actions = [
-  //         { icon: "fa-map-marker-alt", tooltip: "Draw Point (m)", onClick: () => alert("Draw Point") },
-  //         { icon: "fa-grip-lines", tooltip: "Draw Line (l)", onClick: () => alert("Draw Line") },
-  //         { icon: "fa-draw-polygon", tooltip: "Draw Polygon (p)", onClick: () => alert("Draw Polygon") },
-  //         { icon: "fa-vector-square", tooltip: "Draw Rectangular (r)", onClick: () => alert("Draw Rectangle") },
-  //         { icon: "fa-circle", tooltip: "Draw Circle (c)", onClick: () => alert("Draw Circle") },
-  //         { icon: "fa-edit", tooltip: "Edit Geometries", onClick: () => alert("Edit Mode") },
-  //       ];
-  
-  //       actions.forEach(action => {
-  //         const button = document.createElement("button");
-  //         button.className = "custom-control-button"; 
-  //         button.onclick = action.onClick;
-  
-  //         const icon = document.createElement("i");
-  //         icon.className = `fas ${action.icon}`;
-  
-  //         // Tooltip element
-  //         const tooltip = document.createElement("div");
-  //         tooltip.className = "tooltip";
-  //         tooltip.innerText = action.tooltip;
-  //         tooltip.style.display = "none"; 
-  
-  //         button.appendChild(icon);
-  //         button.appendChild(tooltip);
-  //         this._container.appendChild(button);
-  
-  //         // Show tooltip on mouse over
-  //         button.addEventListener('mouseenter', () => {
-  //           tooltip.style.display = "block";
-  //           const rect = button.getBoundingClientRect();
-  //           tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
-  //           tooltip.style.left = `${rect.left + rect.width / 2 - tooltip.offsetWidth / 2}px`;
-  //         });
-  
-  //         // Hide tooltip on mouse leave
-  //         button.addEventListener('mouseleave', () => {
-  //           tooltip.style.display = "none";
-  //         });
-  //       });
-  
-  //       return this._container;
-  //     }
-  
-  //     onRemove() {
-  //       this._container.parentNode.removeChild(this._container);
-  //       this._map = undefined;
-  //     }
-  //   }
-  
-  //   return new CustomControl();
-  // };
   
   const restoreLayersAndInteractions = () => {
     const map = mapRef.current;
@@ -336,13 +276,6 @@ return () => {
       addShapefileInteraction(layer.id);
     });
   };
-  
-  // const handleBasemapChange = (style) => {
-  //   setBasemap(style);
-  //   if (mapRef.current) {
-  //     mapRef.current.setStyle(style); 
-  //   }
-  // };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -856,10 +789,6 @@ return () => {
         params: { district: selectedDistrict, tehsil },
       })
       .then((response) => {
-        // const uniqueMauzas = [
-        //   ...new Set(response.data.map((feature) => feature.mauza)),
-        // ];
-        // setMauzas(uniqueMauzas);
         const uniqueSocieties = [
           ...new Set(response.data.map((feature) => feature.society)),
         ];
@@ -893,11 +822,6 @@ return () => {
   const handleMauzaChange = (mauza) => {
     setSelectedMauza(mauza);
   };
-
-  // const handleApplyFilters = () => {
-    
-  //   fetchFilteredData();
-  // };
 
   const handleApplyFilters = () => {
     if (selectedNewdistrict || selectedNewtehsil || selectedMauza) {
@@ -1059,107 +983,7 @@ const handleBlockChange = (block) => {
        onReset={handleReset}
        toggleLayerVisibility={toggleLayerVisibility}
        measurements={measurements}
-       />
-      {/* <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} /> */}
-      {/* {mapInstance && <MapWithDraw map={mapInstance} draw={drawRef.current}/>} */}
-      {/* {mapInstance && (
-        <MapWithDraw 
-          map={mapInstance} 
-          draw={drawRef.current}
-          setMeasurements={setMeasurements} // Pass setter for measurements
-        />
-      )} */}
-    
-
-     {/*   center={center}
-        zoom={zoom}
-        onBasemapChange={handleBasemapChange}
-        onFileUpload={handleFileUpload}
-        uploadMessage={uploadMessage}
-        onReset={handleReset}
-      />
-      <LayerSwitcher layers={layers} onToggleLayer={toggleLayerVisibility} />
-      <div className="filters">
-      <label>
-          District:
-          <select onChange={(e) => handleDistrictChange(e.target.value)} value={selectedDistrict}>
-            <option value="">Select District</option>
-            {districts.map((district) => (
-              <option key={district} value={district}>
-                {district}
-              </option>
-            ))}
-          </select>
-        </label>
-        {selectedDistrict && (
-          <label>
-            Tehsil:
-            <select onChange={(e) => handleTehsilChange(e.target.value)} value={selectedTehsil}>
-              <option value="">Select Tehsil</option>
-              {tehsils.map((tehsil) => (
-                <option key={tehsil} value={tehsil}>
-                  {tehsil}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        {selectedTehsil && (
-          <label>
-            Society:
-            <select onChange={(e) => setSelectedSociety(e.target.value)} value={selectedSociety}>
-              <option value="">Select Society</option>
-              {societies.map((society) => (
-                <option key={society} value={society}>
-                  {society}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        <button onClick={fetchFilteredData}>Apply Society Filters</button>
-      </div>
-      <div className="filters2">
-      <label>
-          District:
-          <select onChange={(e) => handleNewDistrictChange(e.target.value)} value={selectedNewdistrict}>
-            <option value="">Select District</option>
-            {newdistricts.map((district) => (
-              <option key={district} value={district}>
-                {district}
-              </option>
-            ))}
-          </select>
-        </label>
-        {selectedNewdistrict && (
-          <label>
-            Tehsil:
-            <select onChange={(e) => handleNewTehsilChange(e.target.value)} value={selectedNewtehsil}>
-              <option value="">Select Tehsil</option>
-              {newtehsils.map((tehsil) => (
-                <option key={tehsil} value={tehsil}>
-                  {tehsil}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        {selectedNewtehsil && (
-          <label>
-            Mauza:
-            <select onChange={(e) => setSelectedMauza(e.target.value)} value={selectedMauza}>
-              <option value="">Select Mauza</option>
-              {mauzas.map((mauza) => (
-                <option key={mauza} value={mauza}>
-                  {mauza}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        <button onClick={fetchNewFilteredData}>Apply Mauza Filters</button>
-      </div>*/}
-      
+       />      
     </>
   );
 }
