@@ -7,7 +7,7 @@ import LayerSwitcher from './LayerSwitcher';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faLayerGroup, faBuilding, faUsers } from '@fortawesome/free-solid-svg-icons';
 
-const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset, toggleLayerVisibility, measurements }) => {
+const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset, zoomToLayer, toggleLayerVisibility, measurements, toggleLayerVisible }) => {
   const [activeIcon, setActiveIcon] = useState(null);
   const [iconTitle, setIconTitle] = useState('');
 
@@ -31,30 +31,34 @@ const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset
     onFileUpload(event);
 };
 
-  const [towns, setTowns] = useState([]); // Store the fetched town names
-  const [selectedTown, setSelectedTown] = useState(''); // Track selected town
+const [towns, setTowns] = useState([]);
+const [activeTowns, setActiveTowns] = useState({}); // Tracks which towns are toggled on
+// const [activeLayers, setActiveLayers] = useState({});
 
-  useEffect(() => {
-    // Fetch town names from the backend
-    const fetchTowns = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:8000/api/all-soc/');
-        const data = await response.json();
-        const uniqueTowns = [...new Set(data.map(society => society.town_name))]; // Extract unique town names
-        setTowns(uniqueTowns);
-      } catch (error) {
-        console.error('Error fetching town names:', error);
-      }
-    };
 
-    fetchTowns();
-  }, []);
-
-  const handleTownSelect = (event) => {
-    const selected = event.target.value;
-    setSelectedTown(selected);
-    toggleLayerVisibility(selected); // Toggle the selected town's layer
+useEffect(() => {
+  // Fetch town names from the backend
+  const fetchTowns = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/all-soc/');
+      const data = await response.json();
+      const uniqueTowns = [...new Set(data.map(society => society.town_name))].sort(); // Sort alphabetically
+      setTowns(uniqueTowns);
+    } catch (error) {
+      console.error('Error fetching town names:', error);
+    }
   };
+
+  fetchTowns();
+}, []);
+
+const handleToggleTown = (town) => {
+  setActiveTowns(prevState => {
+    const updatedState = { ...prevState, [town]: !prevState[town] };
+    toggleLayerVisible(town, updatedState[town]); // Show/hide layer
+    return updatedState;
+  });
+};
   return (
     <div className="sidebar">
       {iconTitle && <div className="icon-title">{iconTitle}</div>}
@@ -92,12 +96,19 @@ const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset
         <div>Layer details or controls for Cooperative Society</div>
       </LayerItem>
       <LayerItem title="Private Society">
-          <select value={selectedTown} onChange={handleTownSelect}>
-            <option value="">Select a Town</option>
+          <div className="town-list">
             {towns.map((town, index) => (
-              <option key={index} value={town}>{town}</option>
+              <div key={index} className="town-row">
+                <span>{town}</span>
+                <button onClick={() => handleToggleTown(town)}>
+                  {activeTowns[town] ? 'Hide' : 'Show'}
+                </button>
+                {activeTowns[town] && (
+                  <button onClick={() => zoomToLayer(town)}>Zoom</button>
+                )}
+              </div>
             ))}
-          </select>
+          </div>
         </LayerItem>
       <LayerItem title="PHATA">
         <div>Layer details or controls for PHATA</div>

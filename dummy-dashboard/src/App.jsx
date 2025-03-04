@@ -931,7 +931,54 @@ const handleBlockChange = (block) => {
     })
     .catch((error) => console.error('Error fetching plots:', error));
 };
+const [activeLayers, setActiveLayers] = useState({});
 
+// Function to show/hide town layers
+const toggleLayerVisible = async (town, isVisible) => {
+  const map = mapRef.current;
+  const layerId = `town-layer-${town}`;
+
+  if (isVisible) {
+    // Fetch GeoJSON for the selected town
+    const response = await fetch(`http://127.0.0.1:8000/api/geojson/?town_name=${encodeURIComponent(town)}`);
+    const geojson = await response.json();
+
+    if (!map.getSource(layerId)) {
+      map.addSource(layerId, {
+        type: 'geojson',
+        data: geojson
+      });
+
+      map.addLayer({
+        id: layerId,
+        type: 'fill',
+        source: layerId,
+        paint: {
+          'fill-color': '#088',
+          'fill-opacity': 0.5
+        }
+      });
+    }
+
+    setActiveLayers(prev => ({ ...prev, [town]: true }));
+  } else {
+    if (map.getLayer(layerId)) map.removeLayer(layerId);
+    if (map.getSource(layerId)) map.removeSource(layerId);
+
+    setActiveLayers(prev => ({ ...prev, [town]: false }));
+  }
+};
+
+// Function to zoom to the selected town
+const zoomToLayer = async (town) => {
+  const map = mapRef.current;
+  const response = await fetch(`http://127.0.0.1:8000/api/all-soc/?town_name=${encodeURIComponent(town)}`);
+  const { bbox } = await response.json(); // Expecting { bbox: [minLng, minLat, maxLng, maxLat] }
+
+  if (bbox) {
+    map.fitBounds(bbox, { padding: 50, duration: 1000 });
+  }
+};
 
   return (
     <>
@@ -983,6 +1030,8 @@ const handleBlockChange = (block) => {
        onReset={handleReset}
        toggleLayerVisibility={toggleLayerVisibility}
        measurements={measurements}
+       toggleLayerVisible={toggleLayerVisible}
+       zoomToLayer={zoomToLayer}
        />      
     </>
   );
