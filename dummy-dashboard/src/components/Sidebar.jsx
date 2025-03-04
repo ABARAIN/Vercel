@@ -95,21 +95,21 @@ const handleToggleTown = (town) => {
       <LayerItem title="Cooperative Society">
         <div>Layer details or controls for Cooperative Society</div>
       </LayerItem>
-      <LayerItem title="Private Society">
-          <div className="town-list">
-            {towns.map((town, index) => (
-              <div key={index} className="town-row">
-                <span>{town}</span>
-                <button onClick={() => handleToggleTown(town)}>
-                  {activeTowns[town] ? 'Hide' : 'Show'}
-                </button>
-                {activeTowns[town] && (
-                  <button onClick={() => zoomToLayer(town)}>Zoom</button>
-                )}
-              </div>
-            ))}
-          </div>
-        </LayerItem>
+      <LayerItem title="Regular Approved Societies & Schemes">
+        <div className="town-list">
+          {towns.map((town, index) => (
+            <div key={index} className="town-row">
+              <span>{town}</span>
+              <button onClick={() => handleToggleTown(town)}>
+                {activeTowns[town] ? 'Hide' : 'Show'}
+              </button>
+              {activeTowns[town] && (
+                <button onClick={() => zoomToLayer(town)}>Zoom</button>
+              )}
+            </div>
+          ))}
+        </div>
+      </LayerItem>
       <LayerItem title="PHATA">
         <div>Layer details or controls for PHATA</div>
       </LayerItem>
