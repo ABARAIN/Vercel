@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SidebarMenu from './SidebarMenu';
 import BasemapSelector from './BasemapSelector';
 import LayerItem from './LayerItem'; 
@@ -31,6 +31,30 @@ const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset
     onFileUpload(event);
 };
 
+  const [towns, setTowns] = useState([]); // Store the fetched town names
+  const [selectedTown, setSelectedTown] = useState(''); // Track selected town
+
+  useEffect(() => {
+    // Fetch town names from the backend
+    const fetchTowns = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/all-soc/');
+        const data = await response.json();
+        const uniqueTowns = [...new Set(data.map(society => society.town_name))]; // Extract unique town names
+        setTowns(uniqueTowns);
+      } catch (error) {
+        console.error('Error fetching town names:', error);
+      }
+    };
+
+    fetchTowns();
+  }, []);
+
+  const handleTownSelect = (event) => {
+    const selected = event.target.value;
+    setSelectedTown(selected);
+    toggleLayerVisibility(selected); // Toggle the selected town's layer
+  };
   return (
     <div className="sidebar">
       {iconTitle && <div className="icon-title">{iconTitle}</div>}
@@ -68,8 +92,13 @@ const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset
         <div>Layer details or controls for Cooperative Society</div>
       </LayerItem>
       <LayerItem title="Private Society">
-        <div>Layer details or controls for Private Society</div>
-      </LayerItem>
+          <select value={selectedTown} onChange={handleTownSelect}>
+            <option value="">Select a Town</option>
+            {towns.map((town, index) => (
+              <option key={index} value={town}>{town}</option>
+            ))}
+          </select>
+        </LayerItem>
       <LayerItem title="PHATA">
         <div>Layer details or controls for PHATA</div>
       </LayerItem>
