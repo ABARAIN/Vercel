@@ -937,6 +937,7 @@ const [activeLayers, setActiveLayers] = useState({});
 const toggleLayerVisible = async (town, isVisible) => {
   const map = mapRef.current;
   const layerId = `town-layer-${town}`;
+  const lineLayerId = `town-boundary-${town}`;
 
   if (isVisible) {
     // Fetch GeoJSON for the selected town
@@ -949,13 +950,25 @@ const toggleLayerVisible = async (town, isVisible) => {
         data: geojson
       });
 
+      // Transparent fill layer
       map.addLayer({
         id: layerId,
         type: 'fill',
         source: layerId,
         paint: {
-          'fill-color': '#088',
-          'fill-opacity': 0.5
+          'fill-color': '#088',  // Color won't be visible
+          'fill-opacity': 0       // Fully transparent fill
+        }
+      });
+
+      // Line layer for boundary
+      map.addLayer({
+        id: lineLayerId,
+        type: 'line',
+        source: layerId,
+        paint: {
+          'line-color': '#000000', // Black boundary
+          'line-width': 2           // Adjust thickness
         }
       });
     }
@@ -963,6 +976,7 @@ const toggleLayerVisible = async (town, isVisible) => {
     setActiveLayers(prev => ({ ...prev, [town]: true }));
   } else {
     if (map.getLayer(layerId)) map.removeLayer(layerId);
+    if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
     if (map.getSource(layerId)) map.removeSource(layerId);
 
     setActiveLayers(prev => ({ ...prev, [town]: false }));
