@@ -104,7 +104,7 @@ const handleToggleTown = (town) => {
                 {activeTowns[town] ? 'Hide' : 'Show'}
               </button>
               {activeTowns[town] && (
-                <button onClick={() => zoomToLayer(town)}>Zoom</button>
+                <button onClick={() => zoomToLayer(town)}>Fly to</button>
               )}
             </div>
           ))}

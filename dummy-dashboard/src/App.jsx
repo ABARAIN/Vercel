@@ -986,7 +986,7 @@ const toggleLayerVisible = async (town, isVisible) => {
 // Function to zoom to the selected town
 const zoomToLayer = async (town) => {
   const map = mapRef.current;
-  const response = await fetch(`http://127.0.0.1:8000/api/all-soc/?town_name=${encodeURIComponent(town)}`);
+  const response = await fetch(`http://127.0.0.1:8000/api/bbox/?town_name=${encodeURIComponent(town)}`);
   const { bbox } = await response.json(); // Expecting { bbox: [minLng, minLat, maxLng, maxLat] }
 
   if (bbox) {
