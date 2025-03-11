@@ -63,10 +63,11 @@ const handleToggleTown = (town) => {
 const handleToggleMBlock = () => {
   setMBlockVisible((prev) => {
     const newState = !prev;
-    toggleLayerVisible("M-Block", newState); // Show/hide M-Block layer
+    toggleMBlockVisibility(newState); // Pass the updated state to toggle function
     return newState;
   });
 };
+
   return (
     <div className="sidebar">
       {iconTitle && <div className="icon-title">{iconTitle}</div>}
@@ -128,16 +129,18 @@ const handleToggleMBlock = () => {
         <div>Layer details or controls for State Lands</div>
       </LayerItem>
       <LayerItem title="Digitized Blocks">
-          <div className="mblock-layer">
+        <div className="town-list"> {/* Apply same styling as towns */}
+          <div className="town-row">
             <span>M-Block</span>
-            <button onClick={toggleMBlockVisibility}>
+            <button onClick={handleToggleMBlock}>
               {mBlockVisible ? 'Hide' : 'Show'}
             </button>
             {mBlockVisible && (
               <button onClick={() => zoomToMBlock('M-Block')}>Fly to</button>
             )}
           </div>
-        </LayerItem>
+        </div>
+      </LayerItem>
       <LayerItem title="Settlement Operations">
         <div>Layer details or controls for Settlement Operations</div>
       </LayerItem>
