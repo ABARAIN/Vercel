@@ -7,9 +7,10 @@ import LayerSwitcher from './LayerSwitcher';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faLayerGroup, faBuilding, faUsers } from '@fortawesome/free-solid-svg-icons';
 
-const Sidebar = ({ layers, onBasemapChange, onFileUpload, uploadMessage, onReset, zoomToLayer, toggleLayerVisibility, measurements, toggleLayerVisible }) => {
+const Sidebar = ({ layers, onBasemapChange,toggleMBlockVisibility,zoomToMBlock, onFileUpload, uploadMessage, onReset, zoomToLayer, toggleLayerVisibility, measurements, toggleLayerVisible }) => {
   const [activeIcon, setActiveIcon] = useState(null);
   const [iconTitle, setIconTitle] = useState('');
+  const [mBlockVisible, setMBlockVisible] = useState(false); // Track M-Block visibility
 
   const [showLayers, setShowLayers] = useState(false);
   
@@ -57,6 +58,13 @@ const handleToggleTown = (town) => {
     const updatedState = { ...prevState, [town]: !prevState[town] };
     toggleLayerVisible(town, updatedState[town]); // Show/hide layer
     return updatedState;
+  });
+};
+const handleToggleMBlock = () => {
+  setMBlockVisible((prev) => {
+    const newState = !prev;
+    toggleLayerVisible("M-Block", newState); // Show/hide M-Block layer
+    return newState;
   });
 };
   return (
@@ -119,9 +127,17 @@ const handleToggleTown = (town) => {
       <LayerItem title="State Lands">
         <div>Layer details or controls for State Lands</div>
       </LayerItem>
-      <LayerItem title="Cadastral Maps">
-        <div>Layer details or controls for Cadastral Maps</div>
-      </LayerItem>
+      <LayerItem title="Digitized Blocks">
+          <div className="mblock-layer">
+            <span>M-Block</span>
+            <button onClick={toggleMBlockVisibility}>
+              {mBlockVisible ? 'Hide' : 'Show'}
+            </button>
+            {mBlockVisible && (
+              <button onClick={() => zoomToMBlock('M-Block')}>Fly to</button>
+            )}
+          </div>
+        </LayerItem>
       <LayerItem title="Settlement Operations">
         <div>Layer details or controls for Settlement Operations</div>
       </LayerItem>

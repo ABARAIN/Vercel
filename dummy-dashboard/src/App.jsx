@@ -31,7 +31,8 @@ function App() {
   const [basemap, setBasemap] = useState('mapbox://styles/mapbox/streets-v11');
   const [layers, setLayers] = useState([]);
   const [uploadMessage, setUploadMessage] = useState('');
-
+  const [mBlockData, setMBlockData] = useState(null);
+  const [mBlockVisible, setMBlockVisible] = useState(false);
   //const [divisions, setDivisions] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [tehsils, setTehsils] = useState([]);
@@ -101,7 +102,8 @@ function App() {
 
     mapRef.current = map;
     setMapInstance(map); // Set the map instance in state
-    
+    fetchMBlockData(); // Fetch data on mount
+
     draw = new MapboxDraw({
       displayControlsDefault: false,
       controls: {
@@ -993,7 +995,77 @@ const zoomToLayer = async (town) => {
     map.fitBounds(bbox, { padding: 50, duration: 1000 });
   }
 };
-
+  // Fetch all M-Block data once
+  const fetchMBlockData = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/m-block/');
+      const geojson = await response.json();
+      setMBlockData(geojson);
+    } catch (error) {
+      console.error('Error fetching M-Block data:', error);
+    }
+  };
+    // Toggle visibility of M-Block layer
+    const toggleMBlockVisibility = () => {
+      const map = mapRef.current;
+      const layerId = 'mblock-layer';
+      const lineLayerId = 'mblock-boundary';
+  
+      if (!mBlockData) {
+        console.warn('M-Block data not loaded yet');
+        return;
+      }
+  
+      if (!mBlockVisible) {
+        if (!map.getSource(layerId)) {
+          map.addSource(layerId, {
+            type: 'geojson',
+            data: mBlockData
+          });
+  
+          // Transparent fill layer
+          map.addLayer({
+            id: layerId,
+            type: 'fill',
+            source: layerId,
+            paint: {
+              'fill-color': '#088',
+              'fill-opacity': 0
+            }
+          });
+  
+          // Line layer for boundary
+          map.addLayer({
+            id: lineLayerId,
+            type: 'line',
+            source: layerId,
+            paint: {
+              'line-color': '#000000',
+              'line-width': 2
+            }
+          });
+        }
+        setMBlockVisible(true);
+      } else {
+        if (map.getLayer(layerId)) map.removeLayer(layerId);
+        if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
+        if (map.getSource(layerId)) map.removeSource(layerId);
+  
+        setMBlockVisible(false);
+      }
+    };
+  
+    // Zoom to M-Block extent
+    const zoomToMBlock = async () => {
+      const map = mapRef.current;
+      const response = await fetch('http://127.0.0.1:8000/api/m-block-bbox/');
+      const { bbox } = await response.json(); // Expecting { bbox: [minLng, minLat, maxLng, maxLat] }
+  
+      if (bbox) {
+        map.fitBounds(bbox, { padding: 50, duration: 1000 });
+      }
+    };
+  
   return (
     <>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
@@ -1046,6 +1118,8 @@ const zoomToLayer = async (town) => {
        measurements={measurements}
        toggleLayerVisible={toggleLayerVisible}
        zoomToLayer={zoomToLayer}
+       toggleMBlockVisibility={toggleMBlockVisibility}
+       zoomToMBlock={zoomToMBlock}
        />      
     </>
   );
