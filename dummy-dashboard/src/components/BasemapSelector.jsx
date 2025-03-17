@@ -16,8 +16,8 @@ function BasemapSelector({ onBasemapChange }) {
   return (
     <div className="basemap-selector">
       <button 
-        className={`basemap-button ${selectedBasemap === 'mapbox://styles/mapbox/streets-v11' ? 'active' : ''}`} 
-        onClick={() => handleBasemapClick('mapbox://styles/mapbox/streets-v11')}
+        className={`basemap-button ${selectedBasemap === 'mapbox://styles/ibrahimmalik2002/cm8cq3smm00jf01sa72lchd2g' ? 'active' : ''}`} 
+        onClick={() => handleBasemapClick('mapbox://styles/ibrahimmalik2002/cm8cq3smm00jf01sa72lchd2g')}
       >
         <img src={streetsIcon} alt="Streets" className="basemap-icon" /> Streets
       </button>
