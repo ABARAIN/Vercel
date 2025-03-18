@@ -16,6 +16,12 @@ import MapWithDraw from './components/MapWithDraw';
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import * as turf from "@turf/turf";
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
+import MergedSocietyPopup from './components/popups/MergedSocietyPopup';
+import DigitizedAreasPopup from './components/popups/DigitizedAreasPopup';
+import AllSocietiesPopup from './components/popups/AllSocietiesPopup';
+
+
+
 
 const INITIAL_CENTER = [74.1984366152605, 31.406322333747173];
 const INITIAL_ZOOM = 12.25;
@@ -131,85 +137,67 @@ function App() {
       }
 
     });
-       // Add click event listener
-       map.on("click", async (e) => {
-        console.log("Selected Filters:", { 
-          selectedDistrict: selectedDistrictRef.current, 
-          selectedTehsil: selectedTehsilRef.current, 
-          selectedSociety: selectedSocietyRef.current 
-        });
-      
-        if (!selectedDistrictRef.current && !selectedTehsilRef.current && !selectedSocietyRef.current) {
-          console.log("No filter applied. Popup will not appear.");
+
+
+
+  ///////////////////////////////////////////////////////POPUP////////////////////////////////////////////////////////////
+
+
+
+    map.on("click", async (e) => {
+      const { lng, lat } = e.lngLat;
+      const coordinateString = `lat=${lat}&lon=${lng}`;
+    
+      try {
+        // Try DigitizedAreas first
+        const digitizedRes = await fetch(`http://127.0.0.1:8000/api/digitized-parcel/?${coordinateString}`);
+        const digitizedData = await digitizedRes.json();
+    
+        if (digitizedRes.ok) {
+          const popupContent = DigitizedAreasPopup(digitizedData, lat, lng);
+          new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
+            .setLngLat([lng, lat])
+            .setHTML(popupContent)
+            .addTo(map);
+          return; // Stop if found
+        }
+    
+        // Try MergedSociety
+        const mergedRes = await fetch(`http://127.0.0.1:8000/api/land-parcel/?${coordinateString}`);
+        const mergedData = await mergedRes.json();
+    
+        if (mergedRes.ok) {
+          const popupContent = MergedSocietyPopup(mergedData, lat, lng);
+          new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
+            .setLngLat([lng, lat])
+            .setHTML(popupContent)
+            .addTo(map);
           return;
         }
-      
-        const { lng, lat } = e.lngLat; // Get clicked coordinates
-        console.log("Clicked coordinates:", lng, lat);
-      
-        try {
-          const response = await fetch(
-            `http://127.0.0.1:8000/api/land-parcel/?lat=${lat}&lon=${lng}`
-          );
-          const data = await response.json();
-      
-          if (response.ok) {
-            console.log("Land Parcel Data:", data);
-      
-            new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
-              .setLngLat([lng, lat])
-              .setHTML(`
-                <div class="custom-popup" style="max-height: 400px; overflow-y: auto; padding: 10px; width: 550px;">
-                  <h3 style="text-align: center; margin-bottom: 10px;">Plot Details</h3>
-              
-                  <table border="1" style="border-collapse: collapse; width: 110%; text-align: left;">
-                      <!-- Basic Information -->
-                      <tr>
-                          <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">Basic Information</th>
-                      </tr>
-                      <tr>
-                          <td style="padding: 8px;"><strong>Society</strong></td>
-                          <td style="padding: 8px;">${data.society}</td>
-                      </tr>
-                      <tr>
-                          <td style="padding: 8px;"><strong>Landuse</strong></td>
-                          <td style="padding: 8px;">${data.landuse}</td>
-                      </tr>
-                      <tr>
-                          <td style="padding: 8px;"><strong>Plot Number</strong></td>
-                          <td style="padding: 8px;">${data.plot_no}</td>
-                      </tr>
-                      <tr>
-                          <td style="padding: 8px;"><strong>District</strong></td>
-                          <td style="padding: 8px;">${data.district}</td>
-                      </tr>
-                      <tr>
-                          <td style="padding: 8px;"><strong>Tehsil</strong></td>
-                          <td style="padding: 8px;">${data.tehsil}</td>
-                      </tr>
-              
-                      <!-- Location & Details -->
-                      <tr>
-                          <th colspan="2" style="background-color: #f0f0f0; text-align: center; padding: 8px;">Location & Details</th>
-                      </tr>
-                      <tr>
-                          <td style="padding: 8px;"><strong>Coordinates</strong></td>
-                          <td style="padding: 8px;">${data.geom}</td>
-                      </tr>
-                      <tr>
-                          <td style="padding: 8px;"><strong>View Property Details</strong></td>
-                          <td style="padding: 8px;"><a href="http://localhost:3000/login">Click Here</a></td>
-                      </tr>
-                  </table>
-                </div>
-              `).addTo(map);              
-          } else {
-            console.warn("No data found:", data.error);
-          }
-        } catch (error) {
-          console.error("Error fetching parcel data:", error);
+    
+        // Try AllSocieties
+        const societyRes = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
+        const societyData = await societyRes.json();
+    
+        if (societyRes.ok) {
+          const popupContent = AllSocietiesPopup(societyData, lat, lng);
+          new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
+            .setLngLat([lng, lat])
+            .setHTML(popupContent)
+            .addTo(map);
+          return;
         }
-      });
+    
+        // Nothing found
+        console.warn("No parcel found at this location.");
+      } catch (err) {
+        console.error("Error fetching parcel information:", err);
+      }
+    });
+    
+    ///////////////////////////////////////////////////////POPUP////////////////////////////////////////////////////////////
+
+
       
 
       map.on('move', () => {
