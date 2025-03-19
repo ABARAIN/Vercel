@@ -7,7 +7,8 @@ import LayerSwitcher from './LayerSwitcher';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faLayerGroup, faBuilding, faUsers } from '@fortawesome/free-solid-svg-icons';
 
-const Sidebar = ({ layers, onBasemapChange,toggleMBlockVisibility,zoomToMBlock, onFileUpload, uploadMessage, onReset, zoomToLayer, toggleLayerVisibility, measurements, toggleLayerVisible }) => {
+const Sidebar = ({ layers, onBasemapChange,toggleMBlockVisibility,zoomToMBlock, onFileUpload, uploadMessage, onReset, zoomToLayer, toggleLayerVisibility, measurements, toggleLayerVisible,   activeTowns,
+  setActiveTowns, }) => {
   const [activeIcon, setActiveIcon] = useState(null);
   const [iconTitle, setIconTitle] = useState('');
   const [mBlockVisible, setMBlockVisible] = useState(false); // Track M-Block visibility
@@ -33,7 +34,7 @@ const Sidebar = ({ layers, onBasemapChange,toggleMBlockVisibility,zoomToMBlock, 
 };
 
 const [towns, setTowns] = useState([]);
-const [activeTowns, setActiveTowns] = useState({}); // Tracks which towns are toggled on
+
 // const [activeLayers, setActiveLayers] = useState({});
 
 

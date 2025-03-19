@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback} from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import axios from 'axios';
@@ -8,10 +8,10 @@ import * as wkt from 'wkt';
 import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 import './styles/App.css';
-import Header from './components/Header'; 
+import Header from './components/Header';
 import Navbar from './components/Navbar';
 import BasemapSelector from './components/BasemapSelector';
-import SearchBar from './components/SearchBar'; 
+import SearchBar from './components/SearchBar';
 import MapWithDraw from './components/MapWithDraw';
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import * as turf from "@turf/turf";
@@ -46,13 +46,13 @@ function App() {
   const [blocks, setBlocks] = useState([]);
   const [plot_no, setPlots] = useState([]);
   const [mauzas, setMauzas] = useState([]);
- // const [selectedDivision, setSelectedDivision] = useState('');
+  // const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedTehsil, setSelectedTehsil] = useState('');
   const [selectedSociety, setSelectedSociety] = useState('');
   const [selectedBlock, setSelectedBlock] = useState('');
   const [selectedPlot, setSelectedPlot] = useState('');
-   const [selectedMauza, setSelectedMauza] = useState('');
+  const [selectedMauza, setSelectedMauza] = useState('');
 
   //const [newdivisions, setNewdivisions] = useState([]);
   const [newdistricts, setNewdistricts] = useState([]);
@@ -73,157 +73,183 @@ function App() {
   const [showTehsil, setShowTehsil] = useState(false);
   const [showSocietyDropdown, setShowSocietyDropdown] = useState(false);
   const [showMauzaDropdown, setShowMauzaDropdown] = useState(false);
-  
+
   const [measurements, setMeasurements] = useState([]);
-  const metersToFeet = (meters) => meters * 3.28084; 
-  
+  const metersToFeet = (meters) => meters * 3.28084;
+
   const selectedDistrictRef = useRef('');
   const selectedTehsilRef = useRef('');
   const selectedSocietyRef = useRef('');
+  const [activeTowns, setActiveTowns] = useState({});
+  const isVisibleGlobalRef = useRef({});
+  const globalVisibilityRef = useRef(false); // default value
+  const mBlockVisibleRef = useRef(false); // Initial state
+  const mergedSocietyVisibleRef = useRef(false);
+
+
+
 
   useEffect(() => {
     selectedDistrictRef.current = selectedDistrict;
     selectedTehsilRef.current = selectedTehsil;
     selectedSocietyRef.current = selectedSociety;
   }, [selectedDistrict, selectedTehsil, selectedSociety]);
-  
+
 
   const handleBasemapChange = useCallback((style) => {
     setBasemap(style);
-}, []); // useCallback, no dependencies
+  }, []); // useCallback, no dependencies
 
   useEffect(() => {
     mapboxgl.accessToken =
       'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
-      let map = null; // Initialize map variable outside
-      let draw = null; // Important: Keep a separate draw variable
+    let map = null; // Initialize map variable outside
+    let draw = null; // Important: Keep a separate draw variable
 
-      const initializeMap = () => {  // Separate function for map initialization
-          map = new mapboxgl.Map({
-              container: mapContainerRef.current,
-              style: basemap,
-              center: INITIAL_CENTER,
-              zoom: INITIAL_ZOOM,
-          });
+    const initializeMap = () => {  // Separate function for map initialization
+      map = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: basemap,
+        center: INITIAL_CENTER,
+        zoom: INITIAL_ZOOM,
+      });
 
-    mapRef.current = map;
-    setMapInstance(map); // Set the map instance in state
-    fetchMBlockData(); // Fetch data on mount
+      mapRef.current = map;
+      setMapInstance(map); // Set the map instance in state
+      fetchMBlockData(); // Fetch data on mount
 
-    draw = new MapboxDraw({
-      displayControlsDefault: false,
-      controls: {
-        point: true,
-        line_string: true,
-        polygon: true,
-        trash: true,
-      },
-    });
-    drawRef.current = draw; // Assign draw instance to the ref
-    map.addControl(draw); // Add it to the map
+      draw = new MapboxDraw({
+        displayControlsDefault: false,
+        controls: {
+          point: true,
+          line_string: true,
+          polygon: true,
+          trash: true,
+        },
+      });
+      drawRef.current = draw; // Assign draw instance to the ref
+      map.addControl(draw); // Add it to the map
 
-    map.on("draw.create", updateMeasurements);
-    map.on("draw.update", updateMeasurements);
-    map.on("draw.delete", () => setMeasurements([]));
-    
-    map.on('load', () => {
-      restoreLayersAndInteractions();
-      // if (selectedDistrict || selectedTehsil || selectedMauza) {
-      if ( selectedDistrict || selectedTehsil || selectedSociety || selectedBlock) {
-        fetchFilteredData();
-      }
-      if ( selectedNewdistrict || selectedNewtehsil || selectedMauza || selectedNewblock) {
-        fetchNewFilteredData();
-      }
+      map.on("draw.create", updateMeasurements);
+      map.on("draw.update", updateMeasurements);
+      map.on("draw.delete", () => setMeasurements([]));
 
-    });
-
-
-
-  ///////////////////////////////////////////////////////POPUP////////////////////////////////////////////////////////////
-
-
-
-    map.on("click", async (e) => {
-      const { lng, lat } = e.lngLat;
-      const coordinateString = `lat=${lat}&lon=${lng}`;
-    
-      try {
-        // Try DigitizedAreas first
-        const digitizedRes = await fetch(`http://127.0.0.1:8000/api/digitized-parcel/?${coordinateString}`);
-        const digitizedData = await digitizedRes.json();
-    
-        if (digitizedRes.ok) {
-          const popupContent = DigitizedAreasPopup(digitizedData, lat, lng);
-          new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
-            .setLngLat([lng, lat])
-            .setHTML(popupContent)
-            .addTo(map);
-          return; // Stop if found
+      map.on('load', () => {
+        restoreLayersAndInteractions();
+        // if (selectedDistrict || selectedTehsil || selectedMauza) {
+        if (selectedDistrict || selectedTehsil || selectedSociety || selectedBlock) {
+          fetchFilteredData();
         }
-    
-        // Try MergedSociety
-        const mergedRes = await fetch(`http://127.0.0.1:8000/api/land-parcel/?${coordinateString}`);
-        const mergedData = await mergedRes.json();
-    
-        if (mergedRes.ok) {
-          const popupContent = MergedSocietyPopup(mergedData, lat, lng);
-          new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
-            .setLngLat([lng, lat])
-            .setHTML(popupContent)
-            .addTo(map);
-          return;
+        if (selectedNewdistrict || selectedNewtehsil || selectedMauza || selectedNewblock) {
+          fetchNewFilteredData();
         }
-    
-        // Try AllSocieties
-        const societyRes = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
-        const societyData = await societyRes.json();
-    
-        if (societyRes.ok) {
-          const popupContent = AllSocietiesPopup(societyData, lat, lng);
-          new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
-            .setLngLat([lng, lat])
-            .setHTML(popupContent)
-            .addTo(map);
-          return;
-        }
-    
-        // Nothing found
-        console.warn("No parcel found at this location.");
-      } catch (err) {
-        console.error("Error fetching parcel information:", err);
-      }
-    });
-    
-    ///////////////////////////////////////////////////////POPUP////////////////////////////////////////////////////////////
+
+      });
 
 
-      
+
+      ///////////////////////////////////////////////////////POPUP////////////////////////////////////////////////////////////
+
+      console.log("🔔 Global isVisible state:", globalVisibilityRef.current);
+
+      map.on("click", async (e) => {
+        const { lng, lat } = e.lngLat;
+        const coordinateString = `lat=${lat}&lon=${lng}`;
+
+        try {
+          // Try DigitizedAreas first
+          const digitizedRes = await fetch(`http://127.0.0.1:8000/api/digitized-parcel/?${coordinateString}`);
+          const digitizedData = await digitizedRes.json();
+
+          if (digitizedRes.ok && mBlockVisibleRef.current === true) {
+            const popupContent = DigitizedAreasPopup(digitizedData, lat, lng);
+            new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
+              .setLngLat([lng, lat])
+              .setHTML(popupContent)
+              .addTo(map);
+            return; // Stop if found
+          } else if (!mBlockVisibleRef.current) {
+            console.log("🚫 Skipped DigitizedAreas popup because mBlockVisible is FALSE");
+          }
+
+
+
+          // Try MergedSociety
+          const mergedRes = await fetch(`http://127.0.0.1:8000/api/land-parcel/?${coordinateString}`);
+          const mergedData = await mergedRes.json();
+
+          if (mergedRes.ok && mergedSocietyVisibleRef.current === true) {
+            const popupContent = MergedSocietyPopup(mergedData, lat, lng);
+            new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
+              .setLngLat([lng, lat])
+              .setHTML(popupContent)
+              .addTo(map);
+            return;
+          } else if (!mergedSocietyVisibleRef.current) {
+            console.log("🚫 Skipped MergedSociety popup because filters are not applied.");
+          }
+
+
+          
+
+          // ✅ Fetch Society Parcel API first
+          const societyRes = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
+          const societyData = await societyRes.json();
+
+          // ✅ Check global visibility before showing popup
+          if (societyRes.ok && globalVisibilityRef.current === true) {
+            const popupContent = AllSocietiesPopup(societyData, lat, lng);
+            new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
+              .setLngLat([lng, lat])
+              .setHTML(popupContent)
+              .addTo(map);
+            return;
+          } else {
+            console.log("🚫 Skipped AllSocieties popup because global isVisible is FALSE");
+          }
+
+
+
+
+          // Nothing found
+          console.warn("No parcel found at this location.");
+        } catch (err) {
+          console.error("Error fetching parcel information:", err);
+        }
+      });
+
+
+
+
+      ///////////////////////////////////////////////////////POPUP////////////////////////////////////////////////////////////
+
+
+
 
       map.on('move', () => {
         if (mapRef.current) {
-            const mapCenter = mapRef.current.getCenter();
-            const currentZoom = mapRef.current.getZoom();
-            setCenter([mapCenter.lng, mapCenter.lat]);
-            setZoom(currentZoom);
+          const mapCenter = mapRef.current.getCenter();
+          const currentZoom = mapRef.current.getZoom();
+          setCenter([mapCenter.lng, mapCenter.lat]);
+          setZoom(currentZoom);
         }
-    });
-};
+      });
+    };
 
-initializeMap(); // Initialize map on the first render
+    initializeMap(); // Initialize map on the first render
 
 
-return () => {
-  if (mapRef.current) {
-    if (drawRef.current) {
-      mapRef.current.removeControl(drawRef.current); // Remove draw control if it exists
-    }
-    mapRef.current.remove(); // Remove the map
-  }
-  map = null;
-  draw = null;
-};
-}, [basemap]);
+    return () => {
+      if (mapRef.current) {
+        if (drawRef.current) {
+          mapRef.current.removeControl(drawRef.current); // Remove draw control if it exists
+        }
+        mapRef.current.remove(); // Remove the map
+      }
+      map = null;
+      draw = null;
+    };
+  }, [basemap]);
 
   useEffect(() => {
     if (mapRef.current && drawRef.current) {
@@ -240,7 +266,7 @@ return () => {
       mapRef.current.addControl(drawRef.current);
     }
   }, [basemap])
-  
+
   const restoreLayersAndInteractions = () => {
     const map = mapRef.current;
     layers.forEach(({ id, source, layer, relatedLayers, visible }) => {
@@ -351,18 +377,18 @@ return () => {
         'circle-blur': 0.5,  // Gives a glowing effect
       },
     };
-    
+
     // Function to animate the pulsating effect
     const animatePulsatingPoints = () => {
       let growing = true;
       let radius = 3;
-    
+
       setInterval(() => {
         radius = growing ? 12 : 6; // Toggle between 6 and 12
-    
+
         map.setPaintProperty(id, 'circle-radius', radius);
         map.setPaintProperty(id, 'circle-opacity', growing ? 1 : 0.6);
-    
+
         growing = !growing;
       }, 700); // Animation speed (700ms)
     };
@@ -427,11 +453,11 @@ return () => {
 
   const addShapefileInteraction = (id) => {
     const map = mapRef.current;
-  
+
     map.on('click', id, (e) => {
       const properties = e.features[0].properties;
       const coordinates = e.lngLat;
-  
+
       new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
         .setLngLat(coordinates)
         .setHTML(`
@@ -572,10 +598,10 @@ return () => {
   const toggleLayerVisibility = (layerId) => {
     const map = mapRef.current;
     const layer = layers.find((l) => l.id === layerId);
-  
+
     if (layer) {
       const visibility = layer.visible ? 'none' : 'visible';
-  
+
       // Toggle visibility for the main layer and any related layers
       const layersToToggle = [layer.layer.id, ...(layer.relatedLayers?.map((l) => l.id) || [])];
       layersToToggle.forEach((id) => {
@@ -583,7 +609,7 @@ return () => {
           map.setLayoutProperty(id, 'visibility', visibility);
         }
       });
-  
+
       // Update state to reflect the new visibility
       setLayers((prev) =>
         prev.map((l) =>
@@ -592,7 +618,7 @@ return () => {
       );
     }
   };
-  
+
 
   const handleReset = () => {
     if (mapRef.current) {
@@ -615,13 +641,13 @@ return () => {
 
   useEffect(() => {
     axios.get('http://localhost:8000/api/joined-mauza-districts/')
-    .then((response) => {
-      const newUniqueDistricts = [
-        ...new Set(response.data.map((feature) => feature.district)),
-      ];
-      setNewdistricts(newUniqueDistricts);
-    })
-    .catch((error) => console.error('Error fetching districts:', error));
+      .then((response) => {
+        const newUniqueDistricts = [
+          ...new Set(response.data.map((feature) => feature.district)),
+        ];
+        setNewdistricts(newUniqueDistricts);
+      })
+      .catch((error) => console.error('Error fetching districts:', error));
   }, []);
   const fetchFilteredData = () => {
     const params = {};
@@ -632,7 +658,7 @@ return () => {
     if (selectedPlot) params.plot_no = selectedPlot; // Ensure this matches the backend field
 
     axios
-      .get('http://127.0.0.1:8000/api/societies/', { params }) 
+      .get('http://127.0.0.1:8000/api/societies/', { params })
       .then((response) => {
         if (!response.data.length) {
           console.warn('No data returned from the API');
@@ -651,7 +677,7 @@ return () => {
               const geom = feature.geom.replace('SRID=4326;', ''); // Strip SRID
               return {
                 type: 'Feature',
-                geometry: wkt.parse(geom), 
+                geometry: wkt.parse(geom),
                 properties: feature,
               };
             } catch (error) {
@@ -664,7 +690,7 @@ return () => {
         addLayer(geojson, 'filtered-layer');
       })
       .catch((error) => console.error('Error fetching filtered data:', error));
-};
+  };
 
   const fetchNewFilteredData = () => {
     const params = {};
@@ -681,7 +707,7 @@ return () => {
             const geom = feature.geom.replace('SRID=4326;', ''); // Strip SRID
             return {
               type: 'Feature',
-              geometry: wkt.parse(geom), 
+              geometry: wkt.parse(geom),
               properties: feature,
             };
           }),
@@ -730,7 +756,7 @@ return () => {
   };
 
   const handleDistrictChange = (district) => {
-    
+
     setSelectedDistrict(district);
     setSelectedTehsil('');
     // setSelectedMauza('');
@@ -738,7 +764,7 @@ return () => {
 
     axios
       // .get('http://localhost:8000/api/joined-mauza-districts/', {
-      .get('http://localhost:8000/api/societies/',{
+      .get('http://localhost:8000/api/societies/', {
         params: { district },
       })
       .then((response) => {
@@ -756,16 +782,16 @@ return () => {
     setSelectedMauza('');
 
     axios
-    .get('http://localhost:8000/api/joined-mauza-districts/', {
-      params: {district},
-    })
-    .then((response) => {
-      const newUniqueTehsils = [
-        ...new Set(response.data.map((feature) => feature.tehsil)),
-      ];
-      setNewtehsils(newUniqueTehsils);
-    })
-    .catch((error) => console.error('Error fetching tehsils:', error));
+      .get('http://localhost:8000/api/joined-mauza-districts/', {
+        params: { district },
+      })
+      .then((response) => {
+        const newUniqueTehsils = [
+          ...new Set(response.data.map((feature) => feature.tehsil)),
+        ];
+        setNewtehsils(newUniqueTehsils);
+      })
+      .catch((error) => console.error('Error fetching tehsils:', error));
   };
 
   const handleTehsilChange = (tehsil) => {
@@ -804,9 +830,9 @@ return () => {
       .catch((error) => console.error('Error fetching mauzas:', error));
   };
   const handleSearch = (query) => {
-    
+
     console.log('Searching for:', query);
-    
+
   };
 
   const handleMauzaChange = (mauza) => {
@@ -815,11 +841,13 @@ return () => {
 
   const handleApplyFilters = () => {
     if (selectedNewdistrict || selectedNewtehsil || selectedMauza) {
-      fetchNewFilteredData(); 
+      fetchNewFilteredData();
     } else {
-      fetchFilteredData(); 
+      fetchFilteredData();
     }
     setFiltersApplied(true);
+    mergedSocietyVisibleRef.current = true; // ✅ Allow popup after filter is applied
+    console.log("🔔 mergedSocietyVisibleRef (Apply):", mergedSocietyVisibleRef.current);
   };
 
   const handleRemoveFilters = () => {
@@ -836,11 +864,14 @@ return () => {
     setPlots([]);
     setMauzas([]);
 
-    setFiltersApplied(false); 
-    setShowTehsil(false); 
-    setShowSocietyDropdown(false); 
-    setShowMauzaDropdown(false); 
-};
+    setFiltersApplied(false);
+    setShowTehsil(false);
+    setShowSocietyDropdown(false);
+    setShowMauzaDropdown(false);
+
+    mergedSocietyVisibleRef.current = false; // ❌ Don't show popup
+    console.log("🔕 mergedSocietyVisibleRef (Remove):", mergedSocietyVisibleRef.current);
+  };
 
   const fetchMauzas = (district, tehsil) => {
     axios
@@ -903,86 +934,83 @@ return () => {
         setBlocks(uniqueBlocks);
       })
       .catch((error) => console.error('Error fetching blocks:', error));
-};
+  };
 
-const handleBlockChange = (block) => {
-  setSelectedBlock(block);
-  setSelectedPlot('');  // Reset plot when block changes
+  const handleBlockChange = (block) => {
+    setSelectedBlock(block);
+    setSelectedPlot('');  // Reset plot when block changes
 
-  axios
-    .get('http://localhost:8000/api/societies/', {
-      params: { block },  // Use correct parameter name
-    })
-    .then((response) => {
-      const uniquePlots = [
-        ...new Set(response.data.map((feature) => feature.plot_no)),
-      ];
-      setPlots(uniquePlots);
-    })
-    .catch((error) => console.error('Error fetching plots:', error));
-};
-const [activeLayers, setActiveLayers] = useState({});
+    axios
+      .get('http://localhost:8000/api/societies/', {
+        params: { block },  // Use correct parameter name
+      })
+      .then((response) => {
+        const uniquePlots = [
+          ...new Set(response.data.map((feature) => feature.plot_no)),
+        ];
+        setPlots(uniquePlots);
+      })
+      .catch((error) => console.error('Error fetching plots:', error));
+  };
+  const [activeLayers, setActiveLayers] = useState({});
+  const activeLayersRef = useRef({});
 
-// Function to show/hide town layers
-const toggleLayerVisible = async (town, isVisible) => {
-  const map = mapRef.current;
-  const layerId = `town-layer-${town}`;
-  const lineLayerId = `town-boundary-${town}`;
+  const toggleLayerVisible = async (town, isVisible) => {
+    const map = mapRef.current;
+    const layerId = `town-layer-${town}`;
+    const lineLayerId = `town-boundary-${town}`;
 
-  if (isVisible) {
-    // Fetch GeoJSON for the selected town
-    const response = await fetch(`http://127.0.0.1:8000/api/geojson/?town_name=${encodeURIComponent(town)}`);
-    const geojson = await response.json();
+    globalVisibilityRef.current = isVisible; // ✅ store current isVisible
 
-    if (!map.getSource(layerId)) {
-      map.addSource(layerId, {
-        type: 'geojson',
-        data: geojson
-      });
+    console.log("📍 toggleLayerVisible - Town:", town, "| isVisible:", isVisible);
 
-      // Transparent fill layer
-      map.addLayer({
-        id: layerId,
-        type: 'fill',
-        source: layerId,
-        paint: {
-          'fill-color': '#088',  // Color won't be visible
-          'fill-opacity': 0       // Fully transparent fill
-        }
-      });
+    if (isVisible) {
+      const response = await fetch(`http://127.0.0.1:8000/api/geojson/?town_name=${encodeURIComponent(town)}`);
+      const geojson = await response.json();
 
-      // Line layer for boundary
-      map.addLayer({
-        id: lineLayerId,
-        type: 'line',
-        source: layerId,
-        paint: {
-          'line-color': '#000000', // Black boundary
-          'line-width': 2           // Adjust thickness
-        }
-      });
+      if (!map.getSource(layerId)) {
+        map.addSource(layerId, { type: 'geojson', data: geojson });
+
+        map.addLayer({
+          id: layerId,
+          type: 'fill',
+          source: layerId,
+          paint: { 'fill-color': '#088', 'fill-opacity': 0 }
+        });
+
+        map.addLayer({
+          id: lineLayerId,
+          type: 'line',
+          source: layerId,
+          paint: { 'line-color': '#000000', 'line-width': 2 }
+        });
+      }
+    } else {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
+      if (map.getSource(layerId)) map.removeSource(layerId);
     }
 
-    setActiveLayers(prev => ({ ...prev, [town]: true }));
-  } else {
-    if (map.getLayer(layerId)) map.removeLayer(layerId);
-    if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
-    if (map.getSource(layerId)) map.removeSource(layerId);
+    // ✅ Update state and ref simultaneously
+    setActiveLayers(prev => {
+      const updated = { ...prev, [town]: isVisible };
+      activeLayersRef.current = updated;
+      return updated;
+    });
+  };
 
-    setActiveLayers(prev => ({ ...prev, [town]: false }));
-  }
-};
 
-// Function to zoom to the selected town
-const zoomToLayer = async (town) => {
-  const map = mapRef.current;
-  const response = await fetch(`http://127.0.0.1:8000/api/bbox/?town_name=${encodeURIComponent(town)}`);
-  const { bbox } = await response.json(); // Expecting { bbox: [minLng, minLat, maxLng, maxLat] }
 
-  if (bbox) {
-    map.fitBounds(bbox, { padding: 50, duration: 1000 });
-  }
-};
+  // Function to zoom to the selected town
+  const zoomToLayer = async (town) => {
+    const map = mapRef.current;
+    const response = await fetch(`http://127.0.0.1:8000/api/bbox/?town_name=${encodeURIComponent(town)}`);
+    const { bbox } = await response.json(); // Expecting { bbox: [minLng, minLat, maxLng, maxLat] }
+
+    if (bbox) {
+      map.fitBounds(bbox, { padding: 50, duration: 1000 });
+    }
+  };
   // Fetch all M-Block data once
   const fetchMBlockData = async () => {
     try {
@@ -993,122 +1021,130 @@ const zoomToLayer = async (town) => {
       console.error('Error fetching M-Block data:', error);
     }
   };
-    // Toggle visibility of M-Block layer
-    const toggleMBlockVisibility = () => {
-      const map = mapRef.current;
-      const layerId = 'mblock-layer';
-      const lineLayerId = 'mblock-boundary';
-  
-      if (!mBlockData) {
-        console.warn('M-Block data not loaded yet');
-        return;
+  // Toggle visibility of M-Block layer
+  const toggleMBlockVisibility = () => {
+    const map = mapRef.current;
+    const layerId = 'mblock-layer';
+    const lineLayerId = 'mblock-boundary';
+
+    if (!mBlockData) {
+      console.warn('M-Block data not loaded yet');
+      return;
+    }
+
+    if (!mBlockVisible) {
+      if (!map.getSource(layerId)) {
+        map.addSource(layerId, {
+          type: 'geojson',
+          data: mBlockData
+        });
+
+        // Transparent fill layer
+        map.addLayer({
+          id: layerId,
+          type: 'fill',
+          source: layerId,
+          paint: {
+            'fill-color': '#088',
+            'fill-opacity': 0
+          }
+        });
+
+        // Line layer for boundary
+        map.addLayer({
+          id: lineLayerId,
+          type: 'line',
+          source: layerId,
+          paint: {
+            'line-color': '#000000',
+            'line-width': 2
+          }
+        });
       }
-  
-      if (!mBlockVisible) {
-        if (!map.getSource(layerId)) {
-          map.addSource(layerId, {
-            type: 'geojson',
-            data: mBlockData
-          });
-  
-          // Transparent fill layer
-          map.addLayer({
-            id: layerId,
-            type: 'fill',
-            source: layerId,
-            paint: {
-              'fill-color': '#088',
-              'fill-opacity': 0
-            }
-          });
-  
-          // Line layer for boundary
-          map.addLayer({
-            id: lineLayerId,
-            type: 'line',
-            source: layerId,
-            paint: {
-              'line-color': '#000000',
-              'line-width': 2
-            }
-          });
-        }
-        setMBlockVisible(true);
-      } else {
-        if (map.getLayer(layerId)) map.removeLayer(layerId);
-        if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
-        if (map.getSource(layerId)) map.removeSource(layerId);
-  
-        setMBlockVisible(false);
-      }
-    };
-  
-    // Zoom to M-Block extent
-    const zoomToMBlock = async () => {
-      const map = mapRef.current;
-      const response = await fetch('http://127.0.0.1:8000/api/m-block-bbox/');
-      const { bbox } = await response.json(); // Expecting { bbox: [minLng, minLat, maxLng, maxLat] }
-  
-      if (bbox) {
-        map.fitBounds(bbox, { padding: 50, duration: 1000 });
-      }
-    };
-  
+
+
+      setMBlockVisible(true);
+      mBlockVisibleRef.current = true;
+
+    } else {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId);
+      if (map.getSource(layerId)) map.removeSource(layerId);
+
+      setMBlockVisible(false);
+      mBlockVisibleRef.current = false;
+    }
+    console.log(mBlockVisible)
+  };
+
+  // Zoom to M-Block extent
+  const zoomToMBlock = async () => {
+    const map = mapRef.current;
+    const response = await fetch('http://127.0.0.1:8000/api/m-block-bbox/');
+    const { bbox } = await response.json(); // Expecting { bbox: [minLng, minLat, maxLng, maxLat] }
+
+    if (bbox) {
+      map.fitBounds(bbox, { padding: 50, duration: 1000 });
+    }
+  };
+
   return (
     <>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
       <Header />
-      <Navbar 
-       // divisions={divisions}
-       districts={districts}
+      <Navbar
+        // divisions={divisions}
+        districts={districts}
         tehsils={tehsils}
         mauzas={mauzas}
         societies={societies}
-        blocks={blocks} 
+        blocks={blocks}
         plot_no={plot_no}
-        newdistricts={newdistricts} 
+        newdistricts={newdistricts}
         selectedDistrict={selectedDistrict}
         selectedTehsil={selectedTehsil}
-        selectedSociety={selectedSociety} 
+        selectedSociety={selectedSociety}
         selectedBlock={selectedBlock}
         selectedPlot={selectedPlot}
-        selectedMauza={selectedMauza} 
-        selectedNewdistrict={selectedNewdistrict} 
+        selectedMauza={selectedMauza}
+        selectedNewdistrict={selectedNewdistrict}
         selectedNewtehsil={selectedNewtehsil}
         onDistrictChange={handleDistrictChange}
         onTehsilChange={handleTehsilChange}
-        onMauzaChange={handleMauzaChange} 
+        onMauzaChange={handleMauzaChange}
         //onSocietyChange={setSelectedSociety}
-        onSocietyChange={handleSocietyChange} 
+        onSocietyChange={handleSocietyChange}
         onBlockChange={handleBlockChange}
         onPlotChange={setSelectedPlot}
 
-        onApplyFilters={handleApplyFilters} 
-        onNewDistrictChange={handleNewDistrictChange} 
-        onNewTehsilChange={handleNewTehsilChange} 
+        onApplyFilters={handleApplyFilters}
+        onNewDistrictChange={handleNewDistrictChange}
+        onNewTehsilChange={handleNewTehsilChange}
         fetchNewFilteredData={fetchNewFilteredData}
         fetchMauzas={fetchMauzas}
         onRemoveFilters={handleRemoveFilters}
-        showTehsil={showTehsil} 
-        showSocietyDropdown={showSocietyDropdown} 
+        showTehsil={showTehsil}
+        showSocietyDropdown={showSocietyDropdown}
         showMauzaDropdown={showMauzaDropdown}
-        
-     />
-       {/* <SearchBar onSearch={handleSearch} /> */}
-       
+
+      />
+      {/* <SearchBar onSearch={handleSearch} /> */}
+
       <div id="map-container" ref={mapContainerRef}></div>
       <Sidebar
-      layers={layers} 
-       onBasemapChange={handleBasemapChange}
-       onFileUpload={handleFileUpload} 
-       onReset={handleReset}
-       toggleLayerVisibility={toggleLayerVisibility}
-       measurements={measurements}
-       toggleLayerVisible={toggleLayerVisible}
-       zoomToLayer={zoomToLayer}
-       toggleMBlockVisibility={toggleMBlockVisibility}
-       zoomToMBlock={zoomToMBlock}
-       />      
+        layers={layers}
+        onBasemapChange={handleBasemapChange}
+        onFileUpload={handleFileUpload}
+        onReset={handleReset}
+        toggleLayerVisibility={toggleLayerVisibility}
+        measurements={measurements}
+        toggleLayerVisible={toggleLayerVisible}
+        zoomToLayer={zoomToLayer}
+        toggleMBlockVisibility={toggleMBlockVisibility}
+        zoomToMBlock={zoomToMBlock}
+        activeTowns={activeTowns}
+        setActiveTowns={setActiveTowns}
+      />
     </>
   );
 }
