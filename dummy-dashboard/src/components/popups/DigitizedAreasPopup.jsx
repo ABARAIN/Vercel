@@ -59,11 +59,13 @@ const DigitizedAreasPopup = (data, lat, lng) => {
           </tr>
         </thead>
         <tbody id="${uid}-area" class="section-content">
-          <tr><td><strong>As per Master Plan</strong></td><td>${data.mp_area}</td></tr>
-          <tr><td><strong>As per Property File</strong></td><td>${data.plot_area}</td></tr>
-          <tr><td><strong>As per Demarcation</strong></td><td>${data.plot_area_1}</td></tr>
-          <tr><td><strong>Property Footprint</strong></td><td>${data.area_digit}</td></tr>
-        </tbody>
+        <tr style="background-color: #bfbfbf;"><td><strong>Area Unit</strong></td><td>K-M-Sqft</td></tr>
+        <tr style="background-color: #a5d6a7;"><td><strong>As per Master Plan</strong></td><td>${data.mp_area}</td></tr>
+        <tr style="background-color: #90caf9;"><td><strong>As per Property File</strong></td><td>${data.plot_area}</td></tr>
+        <tr style="background-color: #ffee58;"><td><strong>As per Demarcation</strong></td><td>${data.plot_area_1}</td></tr>
+        <tr style="background-color: #e57373;"><td><strong>Property Footprint</strong></td><td>${data.area_digit}</td></tr>
+      </tbody>
+      
 
         <thead>
           <tr class="section-header" onclick="toggleAccordion('${uid}', 'demarcation')">
