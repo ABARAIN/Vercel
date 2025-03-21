@@ -999,7 +999,22 @@ function App() {
     });
   };
 
-
+  
+  window.toggleAccordion = function(uid, sectionId) {
+    const allSections = ['plotinfo', 'admininfo', 'coordinates','basic', 'location','info', 'ownership', 'file', 'landuse', 'area', 'demarcation'];
+    allSections.forEach(id => {
+      const el = document.getElementById(`${uid}-${id}`);
+      if (el) {
+        if (id === sectionId) {
+          const isActive = el.classList.contains('active');
+          el.classList.toggle('active', !isActive);
+        } else {
+          el.classList.remove('active');
+        }
+      }
+    });
+  };
+  
 
   // Function to zoom to the selected town
   const zoomToLayer = async (town) => {
