@@ -6,8 +6,9 @@ import LayerSwitcher from './LayerSwitcher';
 // import '../styles/LayerSwitcher.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faLayerGroup, faBuilding, faUsers } from '@fortawesome/free-solid-svg-icons';
+import SpatialQuery from './SpatialQuery';
 
-const Sidebar = ({ layers, onBasemapChange,toggleMBlockVisibility,zoomToMBlock, onFileUpload, uploadMessage, onReset, zoomToLayer, toggleLayerVisibility, measurements, toggleLayerVisible,   activeTowns,
+const Sidebar = ({ layers, onBasemapChange,toggleMBlockVisibility,zoomToMBlock, onFileUpload, uploadMessage, onReset, zoomToLayer, toggleLayerVisibility, measurements, toggleLayerVisible,   activeTowns,map,
   setActiveTowns, }) => {
   const [activeIcon, setActiveIcon] = useState(null);
   const [iconTitle, setIconTitle] = useState('');
@@ -81,7 +82,7 @@ const handleToggleMBlock = () => {
         </div>
         <div 
           className={`icon-container ${activeIcon === 'layers' ? 'active' : ''}`} 
-          onClick={() => handleIconClick('layers', 'Layers Icon')}
+          onClick={() => handleIconClick('layers', 'Layers Icon')} 
         >
           <FontAwesomeIcon icon={faLayerGroup} size="1x" />
         </div>
@@ -120,8 +121,12 @@ const handleToggleMBlock = () => {
           ))}
         </div>
       </LayerItem>
-      <LayerItem title="PHATA">
-        <div>Layer details or controls for PHATA</div>
+      <LayerItem title="PHATA Spatial Query">
+        {map ? (
+          <SpatialQuery map={map} />
+        ) : (
+          <p style={{ fontStyle: 'italic', fontSize: '13px' }}>Map not loaded yet.</p>
+        )}
       </LayerItem>
       <LayerItem title="Development Authorities">
         <div>Layer details or controls for Development Authorities</div>

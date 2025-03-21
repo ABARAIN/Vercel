@@ -85,7 +85,7 @@ function App() {
   const globalVisibilityRef = useRef(false); // default value
   const mBlockVisibleRef = useRef(false); // Initial state
   const mergedSocietyVisibleRef = useRef(false);
-
+  const [mapLoaded, setMapLoaded] = useState(false);
 
 
 
@@ -1159,6 +1159,7 @@ function App() {
         zoomToMBlock={zoomToMBlock}
         activeTowns={activeTowns}
         setActiveTowns={setActiveTowns}
+        map={mapRef.current}
       />
     </>
   );

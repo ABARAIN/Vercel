@@ -1,0 +1,53 @@
+.spatial-query-container {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 450px;
+    margin: 10px auto;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .spatial-query-container h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #2a7fd4;
+    font-weight: 600;
+  }
+  
+  .spatial-query-container select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    outline-color: #2a7fd4;
+    background-color: #fff;
+  }
+
+  .button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .button-group button {
+    flex: 1;
+    padding: 10px;
+    background-color: #2a7fd4;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .button-group button:hover {
+    background-color: #1a5ebf;
+  }
+  
+  
