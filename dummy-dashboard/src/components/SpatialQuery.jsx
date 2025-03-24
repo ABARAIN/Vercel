@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SpatialQuery.css';
-import MergedSocietyPopup from './popups/MergedSocietyPopup'; // adjust path if needed
+import AllSocietiesPopup from './popups/AllSocietiesPopup'; // adjust path if needed
 import mapboxgl from 'mapbox-gl'; // Ensure this is imported if not already
 
 const SpatialQuery = ({ map }) => {
@@ -140,11 +140,11 @@ const SpatialQuery = ({ map }) => {
         const coordinateString = `lat=${lat}&lon=${lng}`;
   
         try {
-          const popupRes = await fetch(`http://127.0.0.1:8000/api/land-parcel/?${coordinateString}`);
+          const popupRes = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
           const popupData = await popupRes.json();
   
           if (popupRes.ok && popupData) {
-            const popupHTML = MergedSocietyPopup(popupData, lat, lng);
+            const popupHTML = AllSocietiesPopup(popupData, lat, lng);
   
             // Close any previous popup
             if (activePopup) activePopup.remove();
