@@ -121,7 +121,7 @@ const handleToggleMBlock = () => {
           ))}
         </div>
       </LayerItem>
-      <LayerItem title="Spatial Query">
+      <LayerItem title="PHATA Spatial Query">
         {map ? (
           <SpatialQuery map={map} />
         ) : (
