@@ -5,7 +5,7 @@ import {
   AppBar, Toolbar, CssBaseline, Container, Paper,
 } from '@mui/material';
 
-import SpatialQuery from './SpatialQuery';
+import SpatialQuery from '../SpatialQuery';
 import LandusePieChart from './LandusePieChart';
 import LanduseLegend from './LanduseLegend';
 
