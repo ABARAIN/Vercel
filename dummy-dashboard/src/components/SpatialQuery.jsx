@@ -144,33 +144,32 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
       }
 
       // Popup handler
-      let activePopup = null;
-      map.on('click', LAYER_ID, async (e) => {
-        const lng = e.lngLat.lng;
-        const lat = e.lngLat.lat;
-        const coordinateString = `lat=${lat}&lon=${lng}`;
+      // let activePopup = null;
+      // map.on('click', LAYER_ID, async (e) => {
+      //   const lng = e.lngLat.lng;
+      //   const lat = e.lngLat.lat;
+      //   const coordinateString = `lat=${lat}&lon=${lng}`;
 
-        try {
-          const popupRes = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
-          const popupData = await popupRes.json();
+      //   try {
+      //     const popupRes = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
+      //     const popupData = await popupRes.json();
 
-          if (popupRes.ok && popupData) {
-            const popupHTML = AllSocietiesPopup(popupData, lat, lng);
-            if (activePopup) activePopup.remove();
+      //     if (popupRes.ok && popupData) {
+      //       const popupHTML = AllSocietiesPopup(popupData, lat, lng);
+      //       if (activePopup) activePopup.remove();
 
-            activePopup = new mapboxgl.Popup({ offset: 15 })
-              .setLngLat([lng, lat])
-              .setHTML(popupHTML)
-              .addTo(map);
-          }
+      //       activePopup = new mapboxgl.Popup({ offset: 15 })
+      //         .setLngLat([lng, lat])
+      //         .setHTML(popupHTML)
+      //         .addTo(map);
+      //     }
         } catch (err) {
           console.error("❌ Popup error:", err);
         }
-      });
-
-    } catch (err) {
-      console.error("❌ Fetch error:", err);
-    }
+      // });
+  //   } catch (err) {
+  //     console.error("❌ Fetch error:", err);
+  //   }
   };
 
   const handleClear = () => {
