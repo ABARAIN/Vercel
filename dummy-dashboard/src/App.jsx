@@ -19,7 +19,7 @@ import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import MergedSocietyPopup from './components/popups/MergedSocietyPopup';
 import DigitizedAreasPopup from './components/popups/DigitizedAreasPopup';
 import AllSocietiesPopup from './components/popups/AllSocietiesPopup';
-
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -86,7 +86,7 @@ function App() {
   const mBlockVisibleRef = useRef(false); // Initial state
   const mergedSocietyVisibleRef = useRef(false);
   const [mapLoaded, setMapLoaded] = useState(false);
-
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -1105,8 +1105,27 @@ function App() {
 
   return (
     <>
+
+<button
+        onClick={() => navigate('/dashboard')}
+        style={{
+          position: 'absolute',
+          top: 115,
+          right: 5,
+          zIndex: 1000,
+          padding: '13px 14px',
+          backgroundColor: '#1976d2',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer'
+        }}
+      >
+        Go to Dashboard
+      </button>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
       <Header />
+      
       <Navbar
         // divisions={divisions}
         districts={districts}

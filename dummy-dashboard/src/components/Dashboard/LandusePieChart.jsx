@@ -3,7 +3,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Tooltip,
   ResponsiveContainer,
 } from 'recharts';
 
@@ -13,7 +12,8 @@ const landuseColorMap = {
   "Open Space": "#cddc39", "Others": "#607d8b", "Park": "#8bc34a",
   "Parking": "#ffc107", "Public Building": "#ff5722", "Recreational Facility": "#3f51b5",
   "Religious": "#673ab7", "Religious Building": "#9575cd", "Residential": "#03a9f4",
-  "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd"
+  "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd",
+  "Illegal": "#e53935"
 };
 
 const LandusePieChart = ({
@@ -51,7 +51,6 @@ const LandusePieChart = ({
   const handleClick = (entry, index) => {
     const clicked = chartData[index]?.name;
     if (clicked && clicked !== 'Loading') {
-      console.log("🖱 Clicked landuse class:", clicked);
       onClassClick?.(clicked);
     }
   };
@@ -59,7 +58,12 @@ const LandusePieChart = ({
   const getColor = (name) => landuseColorMap[name] || '#999';
 
   return (
-    <div style={{ height: '300px', position: 'relative' }}>
+    <div
+      style={{
+        height: '300px',
+        position: 'relative',
+      }}
+    >
       {selectedClass && (
         <button
           onClick={onResetFilter}
@@ -80,8 +84,12 @@ const LandusePieChart = ({
         </button>
       )}
 
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
+      <ResponsiveContainer
+        width="100%"
+        height="100%"
+        style={{ cursor: 'grab' }}
+      >
+        <PieChart style={{ cursor: 'grab' }}>
           <Pie
             data={chartData}
             dataKey="value"
@@ -102,7 +110,6 @@ const LandusePieChart = ({
               />
             ))}
           </Pie>
-          <Tooltip />
         </PieChart>
       </ResponsiveContainer>
     </div>

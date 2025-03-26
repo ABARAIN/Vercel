@@ -1,0 +1,28 @@
+.legend-scroll-on-hover {
+    max-height: 220px;
+    overflow-y: hidden;
+    padding-right: 6px;
+  }
+  
+  .legend-scroll-on-hover:hover {
+    overflow-y: auto;
+  }
+  
+  /* Optional: smooth custom scrollbar */
+  .legend-scroll-on-hover::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .legend-scroll-on-hover::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .legend-scroll-on-hover::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+    border-radius: 4px;
+  }
+  
+  .legend-scroll-on-hover::-webkit-scrollbar-thumb:hover {
+    background-color: #999;
+  }
+  

@@ -1,29 +1,33 @@
 import React from 'react';
+import './LanduseLegend.css'; // Custom scrollbar styles here
 
 const colorMap = {
-  "Commercial": "#f44336", "Educational": "#2196f3", "Encroachment": "#795548",
+  "Illegal": "#e53935" , "Commercial": "#000000", "Educational": "#2196f3", "Encroachment": "#795548",
   "Graveyard": "#9c27b0", "Health Facility": "#4caf50", "Nullah": "#00bcd4",
   "Open Space": "#cddc39", "Others": "#607d8b", "Park": "#8bc34a",
   "Parking": "#ffc107", "Public Building": "#ff5722", "Recreational Facility": "#3f51b5",
   "Religious": "#673ab7", "Religious Building": "#9575cd", "Residential": "#03a9f4",
-  "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd"
+  "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd",
 };
 
 const LanduseLegend = ({ data, selectedClass, onClassClick }) => {
   if (!data || data.length === 0) return null;
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 6,
-      fontSize: '17px',
-    }}>
-      {data.map((entry, index) => {
-        const isSelected = selectedClass === entry.name;
-        return (
-          <div
-            key={index}
+  
+
+
+    <div className="legend-scroll-on-hover">
+
+      {[...data]
+       .sort((a, b) => b.value - a.value)
+
+        .map((entry, index) => {
+          const isSelected = selectedClass === entry.name;
+
+          return (
+            <div
+              key={index}
             onClick={() => onClassClick?.(entry.name)}
             style={{
               display: 'flex',
@@ -52,6 +56,7 @@ const LanduseLegend = ({ data, selectedClass, onClassClick }) => {
         );
       })}
     </div>
+   
   );
 };
 
