@@ -61,12 +61,22 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
   }, [selectedTown]);
 
   useEffect(() => {
-    setPlots([]); setSelectedPlot('');
+    setPlots([]);
+    setSelectedPlot('');
     if (selectedDistrict && selectedTehsil && selectedTown && selectedBlock) {
       axios.get(`http://127.0.0.1:8000/api/all-soc-dropdowns/?level=plot_no&district=${selectedDistrict}&tehsil=${selectedTehsil}&town_name=${selectedTown}&block=${selectedBlock}`)
-        .then(res => setPlots(res.data));
+        .then(res => {
+          const sortedPlots = res.data.sort((a, b) => {
+            const numA = parseInt(a);
+            const numB = parseInt(b);
+            if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+            return a.localeCompare(b); // fallback for non-numeric
+          });
+          setPlots(sortedPlots);
+        });
     }
   }, [selectedBlock]);
+  
 
   const handleShow = async () => {
     if (!map) return;

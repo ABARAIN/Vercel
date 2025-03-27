@@ -7,13 +7,12 @@ import {
 } from 'recharts';
 
 const landuseColorMap = {
-  "Commercial": "#f44336", "Educational": "#2196f3", "Encroachment": "#795548",
+  "Illegal": "#e53935" , "Commercial": "#000000", "Educational": "#2196f3", "Encroachment": "#795548",
   "Graveyard": "#9c27b0", "Health Facility": "#4caf50", "Nullah": "#00bcd4",
   "Open Space": "#cddc39", "Others": "#607d8b", "Park": "#8bc34a",
   "Parking": "#ffc107", "Public Building": "#ff5722", "Recreational Facility": "#3f51b5",
   "Religious": "#673ab7", "Religious Building": "#9575cd", "Residential": "#03a9f4",
   "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd",
-  "Illegal": "#e53935"
 };
 
 const LandusePieChart = ({
@@ -96,8 +95,8 @@ const LandusePieChart = ({
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={90}
-            innerRadius={50}
+            outerRadius={100}
+            innerRadius={55}
             label
             onClick={handleClick}
           >
