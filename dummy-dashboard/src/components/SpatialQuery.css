@@ -1,13 +1,23 @@
-.spatial-query-container {
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    width: 100%;
-    max-width: 450px;
-    margin: 10px auto;
-    font-family: 'Segoe UI', sans-serif;
-  }
+/* SpatialQuery.css */
+
+.spatial-query-container select {
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  padding: 8px;
+  width: 100%;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.spatial-query-container option {
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  color: #000000;
+}
+
   
   .spatial-query-container h3 {
     text-align: center;

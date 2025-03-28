@@ -20,12 +20,12 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
   const LAYER_ID = 'spatial-query-layer';
 
   const landuseColorMap = {
-    "Commercial": "#f44336", "Educational": "#2196f3", "Encroachment": "#795548",
+    "Illegal": "#e53935" , "Commercial": "#000000", "Educational": "#2196f3", "Encroachment": "#795548",
     "Graveyard": "#9c27b0", "Health Facility": "#4caf50", "Nullah": "#00bcd4",
     "Open Space": "#cddc39", "Others": "#607d8b", "Park": "#8bc34a",
     "Parking": "#ffc107", "Public Building": "#ff5722", "Recreational Facility": "#3f51b5",
     "Religious": "#673ab7", "Religious Building": "#9575cd", "Residential": "#03a9f4",
-    "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd"
+    "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd",
   };
 
   useEffect(() => {
@@ -205,12 +205,12 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
 
   return (
     <div className="spatial-query-container">
-      <h3>Spatial Query Filters</h3>
+    <h3>Spatial Query Filters</h3>
 
-      <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)}>
-        <option value="">Select District</option>
-        {districts.map((d, i) => <option key={i} value={d}>{d}</option>)}
-      </select>
+    <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)}>
+      <option value="">Select District</option>
+      {districts.map((d, i) => <option key={i} value={d}>{d}</option>)}
+    </select>
 
       {tehsils.length > 0 && (
         <select value={selectedTehsil} onChange={e => setSelectedTehsil(e.target.value)}>

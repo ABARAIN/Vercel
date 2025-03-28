@@ -7,6 +7,7 @@ import LayerSwitcher from './LayerSwitcher';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faLayerGroup, faBuilding, faUsers } from '@fortawesome/free-solid-svg-icons';
 import SpatialQuery from './SpatialQuery';
+import "./Sidebar.css"
 
 const Sidebar = ({ layers, onBasemapChange,toggleMBlockVisibility,zoomToMBlock, onFileUpload, uploadMessage, onReset, zoomToLayer, toggleLayerVisibility, measurements, toggleLayerVisible,   activeTowns,map,
   setActiveTowns, }) => {

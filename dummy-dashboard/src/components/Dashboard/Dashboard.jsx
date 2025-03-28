@@ -8,7 +8,7 @@ import {
 import SpatialQuery from '../SpatialQuery';
 import LandusePieChart from './LandusePieChart';
 import LanduseLegend from './LanduseLegend';
-import SelectedPlotList from './SelectedPlotList';
+
 import { useNavigate } from 'react-router-dom';
 import "./Dashboard.css"
 
@@ -23,7 +23,7 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState([]);
   const navigate = useNavigate();
   const [clickedPlotDetails, setClickedPlotDetails] = useState(null);
-
+  const [highlightedPlot, setHighlightedPlot] = useState(null);
 
   useEffect(() => {
     const map = new mapboxgl.Map({
@@ -139,29 +139,19 @@ const Dashboard = () => {
 
   const handleClassClick = (cls) => {
     setSelectedLanduseClass(cls);
-
     if (!fullGeojsonBackup || !mapInstance) return;
 
     const filtered = {
       ...fullGeojsonBackup,
-      features: fullGeojsonBackup.features.filter(
-        (f) => f.properties?.landuse === cls
-      ),
+      features: fullGeojsonBackup.features.filter(f => f.properties?.landuse === cls)
     };
 
-    console.log("🧩 Showing only landuse:", cls, "| Features:", filtered.features.length);
-
-    // Replace existing layer
     if (mapInstance.getLayer('spatial-query-layer')) {
       mapInstance.removeLayer('spatial-query-layer');
       mapInstance.removeSource('spatial-query-layer');
     }
 
-    mapInstance.addSource('spatial-query-layer', {
-      type: 'geojson',
-      data: filtered,
-    });
-
+    mapInstance.addSource('spatial-query-layer', { type: 'geojson', data: filtered });
     mapInstance.addLayer({
       id: 'spatial-query-layer',
       type: 'fill',
@@ -173,46 +163,28 @@ const Dashboard = () => {
       }
     });
 
-
-    // Zoom to filtered bounds
     const bounds = new mapboxgl.LngLatBounds();
-    filtered.features.forEach((feature) => {
-      const geom = feature.geometry;
-      if (geom.type === 'Polygon') {
-        geom.coordinates[0].forEach((c) => bounds.extend(c));
-      } else if (geom.type === 'MultiPolygon') {
-        geom.coordinates.forEach((poly) => {
-          poly[0].forEach((c) => bounds.extend(c));
-        });
-      }
+    filtered.features.forEach(f => {
+      const geom = f.geometry;
+      if (geom.type === 'Polygon') geom.coordinates[0].forEach(c => bounds.extend(c));
+      else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(p => p[0].forEach(c => bounds.extend(c)));
     });
 
-    if (!bounds.isEmpty()) {
-      mapInstance.fitBounds(bounds, { padding: 40, duration: 1000 });
-    }
-
-    // Show in chart too
+    if (!bounds.isEmpty()) mapInstance.fitBounds(bounds, { padding: 40, duration: 1000 });
     setGeojsonData(filtered);
   };
 
 
   const handleReset = () => {
     setSelectedLanduseClass(null);
-
     if (!fullGeojsonBackup || !mapInstance) return;
 
-    // Remove existing filtered layer
     if (mapInstance.getLayer('spatial-query-layer')) {
       mapInstance.removeLayer('spatial-query-layer');
       mapInstance.removeSource('spatial-query-layer');
     }
 
-    // Re-add full GeoJSON
-    mapInstance.addSource('spatial-query-layer', {
-      type: 'geojson',
-      data: fullGeojsonBackup,
-    });
-
+    mapInstance.addSource('spatial-query-layer', { type: 'geojson', data: fullGeojsonBackup });
     mapInstance.addLayer({
       id: 'spatial-query-layer',
       type: 'fill',
@@ -221,22 +193,13 @@ const Dashboard = () => {
         'fill-color': [
           'match',
           ['get', 'landuse'],
-          ...Object.entries({
-            "Commercial": "#000000", "Educational": "#2196f3", "Encroachment": "#795548",
-            "Graveyard": "#9c27b0", "Health Facility": "#4caf50", "Nullah": "#00bcd4",
-            "Open Space": "#cddc39", "Others": "#607d8b", "Park": "#8bc34a",
-            "Parking": "#ffc107", "Public Building": "#ff5722", "Recreational Facility": "#3f51b5",
-            "Religious": "#673ab7", "Religious Building": "#9575cd", "Residential": "#03a9f4",
-            "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd", "Illegal": "#e53935"
-            // Add more as needed...
-          }).flat(),
-          '#bdbdbd'
-
-
+          "Commercial", "#000000", "Educational", "#2196f3", "Residential", "#03a9f4",
+          "Illegal", "#e53935", "Others", "#607d8b", "Park", "#8bc34a", "Open Space", "#cddc39",
+          "Graveyard", "#9c27b0", "Public Building", "#ff5722", "Religious", "#673ab7",
+          "Encroachment", "#795548", "Recreational Facility", "#3f51b5", "Health Facility", "#4caf50",
+          "Nullah", "#00bcd4", "Village", "#ff9800", "Parking", "#ffc107", "Road", "#9e9e9e",
+          "Unclassified", "#bdbdbd", "#bdbdbd"
         ],
-
-
-
         'fill-opacity': 0.6,
         'fill-outline-color': '#333'
       }
@@ -245,17 +208,28 @@ const Dashboard = () => {
     setGeojsonData(fullGeojsonBackup);
   };
 
+  const handlePlotClick = (plot) => {
+    setHighlightedPlot(plot.properties.plot_no);
+
+    const bounds = new mapboxgl.LngLatBounds();
+    const geom = plot.geometry;
+    if (geom.type === 'Polygon') geom.coordinates[0].forEach(c => bounds.extend(c));
+    else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(p => p[0].forEach(c => bounds.extend(c)));
+
+    if (!bounds.isEmpty()) mapInstance.fitBounds(bounds, { padding: 60, duration: 800 });
+  };
+
   return (
     <>
       <button
         onClick={() => navigate('/')}
         style={{
           position: 'absolute',
-          top: 15,
+          top: 6,
           right: 10,
           zIndex: 1000,
-          padding: '8px 12px',
-          backgroundColor: '#444',
+          padding: '8px 6px',
+          backgroundColor: '#004953',
           color: 'white',
           border: 'none',
           borderRadius: '5px',
@@ -266,11 +240,14 @@ const Dashboard = () => {
       </button>
 
       <CssBaseline />
-      <AppBar position="static" sx={{ backgroundColor: '#1976d2' }}>
-        <Toolbar>
-          <Typography variant="h8">Dashboard</Typography>
+      <AppBar position="static" sx={{ backgroundColor: '#1976d2', height: '48px' }}>
+        <Toolbar sx={{ minHeight: '48px !important', px: 2 }}>
+          <Typography variant="subtitle1" sx={{ fontSize: '16px' }}>
+            Dashboard
+          </Typography>
         </Toolbar>
       </AppBar>
+
 
       <Container
         maxWidth={false}
@@ -325,19 +302,81 @@ const Dashboard = () => {
 
                   {/* Block 3: Plot Details */}
                   <Card
-                    sx={{
-                      height: 225,
-                      width: '100%',
-                      mt: 2,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <CardContent sx={{ height: '100%' }}>
-                      <PlotDetailCard plot={clickedPlotDetails} />
-                    </CardContent>
-                  </Card>
+  sx={{
+    height: 250,
+    width: '100%',
+    mt: 2,
+    border: '1px solid #ddd',
+    borderRadius: 2,
+    backgroundColor: '#f9f9f9',
+    display: 'flex',
+    flexDirection: 'column'
+  }}
+>
+  {/* Fixed Title Section */}
+  <CardContent sx={{ borderBottom: '1px solid #ddd', py: 1.5, px: 2 }}>
+    <Typography variant="h6">
+      Selected Plots – {selectedLanduseClass?.toUpperCase() || "None"}
+    </Typography>
+  </CardContent>
+
+  {/* Scrollable Plot List */}
+  <Box
+    sx={{
+      flex: 1,
+      overflowY: 'auto',
+      px: 2,
+      py: 1,
+      '&::-webkit-scrollbar': {
+        width: '6px'
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: '#ccc',
+        borderRadius: '4px'
+      },
+      '&:hover::-webkit-scrollbar-thumb': {
+        backgroundColor: '#999'
+      },
+      '&::-webkit-scrollbar-track': {
+        backgroundColor: 'transparent'
+      }
+    }}
+  >
+    {geojsonData?.features?.length && selectedLanduseClass ? (
+      geojsonData.features
+        .filter(f => f.properties.landuse === selectedLanduseClass)
+        .sort((a, b) => parseInt(a.properties.plot_no) - parseInt(b.properties.plot_no))
+        .map((f, i) => (
+          <Box
+            key={i}
+            onClick={() => handlePlotClick(f)}
+            sx={{
+              cursor: 'pointer',
+              backgroundColor: highlightedPlot === f.properties.plot_no ? '#c8e6c9' : '#fff',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              mb: 1,
+              fontWeight: 500,
+              fontSize: '14px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              transition: '0.3s',
+              '&:hover': { backgroundColor: '#e3f2fd' }
+            }}
+          >
+            <span>Plot No:</span>
+            <span>{f.properties.plot_no || 'N/A'}</span>
+          </Box>
+        ))
+    ) : (
+      <Typography variant="body2" align="center" color="text.secondary">
+        Select a landuse class to view plot numbers.
+      </Typography>
+    )}
+  </Box>
+</Card>
+
                 </Grid>
 
                 {/* SpatialQuery + Block 4 */}
@@ -364,8 +403,6 @@ const Dashboard = () => {
                       height: 400,
                       width: '100%',
                       mt: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
                       overflowY: 'auto',
                       border: '1px solid #ddd',
                       borderRadius: 2,
@@ -373,46 +410,9 @@ const Dashboard = () => {
                       backgroundColor: '#f9f9f9',
                     }}
                   >
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                      Selected Plots – {selectedLanduseClass?.toUpperCase() || "None"}
-                    </Typography>
-
-                    {geojsonData && geojsonData.features && selectedLanduseClass ? (
-                      <>
-                        {geojsonData.features
-  .filter(f => f.properties.landuse === selectedLanduseClass)
-  .sort((a, b) => {
-    const numA = parseInt(a.properties.plot_no);
-    const numB = parseInt(b.properties.plot_no);
-    return numA - numB;
-  })
-  .map((f, index) => (
-    <Box
-      key={index}
-      sx={{
-        backgroundColor: '#fff',
-        padding: '6px 12px',
-        borderRadius: '6px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        mb: 1,
-        fontWeight: 500,
-        fontSize: '14px',
-        display: 'flex',
-        justifyContent: 'space-between',
-      }}
-    >
-      <span>Plot No:</span>
-      <span>{f.properties.plot_no || 'N/A'}</span>
-    </Box>
-  ))}
-
-
-                      </>
-                    ) : (
-                      <Typography variant="body2" align="center" color="text.secondary">
-                        Select a landuse class from the chart or legend to view related plots.
-                      </Typography>
-                    )}
+                   <CardContent sx={{ height: '100%' }}>
+                      <PlotDetailCard plot={clickedPlotDetails} />
+                    </CardContent>
                   </Card>
 
                 </Grid>

@@ -112,6 +112,8 @@ function App() {
         style: basemap,
         center: INITIAL_CENTER,
         zoom: INITIAL_ZOOM,
+        attributionControl: false,
+        
       });
 
       mapRef.current = map;
@@ -190,7 +192,7 @@ function App() {
           }
 
 
-          
+
 
           // ✅ Fetch Society Parcel API first
           const societyRes = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
@@ -999,9 +1001,9 @@ function App() {
     });
   };
 
-  
-  window.toggleAccordion = function(uid, sectionId) {
-    const allSections = ['plotinfo', 'admininfo', 'coordinates','basic', 'location','info', 'ownership', 'file', 'landuse', 'area', 'demarcation'];
+
+  window.toggleAccordion = function (uid, sectionId) {
+    const allSections = ['plotinfo', 'admininfo', 'coordinates', 'basic', 'location', 'info', 'ownership', 'file', 'landuse', 'area', 'demarcation'];
     allSections.forEach(id => {
       const el = document.getElementById(`${uid}-${id}`);
       if (el) {
@@ -1014,7 +1016,7 @@ function App() {
       }
     });
   };
-  
+
 
   // Function to zoom to the selected town
   const zoomToLayer = async (town) => {
@@ -1104,16 +1106,16 @@ function App() {
   };
 
   return (
-    <>
+    <div style={{ transform: 'scale(0.735)', transformOrigin: 'top left', width: '135.6vw', height: '135.33vh',overflow: "hidden", }}>
 
-<button
+      <button
         onClick={() => navigate('/dashboard')}
         style={{
           position: 'absolute',
-          top: 115,
-          right: 5,
+          top: 125,
+          right: 12,
           zIndex: 1000,
-          padding: '13px 14px',
+          padding: '11px 10px',
           backgroundColor: '#1976d2',
           color: 'white',
           border: 'none',
@@ -1125,7 +1127,7 @@ function App() {
       </button>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
       <Header />
-      
+
       <Navbar
         // divisions={divisions}
         districts={districts}
@@ -1164,7 +1166,9 @@ function App() {
       />
       {/* <SearchBar onSearch={handleSearch} /> */}
 
-      <div id="map-container" ref={mapContainerRef}></div>
+      <div id="map-container" ref={mapContainerRef} ></div>
+      <div>
+      
       <Sidebar
         layers={layers}
         onBasemapChange={handleBasemapChange}
@@ -1180,7 +1184,8 @@ function App() {
         setActiveTowns={setActiveTowns}
         map={mapRef.current}
       />
-    </>
+      </div>
+    </div>
   );
 }
 
