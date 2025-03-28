@@ -257,7 +257,7 @@ const Dashboard = () => {
         }}
       >
 
-        <Box height="calc(100vh - 64px)">
+        <Box height="100%">
           <Grid container spacing={2} sx={{ height: '100%' }}>
             {/* Map - Full Left Side */}
             <Grid item xs={12} md={6}>
@@ -302,80 +302,80 @@ const Dashboard = () => {
 
                   {/* Block 3: Plot Details */}
                   <Card
-  sx={{
-    height: 250,
-    width: '100%',
-    mt: 2,
-    border: '1px solid #ddd',
-    borderRadius: 2,
-    backgroundColor: '#f9f9f9',
-    display: 'flex',
-    flexDirection: 'column'
-  }}
->
-  {/* Fixed Title Section */}
-  <CardContent sx={{ borderBottom: '1px solid #ddd', py: 1.5, px: 2 }}>
-    <Typography variant="h6">
-      Selected Plots – {selectedLanduseClass?.toUpperCase() || "None"}
-    </Typography>
-  </CardContent>
+                    sx={{
+                      height: 250,
+                      width: '100%',
+                      mt: 2,
+                      border: '1px solid #ddd',
+                      borderRadius: 2,
+                      backgroundColor: '#ffffff',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
+                  >
+                    {/* Fixed Title Section */}
+                    <CardContent sx={{ borderBottom: '1px solid #ddd', py: 1.5, px: 2 }}>
+                      <Typography variant="h6">
+                        Selected Plots – {selectedLanduseClass?.toUpperCase() || "None"}
+                      </Typography>
+                    </CardContent>
 
-  {/* Scrollable Plot List */}
-  <Box
-    sx={{
-      flex: 1,
-      overflowY: 'auto',
-      px: 2,
-      py: 1,
-      '&::-webkit-scrollbar': {
-        width: '6px'
-      },
-      '&::-webkit-scrollbar-thumb': {
-        backgroundColor: '#ccc',
-        borderRadius: '4px'
-      },
-      '&:hover::-webkit-scrollbar-thumb': {
-        backgroundColor: '#999'
-      },
-      '&::-webkit-scrollbar-track': {
-        backgroundColor: 'transparent'
-      }
-    }}
-  >
-    {geojsonData?.features?.length && selectedLanduseClass ? (
-      geojsonData.features
-        .filter(f => f.properties.landuse === selectedLanduseClass)
-        .sort((a, b) => parseInt(a.properties.plot_no) - parseInt(b.properties.plot_no))
-        .map((f, i) => (
-          <Box
-            key={i}
-            onClick={() => handlePlotClick(f)}
-            sx={{
-              cursor: 'pointer',
-              backgroundColor: highlightedPlot === f.properties.plot_no ? '#c8e6c9' : '#fff',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              mb: 1,
-              fontWeight: 500,
-              fontSize: '14px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              transition: '0.3s',
-              '&:hover': { backgroundColor: '#e3f2fd' }
-            }}
-          >
-            <span>Plot No:</span>
-            <span>{f.properties.plot_no || 'N/A'}</span>
-          </Box>
-        ))
-    ) : (
-      <Typography variant="body2" align="center" color="text.secondary">
-        Select a landuse class to view plot numbers.
-      </Typography>
-    )}
-  </Box>
-</Card>
+                    {/* Scrollable Plot List */}
+                    <Box
+                      sx={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        px: 2,
+                        py: 1,
+                        '&::-webkit-scrollbar': {
+                          width: '6px'
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          backgroundColor: '#ccc',
+                          borderRadius: '4px'
+                        },
+                        '&:hover::-webkit-scrollbar-thumb': {
+                          backgroundColor: '#999'
+                        },
+                        '&::-webkit-scrollbar-track': {
+                          backgroundColor: 'transparent'
+                        }
+                      }}
+                    >
+                      {geojsonData?.features?.length && selectedLanduseClass ? (
+                        geojsonData.features
+                          .filter(f => f.properties.landuse === selectedLanduseClass)
+                          .sort((a, b) => parseInt(a.properties.plot_no) - parseInt(b.properties.plot_no))
+                          .map((f, i) => (
+                            <Box
+                              key={i}
+                              onClick={() => handlePlotClick(f)}
+                              sx={{
+                                cursor: 'pointer',
+                                backgroundColor: highlightedPlot === f.properties.plot_no ? '#c8e6c9' : '#fff',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                                mb: 1,
+                                fontWeight: 500,
+                                fontSize: '14px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                transition: '0.3s',
+                                '&:hover': { backgroundColor: '#e3f2fd' }
+                              }}
+                            >
+                              <span>Plot No:</span>
+                              <span>{f.properties.plot_no || 'N/A'}</span>
+                            </Box>
+                          ))
+                      ) : (
+                        <Typography variant="body2" align="center" color="text.secondary">
+                          Select a landuse class to view plot numbers.
+                        </Typography>
+                      )}
+                    </Box>
+                  </Card>
 
                 </Grid>
 
@@ -399,18 +399,27 @@ const Dashboard = () => {
                   {/* Block 4: Selected Plots List */}
                   {/* Block 4 - Selected Plot Numbers */}
                   <Card
+                    elevation={3}
                     sx={{
-                      height: 400,
+                      height: '28%',
                       width: '100%',
                       mt: 2,
-                      overflowY: 'auto',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      backgroundColor: '#f9f9f9',
                       border: '1px solid #ddd',
                       borderRadius: 2,
-                      padding: 2,
-                      backgroundColor: '#f9f9f9',
+                      overflow: 'hidden', // ⬅ Ensures content respects height
                     }}
                   >
-                   <CardContent sx={{ height: '100%' }}>
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        p: 0,                // ⬅ Removes default padding
+                        height: '100%',
+                        overflowY: 'auto',
+                      }}
+                    >
                       <PlotDetailCard plot={clickedPlotDetails} />
                     </CardContent>
                   </Card>
