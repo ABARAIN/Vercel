@@ -4,7 +4,7 @@ import mapboxgl from 'mapbox-gl';
 import './SpatialQuery.css';
 import AllSocietiesPopup from './popups/AllSocietiesPopup';
 
-const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFullGeojsonBackup }) => {
+const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFullGeojsonBackup,setClickedPlotDetails }) => {
   const [districts, setDistricts] = useState([]);
   const [tehsils, setTehsils] = useState([]);
   const [towns, setTowns] = useState([]);
@@ -190,8 +190,9 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
 
     if (setGeojsonData) {
       setGeojsonData(null);
+      
     }
-
+    setClickedPlotDetails(null);
     setSelectedDistrict('');
     setSelectedTehsil('');
     setSelectedTown('');

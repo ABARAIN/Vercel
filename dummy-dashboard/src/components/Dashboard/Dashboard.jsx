@@ -71,6 +71,7 @@ const Dashboard = () => {
         if (res.ok) {
           console.log("✅ Plot detail fetched:", data);
           setClickedPlotDetails({ data, lat, lng });
+          const popupContent = AllSocietiesPopup(data, lat, lng);
         }
       } catch (error) {
         console.error("❌ Error fetching plot info:", error);
@@ -89,13 +90,14 @@ const Dashboard = () => {
     const { data, lat, lng } = plot;
 
     const fieldMap = {
+
       'Town': data.town_name,
-      'Plot No': data.plotno,
+      'Plot No': data.plotno || data.plot_no,
       'Block': data.block,
       'Division': data.division,
       'District': data.district,
       'Tehsil': data.tehsil,
-      'Society Type': data.societytyp,
+      'Society Type': data.societytyp || data.society_type,
       'Source': data.source,
       'Landuse': data.landuse,
       'Latitude': lat.toFixed(6),
@@ -105,7 +107,7 @@ const Dashboard = () => {
 
     return (
       <div className="plot-card-container fancy-expanded">
-        <div className="plot-card-header">📍 Plot Details</div>
+
         <div className="plot-card-scroll">
           {Object.entries(fieldMap).map(([label, value], index) => (
             <div key={index} className="plot-card-block">
@@ -122,17 +124,6 @@ const Dashboard = () => {
 
 
 
-  const InfoRow = ({ label, value, highlight = false }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-      <span style={{ fontWeight: 500, color: '#555' }}>{label}:</span>
-      <span style={{
-        fontWeight: highlight ? 600 : 400,
-        color: highlight ? '#d32f2f' : '#333'
-      }}>
-        {value ?? '-'}
-      </span>
-    </div>
-  );
 
 
 
@@ -177,6 +168,11 @@ const Dashboard = () => {
 
   const handleReset = () => {
     setSelectedLanduseClass(null);
+    setGeojsonData(null);                     // Clear GeoJSON layer
+    setSelectedLanduseClass(null);           // Clear selected chart/legend class
+    setHighlightedPlot(null);                // Remove any highlighted plot
+    setClickedPlotDetails(null);
+
     if (!fullGeojsonBackup || !mapInstance) return;
 
     if (mapInstance.getLayer('spatial-query-layer')) {
@@ -206,18 +202,50 @@ const Dashboard = () => {
     });
 
     setGeojsonData(fullGeojsonBackup);
+
+
   };
 
   const handlePlotClick = (plot) => {
     setHighlightedPlot(plot.properties.plot_no);
 
+    // 🗺️ Zoom to plot bounds
     const bounds = new mapboxgl.LngLatBounds();
     const geom = plot.geometry;
-    if (geom.type === 'Polygon') geom.coordinates[0].forEach(c => bounds.extend(c));
-    else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(p => p[0].forEach(c => bounds.extend(c)));
+    if (geom.type === 'Polygon') {
+      geom.coordinates[0].forEach((c) => bounds.extend(c));
+    } else if (geom.type === 'MultiPolygon') {
+      geom.coordinates.forEach((poly) =>
+        poly[0].forEach((c) => bounds.extend(c))
+      );
+    }
 
-    if (!bounds.isEmpty()) mapInstance.fitBounds(bounds, { padding: 60, duration: 800 });
+    if (!bounds.isEmpty()) {
+      mapInstance.fitBounds(bounds, { padding: 60, duration: 800 });
+    }
+
+    // 📌 Extract centroid or approximate lat/lng
+    let lat = 0;
+    let lng = 0;
+
+    if (geom.type === 'Polygon') {
+      lat = parseFloat(geom.coordinates[0]?.[0]?.[1]) || 0;
+      lng = parseFloat(geom.coordinates[0]?.[0]?.[0]) || 0;
+    } else if (geom.type === 'MultiPolygon') {
+      lat = parseFloat(geom.coordinates[0]?.[0]?.[0]?.[1]) || 0;
+      lng = parseFloat(geom.coordinates[0]?.[0]?.[0]?.[0]) || 0;
+    }
+    console.log("🧩 Selected plot properties:", plot.properties);
+
+    // 🧠 Set clicked plot details (used in PlotDetailCard)
+    setClickedPlotDetails({
+      data: plot.properties,
+      lat,
+      lng,
+    });
   };
+
+
 
   return (
     <>
@@ -391,6 +419,7 @@ const Dashboard = () => {
                           geojsonData={geojsonData}
                           setGeojsonData={setGeojsonData}
                           setFullGeojsonBackup={setFullGeojsonBackup}
+                          setClickedPlotDetails={setClickedPlotDetails}
                         />
                       )}
                     </CardContent>
@@ -398,6 +427,7 @@ const Dashboard = () => {
 
                   {/* Block 4: Selected Plots List */}
                   {/* Block 4 - Selected Plot Numbers */}
+
                   <Card
                     elevation={3}
                     sx={{
@@ -409,20 +439,40 @@ const Dashboard = () => {
                       backgroundColor: '#f9f9f9',
                       border: '1px solid #ddd',
                       borderRadius: 2,
-                      overflow: 'hidden', // ⬅ Ensures content respects height
+                      overflow: 'hidden',
                     }}
                   >
-                    <CardContent
+                    {/* Fixed Header */}
+                    <CardContent sx={{ borderBottom: '1px solid #ddd', py: 1.5, px: 2 }}>
+                      <Typography variant="h6">Plot Details</Typography>
+                    </CardContent>
+
+                    {/* Scrollable Body */}
+                    <Box
                       sx={{
-                        flexGrow: 1,
-                        p: 0,                // ⬅ Removes default padding
-                        height: '100%',
+                        flex: 1,
                         overflowY: 'auto',
+                        px: 2,
+                        py: 1,
+                        '&::-webkit-scrollbar': {
+                          width: '6px'
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          backgroundColor: '#ccc',
+                          borderRadius: '4px'
+                        },
+                        '&:hover::-webkit-scrollbar-thumb': {
+                          backgroundColor: '#999'
+                        },
+                        '&::-webkit-scrollbar-track': {
+                          backgroundColor: 'transparent'
+                        }
                       }}
                     >
                       <PlotDetailCard plot={clickedPlotDetails} />
-                    </CardContent>
+                    </Box>
                   </Card>
+
 
                 </Grid>
               </Grid>

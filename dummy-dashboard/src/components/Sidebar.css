@@ -6,11 +6,12 @@
                /* set default width */
     background-color: #f4f4f4;
     padding: 15px;
-    overflow-y: auto;
+    overflow-y: hidden;
     box-sizing: border-box;
     border-right: 1px solid #ccc;
     height:auto;
     min-width: 330px;
     max-width: 600px;
+  
   }
   
