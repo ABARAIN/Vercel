@@ -198,7 +198,7 @@ function App() {
           const societyRes = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
           const societyData = await societyRes.json();
 
-          // ✅ Check global visibility before showing popup
+          // ✅ Check global visibility before showing popup m
           if (societyRes.ok && globalVisibilityRef.current === true) {
             const popupContent = AllSocietiesPopup(societyData, lat, lng);
             new mapboxgl.Popup({ offset: 15, closeButton: true, closeOnClick: true })
