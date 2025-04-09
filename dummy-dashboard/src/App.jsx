@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 const INITIAL_CENTER = [74.1984366152605, 31.406322333747173];
-const INITIAL_ZOOM = 12.25;
+const INITIAL_ZOOM = 14;
 
 function App() {
   const mapRef = useRef(null);
