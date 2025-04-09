@@ -29,7 +29,7 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
   };
 
   useEffect(() => {
-    axios.get('http://51.21.201.15:8000/api/all-soc-dropdowns/?level=district')
+    axios.get('http://13.51.168.78:8000/api/all-soc-dropdowns/?level=district')
       .then(res => setDistricts(res.data));
   }, []);
 
@@ -37,7 +37,7 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
     setTehsils([]); setSelectedTehsil('');
     setTowns([]); setSelectedTown('');
     if (selectedDistrict) {
-      axios.get(`http://51.21.201.15:8000/api/all-soc-dropdowns/?level=tehsil&district=${selectedDistrict}`)
+      axios.get(`http://13.51.168.78:8000/api/all-soc-dropdowns/?level=tehsil&district=${selectedDistrict}`)
         .then(res => setTehsils(res.data));
     }
   }, [selectedDistrict]);
@@ -46,7 +46,7 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
     setTowns([]); setSelectedTown('');
     setBlocks([]); setSelectedBlock('');
     if (selectedDistrict && selectedTehsil) {
-      axios.get(`http://51.21.201.15:8000/api/all-soc-dropdowns/?level=town_name&district=${selectedDistrict}&tehsil=${selectedTehsil}`)
+      axios.get(`http://13.51.168.78:8000/api/all-soc-dropdowns/?level=town_name&district=${selectedDistrict}&tehsil=${selectedTehsil}`)
         .then(res => setTowns(res.data));
     }
   }, [selectedTehsil]);
@@ -55,7 +55,7 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
     setBlocks([]); setSelectedBlock('');
     setPlots([]); setSelectedPlot('');
     if (selectedDistrict && selectedTehsil && selectedTown) {
-      axios.get(`http://51.21.201.15:8000/api/all-soc-dropdowns/?level=block&district=${selectedDistrict}&tehsil=${selectedTehsil}&town_name=${selectedTown}`)
+      axios.get(`http://13.51.168.78:8000/api/all-soc-dropdowns/?level=block&district=${selectedDistrict}&tehsil=${selectedTehsil}&town_name=${selectedTown}`)
         .then(res => setBlocks(res.data));
     }
   }, [selectedTown]);
@@ -64,7 +64,7 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
     setPlots([]);
     setSelectedPlot('');
     if (selectedDistrict && selectedTehsil && selectedTown && selectedBlock) {
-      axios.get(`http://51.21.201.15:8000/api/all-soc-dropdowns/?level=plot_no&district=${selectedDistrict}&tehsil=${selectedTehsil}&town_name=${selectedTown}&block=${selectedBlock}`)
+      axios.get(`http://13.51.168.78:8000/api/all-soc-dropdowns/?level=plot_no&district=${selectedDistrict}&tehsil=${selectedTehsil}&town_name=${selectedTown}&block=${selectedBlock}`)
         .then(res => {
           const sortedPlots = res.data.sort((a, b) => {
             const numA = parseInt(a);
@@ -89,7 +89,7 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
     if (selectedPlot) params.plot_no = selectedPlot;
 
     try {
-      const res = await axios.get('http://51.21.201.15:8000/api/all-soc-geojson/', { params });
+      const res = await axios.get('http://13.51.168.78:8000/api/all-soc-geojson/', { params });
       let geojson = res.data;
 
       // Backup full geojson for reset
@@ -161,7 +161,7 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
       //   const coordinateString = `lat=${lat}&lon=${lng}`;
 
       //   try {
-      //     const popupRes = await fetch(`http://51.21.201.15:8000/api/society-parcel/?${coordinateString}`);
+      //     const popupRes = await fetch(`http://13.51.168.78:8000/api/society-parcel/?${coordinateString}`);
       //     const popupData = await popupRes.json();
 
       //     if (popupRes.ok && popupData) {
