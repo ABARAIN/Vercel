@@ -1110,24 +1110,37 @@ function App() {
 
       <button
         onClick={() => navigate('/dashboard')}
+        onMouseEnter={() => setIsHovered(true)} // Set hover state to true
+        onMouseLeave={() => setIsHovered(false)} // Set hover state to false
         style={{
           position: 'absolute',
-          top: 125,
-          right: 12,
+          top: 10,
+          right: 10,
           zIndex: 1000,
           padding: '11px 10px',
-          backgroundColor: '#1976d2',
-          color: 'white',
+          backgroundColor: '#ffffff',
+          color: 'black',
           border: 'none',
           borderRadius: '5px',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          fontSize: '20px', // Increase font size for better visibility
+          fontFamily: 'Open Sans, sans-serif', // Set font family to Open Sans
+          width: '150px', // Optional: set a specific width
+          height: '50px', // Optional: set a specific height
+          
+          
         }}
       >
-        Go to Dashboard
+        Dashboard
       </button>
       {/* <div className="map-title">Central Monitoring Dashboard Map</div> */}
       <Header />
 
+
+
+
+
+/*
       <Navbar
         // divisions={divisions}
         districts={districts}
@@ -1163,7 +1176,9 @@ function App() {
         showSocietyDropdown={showSocietyDropdown}
         showMauzaDropdown={showMauzaDropdown}
 
-      />
+      />*/
+
+      
       {/* <SearchBar onSearch={handleSearch} /> */}
 
       <div id="map-container" ref={mapContainerRef} ></div>

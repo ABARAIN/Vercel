@@ -10,10 +10,10 @@ body {
 }
 
 #map-container {
-  margin-top: 10px;
+  margin-top: 1.5%;
   margin-left: 6px;
-  height: calc(105% - 160px); 
-  width: calc(100% - 350px); 
+  height:85%; 
+  width: 75.4%; 
   background-color: #f0f0f0; 
   border: 2px solid #007bbf; 
   border-radius: 4px; 
@@ -108,7 +108,7 @@ body {
   cursor: pointer; 
 }
 .sidebar {
-  background-color: #f8f9fa; 
+  background-color: #0778e9; 
   color: #333;
   padding: 15px; 
   z-index: 100;
