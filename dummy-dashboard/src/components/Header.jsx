@@ -9,7 +9,7 @@ const Header = () => {
         
         <img 
     src={`LDAlogo.jpeg`} // Reference the logo from the public directory
-    alt="LDA Logo" 
+    alt="LDA Logos" 
     style={{ 
         width: '50px', 
         height: 'auto', 
