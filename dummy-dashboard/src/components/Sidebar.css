@@ -1,15 +1,15 @@
 .sidebar {
     position: fixed;
-    top: 12%;                /* below the fixed navbar */
+    top: 7%;                /* below the fixed navbar */
     right: 0;
     bottom: 0;
                /* set default width */
-    background-color:  #09002f;
+    background-color: #003366;  
     padding: 15px;
     overflow-y: hidden;
     box-sizing: border-box;
     border-right: 1px solid #ccc;
-    height:90%;
+    height:95%;
     min-width: 24%;
   
   }

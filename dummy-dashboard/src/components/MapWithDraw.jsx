@@ -75,4 +75,5 @@ const MapWithDraw = ({ map, draw }) => {  // Receive draw as a prop
   );
 };
 
+
 export default MapWithDraw;

@@ -257,20 +257,21 @@ const Dashboard = () => {
           right: 10,
           zIndex: 1000,
           padding: '8px 6px',
-          backgroundColor: '#004953',
-          color: 'white',
+          backgroundColor: '#ffffff',
+          color: 'black',
           border: 'none',
           borderRadius: '5px',
           cursor: 'pointer',
+          fontSize: '14px', font: 'Open Sans, sans-serif'
         }}
       >
-        ← Back to Home
+        Back to Home
       </button>
 
       <CssBaseline />
-      <AppBar position="static" sx={{ backgroundColor: '#1976d2', height: '48px' }}>
+      <AppBar position="static" sx={{ backgroundColor: '#003366;', height: '48px' }}>
         <Toolbar sx={{ minHeight: '48px !important', px: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontSize: '16px' }}>
+          <Typography variant="subtitle1" sx={{ fontSize: '19px' }}>
             Dashboard
           </Typography>
         </Toolbar>
@@ -298,7 +299,7 @@ const Dashboard = () => {
                 {/* Chart + Legend + Block 3 */}
                 <Grid item xs={12} md={6}>
                   {/* Chart */}
-                  <Card sx={{ height: 320 }}>
+                  <Card sx={{ height: 320, border: '1px solid #003366', }}>
                     <CardContent sx={{ pt: 1, pb: 1 }}>
                       <Typography variant="h6" gutterBottom sx={{ mb: -4 }}>
                         Landuse Breakdown
@@ -315,7 +316,7 @@ const Dashboard = () => {
 
 
                   {/* Legend */}
-                  <Card sx={{ height: 300, mt: 2, overflowY: 'auto' }}>
+                  <Card sx={{ height: 300, mt: 2, overflowY: 'auto',border: '1px solid #003366', }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
                         Legend
@@ -331,10 +332,10 @@ const Dashboard = () => {
                   {/* Block 3: Plot Details */}
                   <Card
                     sx={{
-                      height: 250,
+                      height: 240,
                       width: '100%',
                       mt: 2,
-                      border: '1px solid #ddd',
+                      border: '1px solid #003366',
                       borderRadius: 2,
                       backgroundColor: '#ffffff',
                       display: 'flex',
@@ -410,7 +411,7 @@ const Dashboard = () => {
                 {/* SpatialQuery + Block 4 */}
                 <Grid item xs={12} md={6}>
                   {/* SpatialQuery */}
-                  <Card sx={{ height: 460 }}>
+                  <Card sx={{ height: 460, border: '1px solid #003366', }}>
                     <CardContent sx={{ height: '100%', overflowY: 'auto' }}>
                       {mapInstance && (
                         <SpatialQuery
@@ -437,8 +438,8 @@ const Dashboard = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       backgroundColor: '#f9f9f9',
-                      border: '1px solid #ddd',
-                      borderRadius: 2,
+                      border: '1px solid #003366',
+                      borderRadius: 1,
                       overflow: 'hidden',
                     }}
                   >

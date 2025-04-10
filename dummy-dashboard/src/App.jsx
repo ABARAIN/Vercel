@@ -889,6 +889,7 @@ function App() {
       .catch((error) => console.error('Error fetching mauzas:', error));
   };
 
+  /*
   const updateMeasurements = () => {
     if (drawRef.current) {
       const data = drawRef.current.getAll();
@@ -919,7 +920,63 @@ function App() {
 
       setMeasurements(newMeasurements);
     }
+  }; 
+  */
+
+  const updateMeasurements = () => {
+    if (drawRef.current) {
+      const data = drawRef.current.getAll();
+      const newMeasurements = [];
+  
+      // Remove previous popups if needed
+      document.querySelectorAll('.mapboxgl-popup').forEach(popup => popup.remove());
+  
+      data.features.forEach((feature) => {
+        const coords = feature.geometry.coordinates;
+        let measurementText = '';
+        let popupCoords;
+  
+        if (feature.geometry.type === 'Point') {
+          const [lng, lat] = coords;
+          measurementText = `Point: [${lng.toFixed(6)}, ${lat.toFixed(6)}]`;
+          popupCoords = [lng, lat];
+        } else if (feature.geometry.type === 'LineString') {
+          let lengthMeters = 0;
+          for (let i = 0; i < coords.length - 1; i++) {
+            const from = coords[i];
+            const to = coords[i + 1];
+            lengthMeters += turf.distance(turf.point(from), turf.point(to), { units: 'meters' });
+          }
+          measurementText = `Line Length: ${metersToFeet(lengthMeters).toFixed(2)} ft`;
+  
+          const midIndex = Math.floor(coords.length / 2);
+          popupCoords = coords[midIndex];
+        } else if (feature.geometry.type === 'Polygon') {
+          const areaMeters = turf.area(feature);
+          const areaFeet = areaMeters * 10.7639;
+          measurementText = `Polygon Area: ${areaFeet.toFixed(2)} sq ft`;
+  
+          // Calculate centroid for popup
+          const centroid = turf.centroid(feature).geometry.coordinates;
+          popupCoords = centroid;
+        }
+  
+        newMeasurements.push(measurementText);
+  
+        // Show popup on the map
+        if (popupCoords) {
+          new mapboxgl.Popup({ offset: 10, closeButton: true, closeOnClick: false })
+            .setLngLat(popupCoords)
+            .setHTML(`<div style="font-size: 14px; font-weight: bold;">${measurementText}</div>`)
+            .addTo(mapRef.current); // Assuming you have a mapRef pointing to your map
+        }
+      });
+  
+      setMeasurements(newMeasurements);
+    }
   };
+  
+
 
   const handleSocietyChange = (society) => {
     setSelectedSociety(society);
@@ -1139,8 +1196,42 @@ function App() {
 
 
 
+      
+      {/* <SearchBar onSearch={handleSearch} /> */}
+
+      <div id="map-container" ref={mapContainerRef} ></div>
+      <div>
+      
+      <Sidebar
+        layers={layers}
+        onBasemapChange={handleBasemapChange}
+        onFileUpload={handleFileUpload}
+        onReset={handleReset}
+        toggleLayerVisibility={toggleLayerVisibility}
+        measurements={measurements}
+        toggleLayerVisible={toggleLayerVisible}
+        zoomToLayer={zoomToLayer}
+        toggleMBlockVisibility={toggleMBlockVisibility}
+        zoomToMBlock={zoomToMBlock}
+        activeTowns={activeTowns}
+        setActiveTowns={setActiveTowns}
+        map={mapRef.current}
+      />
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+
 
 /*
+
+---------------------CODE FOR SELECT DISTRICT (NAVBAR)-----------------------------
+
       <Navbar
         // divisions={divisions}
         districts={districts}
@@ -1176,32 +1267,5 @@ function App() {
         showSocietyDropdown={showSocietyDropdown}
         showMauzaDropdown={showMauzaDropdown}
 
-      />*/
-
-      
-      {/* <SearchBar onSearch={handleSearch} /> */}
-
-      <div id="map-container" ref={mapContainerRef} ></div>
-      <div>
-      
-      <Sidebar
-        layers={layers}
-        onBasemapChange={handleBasemapChange}
-        onFileUpload={handleFileUpload}
-        onReset={handleReset}
-        toggleLayerVisibility={toggleLayerVisibility}
-        measurements={measurements}
-        toggleLayerVisible={toggleLayerVisible}
-        zoomToLayer={zoomToLayer}
-        toggleMBlockVisibility={toggleMBlockVisibility}
-        zoomToMBlock={zoomToMBlock}
-        activeTowns={activeTowns}
-        setActiveTowns={setActiveTowns}
-        map={mapRef.current}
       />
-      </div>
-    </div>
-  );
-}
-
-export default App;
+*/

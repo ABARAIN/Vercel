@@ -1,7 +1,8 @@
 .header {
     /*background: linear-gradient(to right, #003366, #0056b3);  ibrahim
-    background: linear-gradient(to right, #003366, #026799);   sana */
-    background: #09002f;
+    background: linear-gradient(to right, #003366, #026799);   sana 
+    #09002f*/
+    background: #003366;  
     padding: 10px 20px;
     position: fixed;
     top: 0;
