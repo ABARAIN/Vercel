@@ -195,7 +195,7 @@ const Dashboard = () => {
           "Encroachment", "#795548", "Recreational Facility", "#3f51b5", "Health Facility", "#4caf50",
           "Nullah", "#00bcd4", "Village", "#ff9800", "Parking", "#ffc107", "Road", "#9e9e9e",
           "Unclassified", "#bdbdbd", "#bdbdbd"
-        ],
+        ],  
         'fill-opacity': 0.6,
         'fill-outline-color': '#333'
       }

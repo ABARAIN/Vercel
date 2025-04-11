@@ -1,32 +1,76 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Drawer,
+  Box,
+  IconButton,
+  Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItem,
+  ListItemText,
+  Button,
+  Divider,
+  Tooltip
+} from '@mui/material';
+import {
+  ExpandMore as ExpandMoreIcon,
+  Layers as LayersIcon,
+  Map as MapIcon,
+  LocationCity as BuildingIcon,
+  Group as UsersIcon,
+  UploadFile as UploadFileIcon,
+  Refresh as ResetIcon
+} from '@mui/icons-material';
 import SidebarMenu from './SidebarMenu';
 import BasemapSelector from './BasemapSelector';
-import LayerItem from './LayerItem'; 
+import LayerItem from './LayerItem';
 import LayerSwitcher from './LayerSwitcher';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMapMarkerAlt, faLayerGroup, faBuilding, faUsers } from '@fortawesome/free-solid-svg-icons';
 import SpatialQuery from './SpatialQuery';
-import "./Sidebar.css"
 
-const Sidebar = ({ layers, onBasemapChange, toggleMBlockVisibility, zoomToMBlock, onFileUpload, uploadMessage, onReset, zoomToLayer, toggleLayerVisibility, measurements, toggleLayerVisible, activeTowns, map,
-  setActiveTowns }) => {
-
-  const [activeIcon, setActiveIcon] = useState('layers'); // Default selected icon
-  const [iconTitle, setIconTitle] = useState('Layers Icon'); // Default title
+const Sidebar = ({
+  layers,
+  onBasemapChange,
+  toggleMBlockVisibility,
+  zoomToMBlock,
+  onFileUpload,
+  uploadMessage,
+  onReset,
+  zoomToLayer,
+  toggleLayerVisibility,
+  measurements,
+  toggleLayerVisible,
+  activeTowns,
+  map,
+  setActiveTowns
+}) => {
+  const [activeIcon, setActiveIcon] = useState('layers');
   const [mBlockVisible, setMBlockVisible] = useState(false);
   const [showLayers, setShowLayers] = useState(false);
   const [towns, setTowns] = useState([]);
 
-  const handleIconClick = (icon, title) => {
-    setActiveIcon(icon);
-    setIconTitle(title);
-  };
-
   const handleFileUpload = (event) => {
     if (event.target.files.length > 0) {
-        setShowLayers(true); 
+      setShowLayers(true);
     }
     onFileUpload(event);
+  };
+
+  const handleToggleTown = (town) => {
+    setActiveTowns(prev => {
+      const updated = { ...prev, [town]: !prev[town] };
+      toggleLayerVisible(town, updated[town]);
+      return updated;
+    });
+  };
+
+  const handleToggleMBlock = () => {
+    setMBlockVisible(prev => {
+      const newState = !prev;
+      toggleMBlockVisibility(newState);
+      return newState;
+    });
   };
 
   useEffect(() => {
@@ -34,147 +78,287 @@ const Sidebar = ({ layers, onBasemapChange, toggleMBlockVisibility, zoomToMBlock
       try {
         const response = await fetch('http://127.0.0.1:8000/api/all-soc/');
         const data = await response.json();
-        const uniqueTowns = [...new Set(data.map(society => society.town_name))].sort();
+        const uniqueTowns = [...new Set(data.map(s => s.town_name))].sort();
         setTowns(uniqueTowns);
       } catch (error) {
-        console.error('Error fetching town names:', error);
+        console.error('Error fetching towns:', error);
       }
     };
 
     fetchTowns();
   }, []);
 
-  const handleToggleTown = (town) => {
-    setActiveTowns(prevState => {
-      const updatedState = { ...prevState, [town]: !prevState[town] };
-      toggleLayerVisible(town, updatedState[town]);
-      return updatedState;
-    });
-  };
+  const getButtonHoverStyle = (isActive) => ({
+    '&:hover': {
+      backgroundColor: isActive ? '#ffcccc' : '#cceeff',
+      color: isActive ? 'red' : '#0077cc',
+    }
+  });
 
-  const handleToggleMBlock = () => {
-    setMBlockVisible((prev) => {
-      const newState = !prev;
-      toggleMBlockVisibility(newState);
-      return newState;
-    });
+  const greenAccordionSummary = {
+    '&.Mui-expanded': {
+      backgroundColor: 'rgba(5, 38, 255, 0.2)',
+      color: '#000000',
+    }
   };
 
   return (
-    <div className="sidebar">
-      {iconTitle && <div className="icon-title">{iconTitle}</div>}
-      
-      <div className="sidebar-icons">
-        <div 
-          className={`icon-container ${activeIcon === 'marker' ? 'active' : ''}`} 
-          onClick={() => handleIconClick('marker', 'Location Icon')}
-        >
-          <FontAwesomeIcon icon={faMapMarkerAlt} size="2x" />
-        </div>
-        <div 
-          className={`icon-container ${activeIcon === 'layers' ? 'active' : ''}`} 
-          onClick={() => handleIconClick('layers', 'Layers Icon')} 
-        >
-          <FontAwesomeIcon icon={faLayerGroup} size="2x" />
-        </div>
-        <div 
-          className={`icon-container ${activeIcon === 'building' ? 'active' : ''}`} 
-          onClick={() => handleIconClick('building', 'Building Icon')}
-        >
-          <FontAwesomeIcon icon={faBuilding} size="2x" />
-        </div>
-        <div 
-          className={`icon-container ${activeIcon === 'users' ? 'active' : ''}`} 
-          onClick={() => handleIconClick('users', 'Users Icon')}
-        >
-          <FontAwesomeIcon icon={faUsers} size="2x" />
-        </div>
-      </div>
+    <Drawer
+      variant="permanent"
+      anchor="right"
+      sx={{
+        width: 700,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          marginTop: 8.5,
+          width: 400,
+          height: '135vh',
+          boxSizing: 'border-box',
+          backgroundColor: '#003366',
+          color: '#fff',
+          padding: 2,
+          overflowY: 'auto'
+        }
+      }}
+    >
+      <Box display="flex" justifyContent="space-around" mb={2}>
+        <Box textAlign="center">
+          <Tooltip title="Basemaps">
+            <IconButton
+              onClick={() => setActiveIcon('marker')}
+              color={activeIcon === 'marker' ? 'success' : 'inherit'}
+              sx={{ fontSize: 50 }}
+            >
+              <MapIcon sx={{ fontSize: 35 }} />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="caption" sx={{ color: '#fff', fontWeight: activeIcon === 'marker' ? 'bold' : 'normal' }}>
+            Basemaps
+          </Typography>
+        </Box>
+
+        <Box textAlign="center">
+          <Tooltip title="Layers">
+            <IconButton
+              onClick={() => setActiveIcon('layers')}
+              color={activeIcon === 'layers' ? 'success' : 'inherit'}
+              sx={{ fontSize: 50 }}
+            >
+              <LayersIcon sx={{ fontSize: 35 }} />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="caption" sx={{ color: '#fff', fontWeight: activeIcon === 'layers' ? 'bold' : 'normal' }}>
+            Layers
+          </Typography>
+        </Box>
+
+        <Box textAlign="center">
+          <Tooltip title="Building">
+            <IconButton
+              onClick={() => setActiveIcon('building')}
+              color={activeIcon === 'building' ? 'success' : 'inherit'}
+              sx={{ fontSize: 50 }}
+            >
+              <BuildingIcon sx={{ fontSize: 35 }} />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="caption" sx={{ color: '#fff', fontWeight: activeIcon === 'building' ? 'bold' : 'normal' }}>
+            Building
+          </Typography>
+        </Box>
+
+        <Box textAlign="center">
+          <Tooltip title="Users">
+            <IconButton
+              onClick={() => setActiveIcon('users')}
+              color={activeIcon === 'users' ? 'success' : 'inherit'}
+              sx={{ fontSize: 50 }}
+            >
+              <UsersIcon sx={{ fontSize: 35 }} />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="caption" sx={{ color: '#fff', fontWeight: activeIcon === 'users' ? 'bold' : 'normal' }}>
+            Users
+          </Typography>
+        </Box>
+      </Box>
+
+      <Divider sx={{ borderColor: '#ccc', mb: 2 }} />
+
+      {activeIcon === 'marker' && (
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+            <Typography>Basemap</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <BasemapSelector onBasemapChange={onBasemapChange} />
+          </AccordionDetails>
+        </Accordion>
+      )}
 
       {activeIcon === 'layers' && (
         <>
-          <SidebarMenu title="Map Layers">
-            <LayerItem title="Geodetic Network">
-              <div>Layer details or controls for Geodetic Network</div>
-            </LayerItem>
-            <LayerItem title="Cooperative Society">
-              <div>Layer details or controls for Cooperative Society</div>
-            </LayerItem>
-            <LayerItem title="Regular Approved Societies & Schemes">
-              <div className="town-list">
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+              <Typography>Geodetic Network</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>Layer controls or details</Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+              <Typography>Cooperative Society</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>Layer controls or details</Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+              <Typography>Approved Societies</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
                 {towns.map((town, index) => (
-                  <div key={index} className="town-row">
-                    <span>{town}</span>
-                    <button onClick={() => handleToggleTown(town)}>
+                  <ListItem key={index} disableGutters>
+                    <ListItemText primary={town} />
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color="inherit"
+                      onClick={() => handleToggleTown(town)}
+                      sx={getButtonHoverStyle(activeTowns[town])}
+                    >
                       {activeTowns[town] ? 'Hide' : 'Show'}
-                    </button>
+                    </Button>
                     {activeTowns[town] && (
-                      <button onClick={() => zoomToLayer(town)}>Fly to</button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        sx={{ ml: 1 }}
+                        onClick={() => zoomToLayer(town)}
+                      >
+                        Fly to
+                      </Button>
                     )}
-                  </div>
+                  </ListItem>
                 ))}
-              </div>
-            </LayerItem>
-            <LayerItem title="PHATA Spatial Query">
-              {map ? (
-                <SpatialQuery map={map} />
-              ) : (
-                <p style={{ fontStyle: 'italic', fontSize: '13px' }}>Map not loaded yet.</p>
-              )}
-            </LayerItem>
-            <LayerItem title="Development Authorities">
-              <div>Layer details or controls for Development Authorities</div>
-            </LayerItem>
-            <LayerItem title="State Lands">
-              <div>Layer details or controls for State Lands</div>
-            </LayerItem>
-            <LayerItem title="Digitized Blocks">
-              <div className="town-list">
-                <div className="town-row">
-                  <span>M-Block</span>
-                  <button onClick={handleToggleMBlock}>
-                    {mBlockVisible ? 'Hide' : 'Show'}
-                  </button>
-                  {mBlockVisible && (
-                    <button onClick={() => zoomToMBlock('M-Block')}>Fly to</button>
-                  )}
-                </div>
-              </div>
-            </LayerItem>
-            <LayerItem title="Settlement Operations">
-              <div>Layer details or controls for Settlement Operations</div>
-            </LayerItem>
-            <LayerItem title="Upload File">
-              <div className="file-upload">
-                <input type="file" onChange={handleFileUpload} />
-                {uploadMessage && <p>{uploadMessage}</p>}
-                {showLayers && (
-                  <LayerSwitcher 
-                    layers={layers} 
-                    onToggleLayer={toggleLayerVisibility} 
-                  />
+              </List>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+              <Typography>PHATA Spatial Query</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {map ? <SpatialQuery map={map} /> : <Typography fontStyle="italic">Map not loaded yet.</Typography>}
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+              <Typography>Development Authorities</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>Details or controls for Development Authorities</Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+              <Typography>State Lands</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>Details or controls for State Lands</Typography>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+              <Typography>Digitized Blocks</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <ListItem disableGutters>
+                <ListItemText primary="M-Block" />
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={handleToggleMBlock}
+                  sx={getButtonHoverStyle(mBlockVisible)}
+                >
+                  {mBlockVisible ? 'Hide' : 'Show'}
+                </Button>
+                {mBlockVisible && (
+                  <Button
+                    variant="contained"
+                    sx={{ ml: 1 }}
+                    onClick={() => zoomToMBlock('M-Block')}
+                  >
+                    Fly to
+                  </Button>
                 )}
-              </div>
-            </LayerItem>
-          </SidebarMenu>
+              </ListItem>
+            </AccordionDetails>
+          </Accordion>
 
-          <SidebarMenu title="Basemap">
-            <BasemapSelector onBasemapChange={onBasemapChange} />
-          </SidebarMenu>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+              <Typography>Settlement Operations</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>Details or controls for Settlement Operations</Typography>
+            </AccordionDetails>
+          </Accordion>
 
-          <SidebarMenu title="Legend">
-            {/* Add legend content if needed */}
-          </SidebarMenu>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
+              <Typography>Upload File</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<UploadFileIcon />}
+                  fullWidth
+                >
+                  Upload
+                  <input type="file" hidden onChange={handleFileUpload} />
+                </Button>
+                {uploadMessage && (
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    {uploadMessage}
+                  </Typography>
+                )}
+                {showLayers && (
+                  <Box mt={2}>
+                    <LayerSwitcher
+                      layers={layers}
+                      onToggleLayer={toggleLayerVisibility}
+                    />
+                  </Box>
+                )}
+              </Box>
+            </AccordionDetails>
+          </Accordion>
         </>
       )}
 
-
-
-      <button className="reset-button" onClick={onReset}>Reset View</button>
-
-
-     
-    </div>
+      <Box mt={3} textAlign="center">
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<ResetIcon />}
+          onClick={onReset}
+        >
+          Reset View
+        </Button>
+      </Box>
+    </Drawer>
   );
 };
 

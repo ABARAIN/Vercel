@@ -10,10 +10,10 @@ body {
 }
 
 #map-container {
-  margin-top: 1.5%;
+  margin-top: 1.7%;
   margin-left: 6px;
   height:92%; 
-  width: 75.4%; 
+  width: 80%; 
   background-color: #f0f0f0; 
   border: 2px solid #007bbf; 
   border-radius: 4px; 
