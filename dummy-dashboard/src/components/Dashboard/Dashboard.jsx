@@ -65,7 +65,7 @@ const Dashboard = () => {
       const { lng, lat } = e.lngLat;
       const coordinateString = `lat=${lat}&lon=${lng}`;
       try {
-        const res = await fetch(`http://13.60.95.206/api/society-parcel/?${coordinateString}`);
+        const res = await fetch(`http://13.60.95.206:8000/api/society-parcel/?${coordinateString}`);
         const data = await res.json();
 
         if (res.ok) {
