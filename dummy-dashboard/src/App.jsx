@@ -160,7 +160,7 @@ function App() {
 
         try {
           // Try DigitizedAreas first
-          const digitizedRes = await fetch(`https://api.nespaklrms.com/api/digitized-parcel/?${coordinateString}`);
+          const digitizedRes = await fetch(`http://13.60.95.206/api/digitized-parcel/?${coordinateString}`);
           const digitizedData = await digitizedRes.json();
 
           if (digitizedRes.ok && mBlockVisibleRef.current === true) {
@@ -177,7 +177,7 @@ function App() {
 
 
           // Try MergedSociety
-          const mergedRes = await fetch(`https://api.nespaklrms.com/api/land-parcel/?${coordinateString}`);
+          const mergedRes = await fetch(`http://13.60.95.206/api/land-parcel/?${coordinateString}`);
           const mergedData = await mergedRes.json();
 
           if (mergedRes.ok && mergedSocietyVisibleRef.current === true) {
@@ -195,7 +195,7 @@ function App() {
 
 
           // ✅ Fetch Society Parcel API first
-          const societyRes = await fetch(`https://api.nespaklrms.com/api/society-parcel/?${coordinateString}`);
+          const societyRes = await fetch(`http://13.60.95.206/api/society-parcel/?${coordinateString}`);
           const societyData = await societyRes.json();
 
           // ✅ Check global visibility before showing popup
@@ -630,8 +630,8 @@ function App() {
 
   useEffect(() => {
     // Fetch available districts from the backend
-    // axios.get('https://api.nespaklrms.com/api/joined-mauza-districts/')
-    axios.get('https://api.nespaklrms.com/api/societies/')
+    // axios.get('http://13.60.95.206/api/joined-mauza-districts/')
+    axios.get('http://13.60.95.206/api/societies/')
       .then((response) => {
         const uniqueDistricts = [
           ...new Set(response.data.map((feature) => feature.district)),
@@ -642,7 +642,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    axios.get('https://api.nespaklrms.com/api/joined-mauza-districts/')
+    axios.get('http://13.60.95.206/api/joined-mauza-districts/')
       .then((response) => {
         const newUniqueDistricts = [
           ...new Set(response.data.map((feature) => feature.district)),
@@ -660,7 +660,7 @@ function App() {
     if (selectedPlot) params.plot_no = selectedPlot; // Ensure this matches the backend field
 
     axios
-      .get('https://api.nespaklrms.com/api/societies/', { params })
+      .get('http://13.60.95.206/api/societies/', { params })
       .then((response) => {
         if (!response.data.length) {
           console.warn('No data returned from the API');
@@ -701,7 +701,7 @@ function App() {
     if (selectedMauza) params.mauza = selectedMauza;
 
     axios
-      .get('https://api.nespaklrms.com/api/joined-mauza-districts/', { params })
+      .get('http://13.60.95.206/api/joined-mauza-districts/', { params })
       .then((response) => {
         const geojson = {
           type: 'FeatureCollection',
@@ -765,8 +765,8 @@ function App() {
     setSelectedSociety('');
 
     axios
-      // .get('https://api.nespaklrms.com/api/joined-mauza-districts/', {
-      .get('https://api.nespaklrms.com/api/societies/', {
+      // .get('http://13.60.95.206/api/joined-mauza-districts/', {
+      .get('http://13.60.95.206/api/societies/', {
         params: { district },
       })
       .then((response) => {
@@ -784,7 +784,7 @@ function App() {
     setSelectedMauza('');
 
     axios
-      .get('https://api.nespaklrms.com/api/joined-mauza-districts/', {
+      .get('http://13.60.95.206/api/joined-mauza-districts/', {
         params: { district },
       })
       .then((response) => {
@@ -802,8 +802,8 @@ function App() {
     setSelectedSociety('');
 
     axios
-      // .get('https://api.nespaklrms.com/api/joined-mauza-districts/', {
-      .get('https://api.nespaklrms.com/api/societies/', {
+      // .get('http://13.60.95.206/api/joined-mauza-districts/', {
+      .get('http://13.60.95.206/api/societies/', {
         params: { district: selectedDistrict, tehsil },
       })
       .then((response) => {
@@ -820,7 +820,7 @@ function App() {
     setSelectedMauza('');
 
     axios
-      .get('https://api.nespaklrms.com/api/joined-mauza-districts/', {
+      .get('http://13.60.95.206/api/joined-mauza-districts/', {
         params: { district: selectedDistrict, tehsil },
       })
       .then((response) => {
@@ -877,7 +877,7 @@ function App() {
 
   const fetchMauzas = (district, tehsil) => {
     axios
-      .get('https://api.nespaklrms.com/api/joined-mauza-districts/', {
+      .get('http://13.60.95.206/api/joined-mauza-districts/', {
         params: { district, tehsil },
       })
       .then((response) => {
@@ -926,7 +926,7 @@ function App() {
     setSelectedBlock('');  // Reset block when society changes
 
     axios
-      .get('https://api.nespaklrms.com/api/societies/', {
+      .get('http://13.60.95.206/api/societies/', {
         params: { society },  // Use correct parameter name
       })
       .then((response) => {
@@ -943,7 +943,7 @@ function App() {
     setSelectedPlot('');  // Reset plot when block changes
 
     axios
-      .get('https://api.nespaklrms.com/api/societies/', {
+      .get('http://13.60.95.206/api/societies/', {
         params: { block },  // Use correct parameter name
       })
       .then((response) => {
@@ -967,7 +967,7 @@ function App() {
     console.log("📍 toggleLayerVisible - Town:", town, "| isVisible:", isVisible);
 
     if (isVisible) {
-      const response = await fetch(`https://api.nespaklrms.com/api/geojson/?town_name=${encodeURIComponent(town)}`);
+      const response = await fetch(`http://13.60.95.206/api/geojson/?town_name=${encodeURIComponent(town)}`);
       const geojson = await response.json();
 
       if (!map.getSource(layerId)) {
@@ -1021,7 +1021,7 @@ function App() {
   // Function to zoom to the selected town
   const zoomToLayer = async (town) => {
     const map = mapRef.current;
-    const response = await fetch(`https://api.nespaklrms.com/api/bbox/?town_name=${encodeURIComponent(town)}`);
+    const response = await fetch(`http://13.60.95.206/api/bbox/?town_name=${encodeURIComponent(town)}`);
     const { bbox } = await response.json(); // Expecting { bbox: [minLng, minLat, maxLng, maxLat] }
 
     if (bbox) {
@@ -1031,7 +1031,7 @@ function App() {
   // Fetch all M-Block data once
   const fetchMBlockData = async () => {
     try {
-      const response = await fetch('https://api.nespaklrms.com/api/m-block/');
+      const response = await fetch('http://13.60.95.206/api/m-block/');
       const geojson = await response.json();
       setMBlockData(geojson);
     } catch (error) {
@@ -1097,7 +1097,7 @@ function App() {
   // Zoom to M-Block extent
   const zoomToMBlock = async () => {
     const map = mapRef.current;
-    const response = await fetch('https://api.nespaklrms.com/api/m-block-bbox/');
+    const response = await fetch('http://13.60.95.206/api/m-block-bbox/');
     const { bbox } = await response.json(); // Expecting { bbox: [minLng, minLat, maxLng, maxLat] }
 
     if (bbox) {
