@@ -252,7 +252,7 @@ const Sidebar = ({
 
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={greenAccordionSummary}>
-              <Typography>PHATA Spatial Query</Typography>
+              <Typography> Spatial Query</Typography>
             </AccordionSummary>
             <AccordionDetails>
               {map ? <SpatialQuery map={map} /> : <Typography fontStyle="italic">Map not loaded yet.</Typography>}

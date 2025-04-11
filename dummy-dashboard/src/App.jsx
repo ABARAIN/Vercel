@@ -9,7 +9,7 @@ import Sidebar from './components/Sidebar';
 import LayerSwitcher from './components/LayerSwitcher';
 import './styles/App.css';
 import Header from './components/Header';
-import Navbar from './components/Navbar';
+// import Navbar from './components/Navbar';
 import BasemapSelector from './components/BasemapSelector';
 import SearchBar from './components/SearchBar';
 import MapWithDraw from './components/MapWithDraw';
