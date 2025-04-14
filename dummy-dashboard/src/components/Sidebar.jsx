@@ -246,6 +246,7 @@ const Sidebar = ({
                     )}
                   </ListItem>
                 ))}
+<<<<<<< Updated upstream
               </List>
             </AccordionDetails>
           </Accordion>
@@ -300,6 +301,48 @@ const Sidebar = ({
                   >
                     Fly to
                   </Button>
+=======
+              </div>
+            </LayerItem>
+            <LayerItem title=" Spatial Query">
+              {map ? (
+                <SpatialQuery map={map} />
+              ) : (
+                <p style={{ fontStyle: 'italic', fontSize: '13px' }}>Map not loaded yet.</p>
+              )}
+            </LayerItem>
+            <LayerItem title="Development Authorities">
+              <div>Layer details or controls for Development Authorities</div>
+            </LayerItem>
+            <LayerItem title="State Lands">
+              <div>Layer details or controls for State Lands</div>
+            </LayerItem>
+            <LayerItem title="Digitized Blocks">
+              <div className="town-list">
+                <div className="town-row">
+                  <span>M-Block</span>
+                  <button onClick={handleToggleMBlock}>
+                    {mBlockVisible ? 'Hide' : 'Show'}
+                  </button>
+                  {mBlockVisible && (
+                    <button onClick={() => zoomToMBlock('M-Block')}>Fly to</button>
+                  )}
+                </div>
+              </div>
+            </LayerItem>
+            <LayerItem title="Settlement Operations">
+              <div>Layer details or controls for Settlement Operations</div>
+            </LayerItem>
+            <LayerItem title="Upload File">
+              <div className="file-upload">
+                <input type="file" onChange={handleFileUpload} />
+                {uploadMessage && <p>{uploadMessage}</p>}
+                {showLayers && (
+                  <LayerSwitcher 
+                    layers={layers} 
+                    onToggleLayer={toggleLayerVisibility} 
+                  />
+>>>>>>> Stashed changes
                 )}
               </ListItem>
             </AccordionDetails>
@@ -348,6 +391,7 @@ const Sidebar = ({
         </>
       )}
 
+<<<<<<< Updated upstream
       <Box mt={3} textAlign="center">
         <Button
           variant="contained"
@@ -359,7 +403,24 @@ const Sidebar = ({
         </Button>
       </Box>
     </Drawer>
+=======
+
+
+      <button className="reset-button" onClick={onReset}>Reset View</button>
+
+    </div>
+>>>>>>> Stashed changes
   );
 };
 
 export default Sidebar;
+
+
+    /*  <div style={{ marginTop: '20px' , color: 'white'}}>
+        <h4>Measurements</h4>
+        <ul>
+          {measurements.map((m, index) => (
+            <li key={index}>{m}</li>
+          ))}
+        </ul>
+      </div> */

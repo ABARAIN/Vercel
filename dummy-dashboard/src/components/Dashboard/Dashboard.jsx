@@ -414,6 +414,7 @@ const Dashboard = () => {
                   {/* SpatialQuery */}
                   <Card sx={{ height: '50%', border: '1px solid #003366', }}>
                     <CardContent sx={{ height: '100%', overflowY: 'auto' }}>
+                    <Typography variant="h6">Spatial Query</Typography>
                       {mapInstance && (
                         <SpatialQuery
                           map={mapInstance}
@@ -433,7 +434,7 @@ const Dashboard = () => {
                   <Card
                     elevation={3}
                     sx={{
-                      height: '28%',
+                      height: '27.3%',
                       width: '100%',
                       mt: 2,
                       display: 'flex',

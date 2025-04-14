@@ -1,0 +1,61 @@
+.plot-card-container.fancy-expanded {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 15px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+    transition: all 0.3s ease-in-out;
+    animation: fadeIn 0.5s ease forwards;
+  }
+  .plot-card-header {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2A7FD4;
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #1976D2;
+  }
+  .plot-card-scroll {
+    flex: 1;
+    overflow-y: hidden;
+    padding-right: 6px;
+  }
+  .plot-card-scroll:hover {
+    overflow-y: auto;
+  }
+  .plot-card-block {
+    background: #F8F9FB;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    box-shadow: inset 0 0 0 1px #E0E0E0;
+    transition: 0.2s ease;
+  }
+  .plot-card-label {
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+  .plot-card-value {
+    font-size: 15px;
+    color: #222;
+  }
+  .plot-card-value.highlight {
+    color: #D32F2F;
+    font-weight: 700;
+  }
+  .plot-card-empty {
+    font-style: italic;
+    color: #aaa;
+    padding: 16px;
+    text-align: center;
+  }
