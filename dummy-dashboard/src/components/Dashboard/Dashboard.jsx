@@ -438,7 +438,6 @@ const Dashboard = () => {
                       mt: 2,
                       display: 'flex',
                       flexDirection: 'column',
-                      backgroundColor: '#f9f9f9',
                       border: '1px solid #003366',
                       borderRadius: 1,
                       overflow: 'hidden',
