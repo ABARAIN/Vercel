@@ -412,7 +412,7 @@ const Dashboard = () => {
               {/* SpatialQuery + Block 4 */}
                 <Grid item xs={12} md={6}>
                   {/* SpatialQuery */}
-                  <Card sx={{ height: 460, border: '1px solid #003366' }}>
+                  <Card sx={{ height: 460, border: '2px solid black' }}>
                     <CardContent sx={{ height: '100%', overflowY: 'auto' }}>
                     <Typography variant="h6">Spatial Query</Typography>
                       {mapInstance && (
