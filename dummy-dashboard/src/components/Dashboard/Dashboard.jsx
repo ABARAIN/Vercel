@@ -300,9 +300,9 @@ const Dashboard = () => {
                 <Grid item xs={12} md={6}>
                  
                   {/* Chart */}
-                  <Card sx={{ height: 300, border: '1px solid #003366', }}>
+                  <Card sx={{ height: 290, border: '1px solid #003366', }}>
                     <CardContent sx={{ pt: 1, pb: 1 }}>
-                      <Typography variant="h6" gutterBottom sx={{ mb: -4 }}>
+                      <Typography variant="h6" gutterBottom sx={{ mb: -4, mt: 1 }}>
                         Landuse Breakdown
                       </Typography>
                       <LandusePieChart
@@ -317,7 +317,7 @@ const Dashboard = () => {
 
 
                   {/* Legend */}
-                  <Card sx={{ height: 280, mt: 2, overflowY: 'auto',border: '1px solid #003366', }}>
+                  <Card sx={{ height: 310, mt: 2, overflowY: 'auto',border: '1px solid #003366', }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
                         Legend
@@ -330,10 +330,11 @@ const Dashboard = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Block 3: Plot Details */}
+                  
+                  {/* Block 4 - Selected Plot Numbers */}
                   <Card
                     sx={{
-                      height: 230,
+                      height: 210,
                       width: '100%',
                       mt: 2,
                       border: '1px solid #003366',
@@ -412,9 +413,10 @@ const Dashboard = () => {
               {/* SpatialQuery + Block 4 */}
                 <Grid item xs={12} md={6}>
                   {/* SpatialQuery */}
-                  <Card sx={{ height: 460, border: '2px solid black' }}>
+                  <Card sx={{ height: 420, border: '1px solid #003366' }}>
                     <CardContent sx={{ height: '100%', overflowY: 'auto' }}>
-                    <Typography variant="h6">Spatial Query</Typography>
+                    <Typography variant="h6" sx={{ marginBottom: '20px' }}>Spatial Query</Typography>
+
                       {mapInstance && (
                         <SpatialQuery
                           map={mapInstance}
@@ -428,113 +430,63 @@ const Dashboard = () => {
                     </CardContent>
                   </Card>
                   {/* Block 4: Selected Plots List */}
-                  {/* Block 4 - Selected Plot Numbers */}
-                  <Card
-                    elevation={3}
-                    sx={{
-                      height: '28%',
-                      width: '100%',
-                      mt: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      backgroundColor: '#F9F9F9',
-                      border: '1px solid #003366',
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {/* Fixed Header */}
-                    <CardContent sx={{ borderBottom: '1px solid #ddd', py: 1.5, px: 2 }}>
-                      <Typography variant="h6">Plot Details</Typography>
-                    </CardContent>
-                    {/* Scrollable Body */}
-                    <Box
-                      sx={{
-                        flex: 1,
-                        overflowY: 'auto',
-                        px: 2,
-                        py: 1,
-                        '&::-webkit-scrollbar': {
-                          width: '6px'
-                        },
-                        '&::-webkit-scrollbar-thumb': {
-                          backgroundColor: '#ccc',
-                          borderRadius: '4px'
-                        },
-                        '&:hover::-webkit-scrollbar-thumb': {
-                          backgroundColor: '#999'
-                        },
-                        '&::-webkit-scrollbar-track': {
-                          backgroundColor: 'transparent'
-                        }
-                      }}
-                    >
-                      <PlotDetailCard plot={clickedPlotDetails} />
-                    </Box>
-                  </Card>
-                </Grid>{/* SpatialQuery + Block 4 */}
-                <Grid item xs={12} md={6}>
-                  {/* SpatialQuery */}
-                  <Card sx={{ height: 460 }}>
-                    <CardContent sx={{ height: '100%', overflowY: 'auto' }}>
-                      {mapInstance && (
-                        <SpatialQuery
-                          map={mapInstance}
-                          landuseFilter={selectedLanduseClass}
-                          geojsonData={geojsonData}
-                          setGeojsonData={setGeojsonData}
-                          setFullGeojsonBackup={setFullGeojsonBackup}
-                          setClickedPlotDetails={setClickedPlotDetails}
-                        />
-                      )}
-                    </CardContent>
-                  </Card>
-                  {/* Block 4: Selected Plots List */}
-                  {/* Block 4 - Selected Plot Numbers */}
-                  <Card
-                    elevation={3}
-                    sx={{
-                      height: '28%',
-                      width: '100%',
-                      mt: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      backgroundColor: '#F9F9F9',
-                      border: '1px solid #ddd',
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {/* Fixed Header */}
-                    <CardContent sx={{ borderBottom: '1px solid #ddd', py: 1.5, px: 2 }}>
-                      <Typography variant="h6">Plot Details</Typography>
-                    </CardContent>
-                    {/* Scrollable Body */}
-                    <Box
-                      sx={{
-                        flex: 1,
-                        overflowY: 'auto',
-                        px: 2,
-                        py: 1,
-                        '&::-webkit-scrollbar': {
-                          width: '6px'
-                        },
-                        '&::-webkit-scrollbar-thumb': {
-                          backgroundColor: '#ccc',
-                          borderRadius: '4px'
-                        },
-                        '&:hover::-webkit-scrollbar-thumb': {
-                          backgroundColor: '#999'
-                        },
-                        '&::-webkit-scrollbar-track': {
-                          backgroundColor: 'transparent'
-                        }
-                      }}
-                    >
-                      <PlotDetailCard plot={clickedPlotDetails} />
-                    </Box>
-                  </Card>
+
+             {/* Block 3: Plot Details */}
+              <Card
+              elevation={3}
+              sx={{
+              height: 405, // Fixed height
+              width: '100%',
+              mt: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: '#F9F9F9',
+              border: '1px solid #003366',
+              borderRadius: 1,
+              overflow: 'hidden',
+              }}
+              >
+              {/* Fixed Header */}
+              <CardContent
+              sx={{
+                borderBottom: '1px solid #ddd',
+                py: 1.5,
+                px: 2,
+                flexShrink: 0, // Ensures header doesn't expand
+              }}
+              >
+              <Typography variant="h6">Plot Details</Typography>
+              </CardContent>
+
+              {/* Scrollable Body */}
+              <Box
+              sx={{
+                flex: 1, // Fills remaining space
+                overflowY: 'auto',
+                px: 2,
+                py: 1,
+                '&::-webkit-scrollbar': {
+                  width: '6px'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: '#ccc',
+                  borderRadius: '4px'
+                },
+                '&:hover::-webkit-scrollbar-thumb': {
+                  backgroundColor: '#999'
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: 'transparent'
+                }
+              }}
+              >
+              <PlotDetailCard plot={clickedPlotDetails} />
+              </Box>
+              </Card>
+
                 </Grid>
+                
+               
 
               </Grid>
             </Grid>
