@@ -14,6 +14,9 @@ import "./Dashboard.css"
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
 
+
+
+
 const Dashboard = () => {
   const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
@@ -26,21 +29,107 @@ const Dashboard = () => {
   const [highlightedPlot, setHighlightedPlot] = useState(null);
 
   useEffect(() => {
+    const baseStyles = {
+      Default: {
+        url: 'mapbox://styles/mapbox/streets-v11',
+        zoom: 11,
+        center: [74.3587, 31.5204]
+      },
+      Streets: {
+        url: 'mapbox://styles/ibrahimmalik2002/cm8cq3smm00jf01sa72lchd2g',
+        zoom: 11,
+        center: [74.1984366152605, 31.406322333747173]
+      },
+      Satellite: {
+        url: 'mapbox://styles/mapbox/satellite-streets-v12',
+        zoom: 16,
+        center: [74.1984366152605, 31.406322333747173]
+      },
+      Light: {
+        url: 'mapbox://styles/mapbox/light-v11',
+        zoom: 12,
+        center: [74.1984366152605, 31.406322333747173]
+      },
+      Dark: {
+        url: 'mapbox://styles/mapbox/dark-v11',
+        zoom: 12,
+        center: [74.1984366152605, 31.406322333747173]
+      },
+      Drone: {
+        url: 'mapbox://styles/ibrahimmalik2002/cm6909iji006b01qzduu40iha',
+        zoom: 13,
+        center: [74.1984366152605, 31.406322333747173]
+      }
+    };
+  
+    const initialStyle = baseStyles.Default;
+  
     const map = new mapboxgl.Map({
       container: mapRef.current,
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [74.3587, 31.5204],
-      zoom: 11,
-      attributionControl: false // ❌ Hide bottom-right attribution
-
+      style: initialStyle.url,
+      center: initialStyle.center,
+      zoom: initialStyle.zoom,
+      attributionControl: false
     });
-
+  
     setMapInstance(map);
-
-
+  
+    // Add zoom controls
+    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
+  
+    // Custom basemap control
+    const styleControl = document.createElement('div');
+    styleControl.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+  
+    const select = document.createElement('select');
+    select.style.padding = '4px';
+    select.style.fontSize = '14px';
+    select.style.border = 'none';
+    select.style.outline = 'none';
+    select.style.cursor = 'pointer';
+  
+    // Populate dropdown
+    for (const [name] of Object.entries(baseStyles)) {
+      const option = document.createElement('option');
+      option.value = name;
+      option.text = name;
+      select.appendChild(option);
+    }
+  
+    // Set default selected option
+    select.value = 'Default';
+  
+    // Handle basemap change
+    select.onchange = (e) => {
+      const selected = baseStyles[e.target.value];
+      if (!selected) return;
+  
+      map.setStyle(selected.url);
+      map.once('style.load', () => {
+        map.flyTo({
+          center: selected.center,
+          zoom: selected.zoom,
+          speed: 0.8
+        });
+      });
+    };
+  
+    styleControl.appendChild(select);
+  
+    map.addControl(
+      {
+        onAdd: () => styleControl,
+        onRemove: () => {
+          styleControl.parentNode.removeChild(styleControl);
+        }
+      },
+      'top-left'
+    );
+  
     return () => map.remove();
   }, []);
-
+  
+  
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
@@ -56,6 +145,14 @@ const Dashboard = () => {
     "Religious": "#673ab7", "Religious Building": "#9575cd", "Residential": "#03a9f4",
     "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd", "Illegal": "#e53935"
   };
+
+
+    
+  
+  
+
+
+
 
 
   useEffect(() => {
@@ -440,7 +537,7 @@ const Dashboard = () => {
               mt: 2,
               display: 'flex',
               flexDirection: 'column',
-              backgroundColor: '#F9F9F9',
+             
               border: '1px solid #003366',
               borderRadius: 1,
               overflow: 'hidden',

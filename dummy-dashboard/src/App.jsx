@@ -115,6 +115,7 @@ function App() {
         attributionControl: false,
         
       });
+      map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
 
       mapRef.current = map;
       setMapInstance(map); // Set the map instance in state
