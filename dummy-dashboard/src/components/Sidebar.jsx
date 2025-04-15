@@ -76,7 +76,7 @@ const Sidebar = ({
   useEffect(() => {
     const fetchTowns = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/all-soc/');
+        const response = await fetch('https://api.nespaklrms.com/api/all-soc/');
         const data = await response.json();
         const uniqueTowns = [...new Set(data.map(s => s.town_name))].sort();
         setTowns(uniqueTowns);
