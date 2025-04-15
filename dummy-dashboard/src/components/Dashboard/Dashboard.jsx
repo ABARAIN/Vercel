@@ -30,7 +30,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const baseStyles = {
-      Default: {
+      Basemaps: {
         url: 'mapbox://styles/mapbox/streets-v11',
         zoom: 11,
         center: [74.3587, 31.5204]
@@ -53,16 +53,16 @@ const Dashboard = () => {
       Dark: {
         url: 'mapbox://styles/mapbox/dark-v11',
         zoom: 12,
-        center: [74.1984366152605, 31.406322333747173]
+        center: [74.3595, 31.5190]
       },
       Drone: {
         url: 'mapbox://styles/ibrahimmalik2002/cm6909iji006b01qzduu40iha',
         zoom: 13,
-        center: [74.1984366152605, 31.406322333747173]
+        center: [74.3600, 31.5200]
       }
     };
   
-    const initialStyle = baseStyles.Default;
+    const initialStyle = baseStyles.Basemaps;
   
     const map = new mapboxgl.Map({
       container: mapRef.current,
@@ -96,8 +96,8 @@ const Dashboard = () => {
       select.appendChild(option);
     }
   
-    // Set default selected option
-    select.value = 'Default';
+    // Set Basemaps selected option
+    select.value = 'Basemaps';
   
     // Handle basemap change
     select.onchange = (e) => {
