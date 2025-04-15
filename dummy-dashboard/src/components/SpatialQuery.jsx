@@ -206,7 +206,6 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
 
   return (
     <div className="spatial-query-container">
-    <h3>Spatial Query Filters</h3>
 
     <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)}>
       <option value="">Select District</option>

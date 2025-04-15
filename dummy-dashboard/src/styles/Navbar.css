@@ -2,10 +2,10 @@
   display: flex;
   
   /*background: linear-gradient(90deg, #004080, #0056b3); */
-  background: white;
+  background:  #09002f;
   padding: 10px 20px; 
   position: fixed; 
-  top: 45px; 
+  top: 7.1%; 
   left: 0;
   right: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); 
@@ -23,7 +23,7 @@
 
 .dropdown label {
   margin-bottom: 5px;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: bold; 
   color: white; 
 }

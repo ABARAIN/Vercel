@@ -1,17 +1,16 @@
 .sidebar {
     position: fixed;
-    top: 110px;                /* below the fixed navbar */
+    top: 7%;                /* below the fixed navbar */
     right: 0;
     bottom: 0;
                /* set default width */
-    background-color: #f4f4f4;
+    background-color: #003366;  
     padding: 15px;
     overflow-y: hidden;
     box-sizing: border-box;
     border-right: 1px solid #ccc;
-    height:auto;
-    min-width: 330px;
-    max-width: 600px;
+    height:95%;
+    min-width: 24%;
   
   }
   
