@@ -65,7 +65,7 @@ const Dashboard = () => {
       const { lng, lat } = e.lngLat;
       const coordinateString = `lat=${lat}&lon=${lng}`;
       try {
-        const res = await fetch(`https://api.nespaklrms.com/api/society-parcel/?${coordinateString}`);
+        const res = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
         const data = await res.json();
 
         if (res.ok) {
@@ -253,23 +253,23 @@ const Dashboard = () => {
         onClick={() => navigate('/')}
         style={{
           position: 'absolute',
-          top: 6,
-          right: 10,
+          top: 8,
+          right: 13,
           zIndex: 1000,
           padding: '8px 6px',
           backgroundColor: '#ffffff',
           color: 'black',
           border: 'none',
-          borderRadius: '5px',
+          borderRadius: '3px',
           cursor: 'pointer',
-          fontSize: '14px', font: 'Open Sans, sans-serif'
+          fontSize: '15px', font: 'Open Sans, sans-serif'
         }}
       >
         Back to Home
       </button>
 
       <CssBaseline />
-      <AppBar position="static" sx={{ backgroundColor: '#003366;', height: '48px' }}>
+      <AppBar position="static" sx={{ backgroundColor: '#003366;', height: '51px' }}>
         <Toolbar sx={{ minHeight: '48px !important', px: 2 }}>
           <Typography variant="subtitle1" sx={{ fontSize: '19px' }}>
             Dashboard
@@ -282,7 +282,7 @@ const Dashboard = () => {
         maxWidth={false}
         disableGutters
         sx={{
-          p: 2, transform: 'scale(0.8)', transformOrigin: 'top left', width: '125%', // counteracts scale shrink to fill horizontal
+          p: 2, transform: 'scale(0.8)', transformOrigin: 'top left', width: '125%',height:"124%", // counteracts scale shrink to fill horizontal
         }}
       >
 
@@ -290,7 +290,7 @@ const Dashboard = () => {
           <Grid container spacing={2} sx={{ height: '100%' }}>
             {/* Map - Full Left Side */}
             <Grid item xs={12} md={6}>
-              <Box ref={mapRef} sx={{ width: '100%', height: '100%', borderRadius: 2 }} />
+              <Box ref={mapRef} sx={{ width: '100%', height: '96.5%', borderRadius: 2 }} />
             </Grid>
 
             {/* Right Side: Chart + Legend + SpatialQuery + Blocks */}
@@ -300,7 +300,7 @@ const Dashboard = () => {
                 <Grid item xs={12} md={6}>
                  
                   {/* Chart */}
-                  <Card sx={{ height: 290, border: '1px solid #003366', }}>
+                  <Card sx={{ height: '33%', border: '1px solid #003366', }}>
                     <CardContent sx={{ pt: 1, pb: 1 }}>
                       <Typography variant="h6" gutterBottom sx={{ mb: -4, mt: 1 }}>
                         Landuse Breakdown
@@ -317,7 +317,7 @@ const Dashboard = () => {
 
 
                   {/* Legend */}
-                  <Card sx={{ height: 310, mt: 2, overflowY: 'auto',border: '1px solid #003366', }}>
+                  <Card sx={{ height: '35%', mt: 2, overflowY: 'auto',border: '1px solid #003366', }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
                         Legend
@@ -334,7 +334,7 @@ const Dashboard = () => {
                   {/* Block 4 - Selected Plot Numbers */}
                   <Card
                     sx={{
-                      height: 210,
+                      height: '27%',
                       width: '100%',
                       mt: 2,
                       border: '1px solid #003366',
@@ -413,7 +413,7 @@ const Dashboard = () => {
               {/* SpatialQuery + Block 4 */}
                 <Grid item xs={12} md={6}>
                   {/* SpatialQuery */}
-                  <Card sx={{ height: 420, border: '1px solid #003366' }}>
+                  <Card sx={{ height: "54.5%", border: '1px solid #003366' }}>
                     <CardContent sx={{ height: '100%', overflowY: 'auto' }}>
                     <Typography variant="h6" sx={{ marginBottom: '20px' }}>Spatial Query</Typography>
 
@@ -435,7 +435,7 @@ const Dashboard = () => {
               <Card
               elevation={3}
               sx={{
-              height: 405, // Fixed height
+              height: "42%", // Fixed height
               width: '100%',
               mt: 2,
               display: 'flex',
