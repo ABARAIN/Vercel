@@ -4,7 +4,7 @@ import {
   Box, Grid, Card, CardContent, Typography,
   AppBar, Toolbar, CssBaseline, Container, Paper,
 } from '@mui/material';
-
+import simplify from 'simplify-js';
 import SpatialQuery from '../SpatialQuery';
 import LandusePieChart from './LandusePieChart';
 import LanduseLegend from './LanduseLegend';
@@ -27,6 +27,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [clickedPlotDetails, setClickedPlotDetails] = useState(null);
   const [highlightedPlot, setHighlightedPlot] = useState(null);
+  const [cornerMarkers, setCornerMarkers] = useState([]);
+
 
   useEffect(() => {
     const baseStyles = {
@@ -130,6 +132,11 @@ const Dashboard = () => {
   }, []);
   
   
+
+
+  
+
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
@@ -162,7 +169,7 @@ const Dashboard = () => {
       const { lng, lat } = e.lngLat;
       const coordinateString = `lat=${lat}&lon=${lng}`;
       try {
-        const res = await fetch(`https://api.nespaklrms.com/api/society-parcel/?${coordinateString}`);
+        const res = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
         const data = await res.json();
 
         if (res.ok) {
@@ -270,6 +277,9 @@ const Dashboard = () => {
     setHighlightedPlot(null);                // Remove any highlighted plot
     setClickedPlotDetails(null);
 
+
+   
+
     if (!fullGeojsonBackup || !mapInstance) return;
 
     if (mapInstance.getLayer('spatial-query-layer')) {
@@ -303,28 +313,81 @@ const Dashboard = () => {
 
   };
 
+
+  function getAngleBetween(p1, p2, p3) {
+    const v1 = [p1[0] - p2[0], p1[1] - p2[1]];
+    const v2 = [p3[0] - p2[0], p3[1] - p2[1]];
+  
+    const dot = v1[0] * v2[0] + v1[1] * v2[1];
+    const mag1 = Math.sqrt(v1[0] ** 2 + v1[1] ** 2);
+    const mag2 = Math.sqrt(v2[0] ** 2 + v2[1] ** 2);
+  
+    const angleRad = Math.acos(dot / (mag1 * mag2));
+    return (angleRad * 180) / Math.PI;
+  }
+  
+
+  function getSimplifiedCornerLabels(geometry, tolerance = 0.00005, angleThreshold = 160) {
+    const coordinates =
+      geometry.type === 'Polygon'
+        ? geometry.coordinates[0]
+        : geometry.type === 'MultiPolygon'
+        ? geometry.coordinates[0][0]
+        : [];
+  
+    if (!coordinates.length) return [];
+  
+    // Remove duplicated last point if polygon is closed
+    const uniqueCoords = [...coordinates];
+    if (
+      coordinates.length > 1 &&
+      coordinates[0][0] === coordinates[coordinates.length - 1][0] &&
+      coordinates[0][1] === coordinates[coordinates.length - 1][1]
+    ) {
+      uniqueCoords.pop();
+    }
+  
+    const corners = [];
+  
+    for (let i = 0; i < uniqueCoords.length; i++) {
+      const prev = uniqueCoords[(i - 1 + uniqueCoords.length) % uniqueCoords.length];
+      const current = uniqueCoords[i];
+      const next = uniqueCoords[(i + 1) % uniqueCoords.length];
+  
+      const angle = getAngleBetween(prev, current, next);
+      if (angle < angleThreshold) {
+        corners.push(current);
+      }
+    }
+  
+    // Always push if there are 4 or fewer points (force label corners)
+    const labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    return (corners.length ? corners : uniqueCoords.slice(0, 6)).map((lngLat, idx) => ({
+      label: labels[idx],
+      lngLat,
+    }));
+  }
+  
+  
+
+
   const handlePlotClick = (plot) => {
     setHighlightedPlot(plot.properties.plot_no);
-
-    // 🗺️ Zoom to plot bounds
+  
     const bounds = new mapboxgl.LngLatBounds();
     const geom = plot.geometry;
+  
     if (geom.type === 'Polygon') {
       geom.coordinates[0].forEach((c) => bounds.extend(c));
     } else if (geom.type === 'MultiPolygon') {
-      geom.coordinates.forEach((poly) =>
-        poly[0].forEach((c) => bounds.extend(c))
-      );
+      geom.coordinates.forEach((poly) => poly[0].forEach((c) => bounds.extend(c)));
     }
-
+  
     if (!bounds.isEmpty()) {
       mapInstance.fitBounds(bounds, { padding: 60, duration: 800 });
     }
-
-    // 📌 Extract centroid or approximate lat/lng
-    let lat = 0;
-    let lng = 0;
-
+  
+    let lat = 0, lng = 0;
     if (geom.type === 'Polygon') {
       lat = parseFloat(geom.coordinates[0]?.[0]?.[1]) || 0;
       lng = parseFloat(geom.coordinates[0]?.[0]?.[0]) || 0;
@@ -332,18 +395,32 @@ const Dashboard = () => {
       lat = parseFloat(geom.coordinates[0]?.[0]?.[0]?.[1]) || 0;
       lng = parseFloat(geom.coordinates[0]?.[0]?.[0]?.[0]) || 0;
     }
-    console.log("🧩 Selected plot properties:", plot.properties);
-
-    // 🧠 Set clicked plot details (used in PlotDetailCard)
-    setClickedPlotDetails({
-      data: plot.properties,
-      lat,
-      lng,
+  
+    setClickedPlotDetails({ data: plot.properties, lat, lng });
+  
+    // 🧠 Add labeled corners
+    const corners = getSimplifiedCornerLabels(geom, 0.00005, 160);
+    cornerMarkers.forEach((m) => m.remove());
+  
+    const newMarkers = corners.map(({ label, lngLat }) => {
+      const el = document.createElement('div');
+      el.className = 'corner-marker-label';
+      el.innerHTML = label;
+  
+      return new mapboxgl.Marker(el)
+        .setLngLat(lngLat)
+        .setPopup(
+          new mapboxgl.Popup({ offset: 8 }).setHTML(
+            `<strong>Corner ${label}</strong><br/>Lat: ${lngLat[1].toFixed(8)}<br/>Lng: ${lngLat[0].toFixed(8)}`
+          )
+        )
+        .addTo(mapInstance);
     });
+  
+    setCornerMarkers(newMarkers);
   };
-
-
-
+  
+  
   return (
     <>
       <button

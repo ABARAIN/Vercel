@@ -32,6 +32,7 @@
     "react-select": "^5.10.0",
     "recharts": "^2.15.1",
     "shpjs": "^6.1.0",
+    "simplify-js": "^1.2.4",
     "wkt": "^0.1.1"
   },
   "devDependencies": {
