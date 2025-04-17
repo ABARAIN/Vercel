@@ -2,15 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import {
   Box, Grid, Card, CardContent, Typography,
-  AppBar, Toolbar, CssBaseline, Container, Paper,
+  AppBar, Toolbar, CssBaseline, Container, Paper, Button,
 } from '@mui/material';
 import simplify from 'simplify-js';
 import SpatialQuery from '../SpatialQuery';
 import LandusePieChart from './LandusePieChart';
 import LanduseLegend from './LanduseLegend';
-
+import PlotInfoPopup from '../popups/PlotInfoPopup';
 import { useNavigate } from 'react-router-dom';
 import "./Dashboard.css"
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
 
@@ -28,7 +30,9 @@ const Dashboard = () => {
   const [clickedPlotDetails, setClickedPlotDetails] = useState(null);
   const [highlightedPlot, setHighlightedPlot] = useState(null);
   const [cornerMarkers, setCornerMarkers] = useState([]);
-
+  const [showCornerPopup, setShowCornerPopup] = useState(true);
+  const [showPlotPopup, setShowPlotPopup] = useState(true);
+  const legendRef = useRef(null);
 
   useEffect(() => {
     const baseStyles = {
@@ -63,33 +67,53 @@ const Dashboard = () => {
         center: [74.3600, 31.5200]
       }
     };
-  
+
     const initialStyle = baseStyles.Basemaps;
-  
+
     const map = new mapboxgl.Map({
       container: mapRef.current,
       style: initialStyle.url,
       center: initialStyle.center,
       zoom: initialStyle.zoom,
-      attributionControl: false
+      attributionControl: false,
+      preserveDrawingBuffer:true,
     });
-  
+
+
+    const attributionControl = new mapboxgl.AttributionControl({
+      customAttribution: ''
+    });
+
+    map.addControl(attributionControl);
+
+    map.on('load', () => {
+      const attrib = document.querySelector('.mapboxgl-ctrl-attrib');
+      if (attrib) {
+        attrib.innerHTML = `
+          <a href="https://www.nespak.com.pk/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
+            © Nespak
+          </a>
+        `;
+      }
+    });
+
+
     setMapInstance(map);
-  
+
     // Add zoom controls
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
-  
+
     // Custom basemap control
     const styleControl = document.createElement('div');
     styleControl.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
-  
+
     const select = document.createElement('select');
     select.style.padding = '4px';
     select.style.fontSize = '14px';
     select.style.border = 'none';
     select.style.outline = 'none';
     select.style.cursor = 'pointer';
-  
+
     // Populate dropdown
     for (const [name] of Object.entries(baseStyles)) {
       const option = document.createElement('option');
@@ -97,15 +121,15 @@ const Dashboard = () => {
       option.text = name;
       select.appendChild(option);
     }
-  
+
     // Set Basemaps selected option
     select.value = 'Basemaps';
-  
+
     // Handle basemap change
     select.onchange = (e) => {
       const selected = baseStyles[e.target.value];
       if (!selected) return;
-  
+
       map.setStyle(selected.url);
       map.once('style.load', () => {
         map.flyTo({
@@ -115,9 +139,9 @@ const Dashboard = () => {
         });
       });
     };
-  
+
     styleControl.appendChild(select);
-  
+
     map.addControl(
       {
         onAdd: () => styleControl,
@@ -127,14 +151,14 @@ const Dashboard = () => {
       },
       'top-left'
     );
-  
+
     return () => map.remove();
   }, []);
-  
-  
 
 
-  
+
+
+
 
 
   useEffect(() => {
@@ -154,9 +178,100 @@ const Dashboard = () => {
   };
 
 
-    
+
+
+  const handlePrintReport = () => {
+    if (!clickedPlotDetails || !mapInstance) {
+      alert("No plot selected or map not ready.");
+      return;
+    }
   
+    const doc = new jsPDF();
+    const { data, lat, lng } = clickedPlotDetails;
   
+    // 📸 1. Map snapshot using Mapbox canvas
+    const mapCanvas = mapInstance.getCanvas();
+    const mapImage = mapCanvas.toDataURL("image/png");
+  
+    // 🧩 2. Demarcation data
+    const cornersData = cornerMarkers.map(marker => {
+      const label = marker.getElement().innerHTML;
+      const { lng, lat } = marker.getLngLat();
+      return { label, lat: lat.toFixed(6), lng: lng.toFixed(6) };
+    });
+  
+    // 📍 3. Title
+    doc.setFontSize(16);
+    doc.text("Plot Report", 15, 15);
+  
+    // 📸 4. Map snapshot
+    doc.setFontSize(12);
+    doc.text("Plot Map Screenshot", 15, 25);
+    doc.addImage(mapImage, 'PNG', 15, 30, 180, 100);
+  
+    let y = 135;
+  
+    // 📋 5. Plot Info
+    doc.text("Plot Details", 15, y);
+    y += 8;
+    const info = [
+      ["Town", data.town_name],
+      ["Block", data.block],
+      ["Plot No", data.plotno || data.plot_no],
+      ["Division", data.division],
+      ["District", data.district],
+      ["Tehsil", data.tehsil],
+      ["Landuse", data.landuse],
+      ["Society Type", data.society_type || data.societytyp],
+      ["Source", data.source],
+      ["Remarks", data.illegal_remarks || "-"]
+    ];
+    info.forEach(([key, val]) => {
+      doc.text(`${key}: ${val ?? "-"}`, 15, y);
+      y += 7;
+    });
+  
+    // 🧱 6. Demarcation table
+    y += 8;
+    doc.text("Demarcation (Corners)", 15, y);
+    y += 6;
+    cornersData.forEach(({ label, lat, lng }) => {
+      doc.text(`${label}: Latitude ${lat}, Longitude ${lng}`, 15, y);
+      y += 6;
+    });
+  
+    // 🗺️ 7. Landuse Legend
+    y += 6;
+    doc.text("Landuse Legend", 15, y);
+    y += 8;
+    const colorMap = {
+      "Illegal": "#e53935", "Commercial": "#000000", "Educational": "#2196f3",
+      "Encroachment": "#795548", "Graveyard": "#9c27b0", "Health Facility": "#4caf50",
+      "Nullah": "#00bcd4", "Open Space": "#cddc39", "Others": "#607d8b", "Park": "#8bc34a",
+      "Parking": "#ffc107", "Public Building": "#ff5722", "Recreational Facility": "#3f51b5",
+      "Religious": "#673ab7", "Religious Building": "#9575cd", "Residential": "#03a9f4",
+      "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd"
+    };
+    const legendKeys = Object.keys(colorMap);
+    legendKeys.forEach((lu, index) => {
+      const x = 15 + (index % 4) * 50;
+      const rowY = y + Math.floor(index / 4) * 8;
+  
+      // Draw color box
+      doc.setFillColor(colorMap[lu]);
+      doc.rect(x, rowY, 4, 4, "F");
+  
+      // Label
+      doc.setTextColor(0, 0, 0);
+      doc.text(lu, x + 6, rowY + 3.5);
+    });
+  
+    // 💾 Save file
+    const plotLabel = data.plotno || data.plot_no || "Unknown";
+    doc.save(`Plot_Report_${plotLabel}.pdf`);
+  };
+  
+
 
 
 
@@ -278,7 +393,7 @@ const Dashboard = () => {
     setClickedPlotDetails(null);
 
 
-   
+
 
     if (!fullGeojsonBackup || !mapInstance) return;
 
@@ -302,7 +417,7 @@ const Dashboard = () => {
           "Encroachment", "#795548", "Recreational Facility", "#3f51b5", "Health Facility", "#4caf50",
           "Nullah", "#00bcd4", "Village", "#ff9800", "Parking", "#ffc107", "Road", "#9e9e9e",
           "Unclassified", "#bdbdbd", "#bdbdbd"
-        ],  
+        ],
         'fill-opacity': 0.6,
         'fill-outline-color': '#333'
       }
@@ -317,26 +432,26 @@ const Dashboard = () => {
   function getAngleBetween(p1, p2, p3) {
     const v1 = [p1[0] - p2[0], p1[1] - p2[1]];
     const v2 = [p3[0] - p2[0], p3[1] - p2[1]];
-  
+
     const dot = v1[0] * v2[0] + v1[1] * v2[1];
     const mag1 = Math.sqrt(v1[0] ** 2 + v1[1] ** 2);
     const mag2 = Math.sqrt(v2[0] ** 2 + v2[1] ** 2);
-  
+
     const angleRad = Math.acos(dot / (mag1 * mag2));
     return (angleRad * 180) / Math.PI;
   }
-  
+
 
   function getSimplifiedCornerLabels(geometry, tolerance = 0.00005, angleThreshold = 160) {
     const coordinates =
       geometry.type === 'Polygon'
         ? geometry.coordinates[0]
         : geometry.type === 'MultiPolygon'
-        ? geometry.coordinates[0][0]
-        : [];
-  
+          ? geometry.coordinates[0][0]
+          : [];
+
     if (!coordinates.length) return [];
-  
+
     // Remove duplicated last point if polygon is closed
     const uniqueCoords = [...coordinates];
     if (
@@ -346,20 +461,20 @@ const Dashboard = () => {
     ) {
       uniqueCoords.pop();
     }
-  
+
     const corners = [];
-  
+
     for (let i = 0; i < uniqueCoords.length; i++) {
       const prev = uniqueCoords[(i - 1 + uniqueCoords.length) % uniqueCoords.length];
       const current = uniqueCoords[i];
       const next = uniqueCoords[(i + 1) % uniqueCoords.length];
-  
+
       const angle = getAngleBetween(prev, current, next);
       if (angle < angleThreshold) {
         corners.push(current);
       }
     }
-  
+
     // Always push if there are 4 or fewer points (force label corners)
     const labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     return (corners.length ? corners : uniqueCoords.slice(0, 6)).map((lngLat, idx) => ({
@@ -367,26 +482,26 @@ const Dashboard = () => {
       lngLat,
     }));
   }
-  
-  
+
+
 
 
   const handlePlotClick = (plot) => {
     setHighlightedPlot(plot.properties.plot_no);
-  
+
     const bounds = new mapboxgl.LngLatBounds();
     const geom = plot.geometry;
-  
+
     if (geom.type === 'Polygon') {
       geom.coordinates[0].forEach((c) => bounds.extend(c));
     } else if (geom.type === 'MultiPolygon') {
       geom.coordinates.forEach((poly) => poly[0].forEach((c) => bounds.extend(c)));
     }
-  
+
     if (!bounds.isEmpty()) {
       mapInstance.fitBounds(bounds, { padding: 60, duration: 800 });
     }
-  
+
     let lat = 0, lng = 0;
     if (geom.type === 'Polygon') {
       lat = parseFloat(geom.coordinates[0]?.[0]?.[1]) || 0;
@@ -395,18 +510,18 @@ const Dashboard = () => {
       lat = parseFloat(geom.coordinates[0]?.[0]?.[0]?.[1]) || 0;
       lng = parseFloat(geom.coordinates[0]?.[0]?.[0]?.[0]) || 0;
     }
-  
+
     setClickedPlotDetails({ data: plot.properties, lat, lng });
-  
+
     // 🧠 Add labeled corners
     const corners = getSimplifiedCornerLabels(geom, 0.00005, 160);
     cornerMarkers.forEach((m) => m.remove());
-  
+
     const newMarkers = corners.map(({ label, lngLat }) => {
       const el = document.createElement('div');
       el.className = 'corner-marker-label';
       el.innerHTML = label;
-  
+
       return new mapboxgl.Marker(el)
         .setLngLat(lngLat)
         .setPopup(
@@ -416,11 +531,36 @@ const Dashboard = () => {
         )
         .addTo(mapInstance);
     });
-  
-    setCornerMarkers(newMarkers);
+
+
+
+
+    if (showCornerPopup) {
+      const corners = getSimplifiedCornerLabels(plot.geometry, 0.00005, 160);
+      cornerMarkers.forEach(marker => marker.remove());
+
+      const newMarkers = corners.map(({ label, lngLat }) => {
+        const el = document.createElement('div');
+        el.className = 'corner-marker-label';
+        el.innerHTML = label;
+
+        return new mapboxgl.Marker(el)
+          .setLngLat(lngLat)
+          .setPopup(
+            new mapboxgl.Popup({ offset: 8 }).setHTML(
+              `<strong>Corner ${label}</strong><br/>Lat: ${lngLat[1].toFixed(6)}<br/>Lng: ${lngLat[0].toFixed(6)}`
+            )
+          )
+          .addTo(mapInstance);
+      });
+
+      setCornerMarkers(newMarkers);
+    }
+
+
   };
-  
-  
+
+
   return (
     <>
       <button
@@ -452,6 +592,7 @@ const Dashboard = () => {
       </AppBar>
 
 
+
       <Container
         maxWidth={false}
         disableGutters
@@ -464,7 +605,33 @@ const Dashboard = () => {
           <Grid container spacing={2} sx={{ height: '100%' }}>
             {/* Map - Full Left Side */}
             <Grid item xs={12} md={6}>
-              <Box ref={mapRef} sx={{ width: '100%', height: '100%', borderRadius: 2 }} />
+            <div id="screenshot-container" style={{ width: '100%', height: '100%' }}>
+  <Box ref={mapRef} sx={{ width: '100%', height: '100%', borderRadius: 2 }} />
+</div>
+
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handlePrintReport}
+                sx={{ mb: 1 }}
+              >
+                🖨️ Print Report
+              </Button>
+
+              {clickedPlotDetails && showPlotPopup && (
+                <PlotInfoPopup
+                  plot={clickedPlotDetails}
+                  map={mapInstance}
+                  showCorners={showCornerPopup}
+                  onToggleCorners={() => setShowCornerPopup(prev => !prev)}
+                  onClose={() => {
+                    setClickedPlotDetails(null);
+                    setShowPlotPopup(false);
+                    cornerMarkers.forEach((m) => m.remove());
+                  }}
+                />
+              )}
+
             </Grid>
 
             {/* Right Side: Chart + Legend + SpatialQuery + Blocks */}
@@ -472,7 +639,7 @@ const Dashboard = () => {
               <Grid container spacing={2} sx={{ height: '100%' }}>
                 {/* Chart + Legend + Block 3 */}
                 <Grid item xs={12} md={6}>
-                 
+
                   {/* Chart */}
                   <Card sx={{ height: 290, border: '1px solid #003366', }}>
                     <CardContent sx={{ pt: 1, pb: 1 }}>
@@ -491,7 +658,7 @@ const Dashboard = () => {
 
 
                   {/* Legend */}
-                  <Card sx={{ height: 310, mt: 2, overflowY: 'auto',border: '1px solid #003366', }}>
+                  <Card sx={{ height: 310, mt: 2, overflowY: 'auto', border: '1px solid #003366', }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
                         Legend
@@ -500,11 +667,12 @@ const Dashboard = () => {
                         data={chartData}
                         selectedClass={selectedLanduseClass}
                         onClassClick={handleClassClick}
+                        ref={legendRef}
                       />
                     </CardContent>
                   </Card>
 
-                  
+
                   {/* Block 4 - Selected Plot Numbers */}
                   <Card
                     sx={{
@@ -584,12 +752,12 @@ const Dashboard = () => {
 
                 </Grid>
 
-              {/* SpatialQuery + Block 4 */}
+                {/* SpatialQuery + Block 4 */}
                 <Grid item xs={12} md={6}>
                   {/* SpatialQuery */}
                   <Card sx={{ height: 420, border: '1px solid #003366' }}>
                     <CardContent sx={{ height: '100%', overflowY: 'auto' }}>
-                    <Typography variant="h6" sx={{ marginBottom: '20px' }}>Spatial Query</Typography>
+                      <Typography variant="h6" sx={{ marginBottom: '20px' }}>Spatial Query</Typography>
 
                       {mapInstance && (
                         <SpatialQuery
@@ -605,62 +773,62 @@ const Dashboard = () => {
                   </Card>
                   {/* Block 4: Selected Plots List */}
 
-             {/* Block 3: Plot Details */}
-              <Card
-              elevation={3}
-              sx={{
-              height: 405, // Fixed height
-              width: '100%',
-              mt: 2,
-              display: 'flex',
-              flexDirection: 'column',
-             
-              border: '1px solid #003366',
-              borderRadius: 1,
-              overflow: 'hidden',
-              }}
-              >
-              {/* Fixed Header */}
-              <CardContent
-              sx={{
-                borderBottom: '1px solid #ddd',
-                py: 1.5,
-                px: 2,
-                flexShrink: 0, // Ensures header doesn't expand
-              }}
-              >
-              <Typography variant="h6">Plot Details</Typography>
-              </CardContent>
+                  {/* Block 3: Plot Details */}
+                  <Card
+                    elevation={3}
+                    sx={{
+                      height: 405, // Fixed height
+                      width: '100%',
+                      mt: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
 
-              {/* Scrollable Body */}
-              <Box
-              sx={{
-                flex: 1, // Fills remaining space
-                overflowY: 'auto',
-                px: 2,
-                py: 1,
-                '&::-webkit-scrollbar': {
-                  width: '6px'
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: '#ccc',
-                  borderRadius: '4px'
-                },
-                '&:hover::-webkit-scrollbar-thumb': {
-                  backgroundColor: '#999'
-                },
-                '&::-webkit-scrollbar-track': {
-                  backgroundColor: 'transparent'
-                }
-              }}
-              >
-              <PlotDetailCard plot={clickedPlotDetails} />
-              </Box>
-              </Card>
+                      border: '1px solid #003366',
+                      borderRadius: 1,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {/* Fixed Header */}
+                    <CardContent
+                      sx={{
+                        borderBottom: '1px solid #ddd',
+                        py: 1.5,
+                        px: 2,
+                        flexShrink: 0, // Ensures header doesn't expand
+                      }}
+                    >
+                      <Typography variant="h6">Plot Details</Typography>
+                    </CardContent>
+
+                    {/* Scrollable Body */}
+                    <Box
+                      sx={{
+                        flex: 1, // Fills remaining space
+                        overflowY: 'auto',
+                        px: 2,
+                        py: 1,
+                        '&::-webkit-scrollbar': {
+                          width: '6px'
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          backgroundColor: '#ccc',
+                          borderRadius: '4px'
+                        },
+                        '&:hover::-webkit-scrollbar-thumb': {
+                          backgroundColor: '#999'
+                        },
+                        '&::-webkit-scrollbar-track': {
+                          backgroundColor: 'transparent'
+                        }
+                      }}
+                    >
+                      <PlotDetailCard plot={clickedPlotDetails} />
+                    </Box>
+                  </Card>
 
                 </Grid>
-                
-               
+
+
 
               </Grid>
             </Grid>

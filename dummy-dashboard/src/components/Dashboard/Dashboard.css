@@ -87,3 +87,61 @@
   border-top-color: #ffffff !important; /* Match the popup background */
 }
 
+.mapboxgl-ctrl-attrib a[href*="improve-mapbox"] {
+  display: none !important;
+}
+
+.mapboxgl-ctrl-attrib a[href*="mapbox.com"] {
+  display: none !important;
+}
+
+.mapboxgl-ctrl-attrib a[href*="openstreetmap.org"] {
+  display: none !important;
+}
+.map-plot-popup {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+  padding: 10px;
+  min-width: 220px;
+  max-width: 240px;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.popup-header h4 {
+  font-size: 14px;
+  margin: 0;
+  font-weight: bold;
+  color: #004c99;
+}
+
+.popup-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #888;
+}
+
+.popup-content div {
+  margin-bottom: 4px;
+}
+
+.popup-img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  margin-top: 8px;
+  border-radius: 6px;
+}
+
+.popup-toggle {
+  margin-top: 8px;
+  font-size: 12px;
+}
