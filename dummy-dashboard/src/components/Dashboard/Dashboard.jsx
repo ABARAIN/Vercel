@@ -278,25 +278,34 @@ const Dashboard = () => {
 
 
 
+
+
   useEffect(() => {
     if (!mapInstance) return;
   
     const handlePolygonClick = (e) => {
+      // 🟢 Check if the click was on an existing corner marker
+      const clickedElement = e.originalEvent.target;
+      if (clickedElement?.classList?.contains('corner-marker-label')) {
+        console.log("🚫 Ignoring corner marker click");
+        return;  // 🛑 Prevent selecting a different plot from corner clicks
+      }
+  
       const features = mapInstance.queryRenderedFeatures(e.point, {
-        layers: ['spatial-query-layer']  // Use your correct layer ID here
+        layers: ['spatial-query-layer']  // Use your actual plot layer ID
       });
   
       if (features.length > 0) {
         const clickedFeature = features[0];
         console.log("🟡 Polygon clicked:", clickedFeature);
   
-        // Clear previous demarcation markers
+        // 🔁 Clear previous demarcation markers
         if (cornerMarkers.length > 0) {
           cornerMarkers.forEach(marker => marker.remove());
-          setCornerMarkers([]);  // Update state to clear
+          setCornerMarkers([]);
         }
   
-        // Call plot click logic (this will re-render corners for the new plot)
+        // 🧠 Handle corner labeling + zoom + block update
         handlePlotClick(clickedFeature);
   
       } else {
@@ -312,9 +321,7 @@ const Dashboard = () => {
   }, [mapInstance, geojsonData, cornerMarkers]);
   
 
-
-
-
+  
   const PlotDetailCard = ({ plot }) => {
     if (!plot) {
       return <div className="plot-card-empty">No plot selected.</div>;
