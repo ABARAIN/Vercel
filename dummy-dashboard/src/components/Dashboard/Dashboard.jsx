@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import {
   Box, Grid, Card, CardContent, Typography,
-  AppBar, Toolbar, CssBaseline, Container, Paper, Button,
+  AppBar, Toolbar, CssBaseline, Container, Paper, Button, CircularProgress,
 } from '@mui/material';
 import simplify from 'simplify-js';
 import SpatialQuery from '../SpatialQuery';
@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import "./Dashboard.css"
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import bbox from '@turf/bbox';
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiaWJyYWhpbW1hbGlrMjAwMiIsImEiOiJjbTQ4OGFsZ2YwZXIyMmlvYWI5a2lqcmRmIn0.rBsosB8v7n08Vkq1UHH_Pw';
 
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [showCornerPopup, setShowCornerPopup] = useState(true);
   const [showPlotPopup, setShowPlotPopup] = useState(true);
   const legendRef = useRef(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const baseStyles = {
@@ -76,7 +78,7 @@ const Dashboard = () => {
       center: initialStyle.center,
       zoom: initialStyle.zoom,
       attributionControl: false,
-      preserveDrawingBuffer:true,
+      preserveDrawingBuffer: true,
     });
 
 
@@ -101,7 +103,8 @@ const Dashboard = () => {
     setMapInstance(map);
 
     // Add zoom controls
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
+    map.addControl(new mapboxgl.NavigationControl({ showCompass: true }), 'top-right');
+
 
     // Custom basemap control
     const styleControl = document.createElement('div');
@@ -185,32 +188,32 @@ const Dashboard = () => {
       alert("No plot selected or map not ready.");
       return;
     }
-  
+
     const doc = new jsPDF();
     const { data, lat, lng } = clickedPlotDetails;
-  
+
     // 📸 1. Map snapshot using Mapbox canvas
     const mapCanvas = mapInstance.getCanvas();
     const mapImage = mapCanvas.toDataURL("image/png");
-  
+
     // 🧩 2. Demarcation data
     const cornersData = cornerMarkers.map(marker => {
       const label = marker.getElement().innerHTML;
       const { lng, lat } = marker.getLngLat();
       return { label, lat: lat.toFixed(6), lng: lng.toFixed(6) };
     });
-  
+
     // 📍 3. Title
     doc.setFontSize(16);
     doc.text("Plot Report", 15, 15);
-  
+
     // 📸 4. Map snapshot
     doc.setFontSize(12);
     doc.text("Plot Map Screenshot", 15, 25);
     doc.addImage(mapImage, 'PNG', 15, 30, 180, 100);
-  
+
     let y = 135;
-  
+
     // 📋 5. Plot Info
     doc.text("Plot Details", 15, y);
     y += 8;
@@ -230,7 +233,7 @@ const Dashboard = () => {
       doc.text(`${key}: ${val ?? "-"}`, 15, y);
       y += 7;
     });
-  
+
     // 🧱 6. Demarcation table
     y += 8;
     doc.text("Demarcation (Corners)", 15, y);
@@ -239,7 +242,7 @@ const Dashboard = () => {
       doc.text(`${label}: Latitude ${lat}, Longitude ${lng}`, 15, y);
       y += 6;
     });
-  
+
     // 🗺️ 7. Landuse Legend
     y += 6;
     doc.text("Landuse Legend", 15, y);
@@ -256,22 +259,20 @@ const Dashboard = () => {
     legendKeys.forEach((lu, index) => {
       const x = 15 + (index % 4) * 50;
       const rowY = y + Math.floor(index / 4) * 8;
-  
+
       // Draw color box
       doc.setFillColor(colorMap[lu]);
       doc.rect(x, rowY, 4, 4, "F");
-  
+
       // Label
       doc.setTextColor(0, 0, 0);
       doc.text(lu, x + 6, rowY + 3.5);
     });
-  
+
     // 💾 Save file
     const plotLabel = data.plotno || data.plot_no || "Unknown";
     doc.save(`Plot_Report_${plotLabel}.pdf`);
   };
-  
-
 
 
 
@@ -279,27 +280,40 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!mapInstance) return;
-
-    const handleClick = async (e) => {
-      const { lng, lat } = e.lngLat;
-      const coordinateString = `lat=${lat}&lon=${lng}`;
-      try {
-        const res = await fetch(`http://127.0.0.1:8000/api/society-parcel/?${coordinateString}`);
-        const data = await res.json();
-
-        if (res.ok) {
-          console.log("✅ Plot detail fetched:", data);
-          setClickedPlotDetails({ data, lat, lng });
-          const popupContent = AllSocietiesPopup(data, lat, lng);
+  
+    const handlePolygonClick = (e) => {
+      const features = mapInstance.queryRenderedFeatures(e.point, {
+        layers: ['spatial-query-layer']  // Use your correct layer ID here
+      });
+  
+      if (features.length > 0) {
+        const clickedFeature = features[0];
+        console.log("🟡 Polygon clicked:", clickedFeature);
+  
+        // Clear previous demarcation markers
+        if (cornerMarkers.length > 0) {
+          cornerMarkers.forEach(marker => marker.remove());
+          setCornerMarkers([]);  // Update state to clear
         }
-      } catch (error) {
-        console.error("❌ Error fetching plot info:", error);
+  
+        // Call plot click logic (this will re-render corners for the new plot)
+        handlePlotClick(clickedFeature);
+  
+      } else {
+        console.log("⚪️ Clicked outside polygons");
       }
     };
+  
+    mapInstance.on('click', handlePolygonClick);
+  
+    return () => {
+      mapInstance.off('click', handlePolygonClick);
+    };
+  }, [mapInstance, geojsonData, cornerMarkers]);
+  
 
-    mapInstance.on('click', handleClick);
-    return () => mapInstance.off('click', handleClick);
-  }, [mapInstance]);
+
+
 
   const PlotDetailCard = ({ plot }) => {
     if (!plot) {
@@ -488,20 +502,21 @@ const Dashboard = () => {
 
   const handlePlotClick = (plot) => {
     setHighlightedPlot(plot.properties.plot_no);
-
+  
     const bounds = new mapboxgl.LngLatBounds();
     const geom = plot.geometry;
-
+  
     if (geom.type === 'Polygon') {
       geom.coordinates[0].forEach((c) => bounds.extend(c));
     } else if (geom.type === 'MultiPolygon') {
       geom.coordinates.forEach((poly) => poly[0].forEach((c) => bounds.extend(c)));
     }
-
+  
     if (!bounds.isEmpty()) {
       mapInstance.fitBounds(bounds, { padding: 60, duration: 800 });
     }
-
+  
+    // Get center for plot details
     let lat = 0, lng = 0;
     if (geom.type === 'Polygon') {
       lat = parseFloat(geom.coordinates[0]?.[0]?.[1]) || 0;
@@ -510,55 +525,46 @@ const Dashboard = () => {
       lat = parseFloat(geom.coordinates[0]?.[0]?.[0]?.[1]) || 0;
       lng = parseFloat(geom.coordinates[0]?.[0]?.[0]?.[0]) || 0;
     }
-
+  
+    // Show details in Block 4
     setClickedPlotDetails({ data: plot.properties, lat, lng });
-
-    // 🧠 Add labeled corners
-    const corners = getSimplifiedCornerLabels(geom, 0.00005, 160);
-    cornerMarkers.forEach((m) => m.remove());
-
-    const newMarkers = corners.map(({ label, lngLat }) => {
+  
+    // 🧠 Get corner labels
+    const corners = getSimplifiedCornerLabels(plot.geometry, 0.00005, 160);
+  
+    // 🚫 REMOVE ALL EXISTING CORNER MARKERS
+    if (cornerMarkers && cornerMarkers.length > 0) {
+      cornerMarkers.forEach(marker => {
+        try {
+          marker.remove();
+        } catch (err) {
+          console.warn("⚠️ Error removing marker", err);
+        }
+      });
+    }
+  
+    // ✅ ADD new markers
+    const newCornerMarkers = corners.map(({ label, lngLat }) => {
       const el = document.createElement('div');
       el.className = 'corner-marker-label';
       el.innerHTML = label;
-
+  
       return new mapboxgl.Marker(el)
         .setLngLat(lngLat)
         .setPopup(
           new mapboxgl.Popup({ offset: 8 }).setHTML(
-            `<strong>Corner ${label}</strong><br/>Lat: ${lngLat[1].toFixed(8)}<br/>Lng: ${lngLat[0].toFixed(8)}`
+            `<strong>Corner ${label}</strong><br/>Lat: ${lngLat[1].toFixed(6)}<br/>Lng: ${lngLat[0].toFixed(6)}`
           )
         )
         .addTo(mapInstance);
     });
-
-
-
-
-    if (showCornerPopup) {
-      const corners = getSimplifiedCornerLabels(plot.geometry, 0.00005, 160);
-      cornerMarkers.forEach(marker => marker.remove());
-
-      const newMarkers = corners.map(({ label, lngLat }) => {
-        const el = document.createElement('div');
-        el.className = 'corner-marker-label';
-        el.innerHTML = label;
-
-        return new mapboxgl.Marker(el)
-          .setLngLat(lngLat)
-          .setPopup(
-            new mapboxgl.Popup({ offset: 8 }).setHTML(
-              `<strong>Corner ${label}</strong><br/>Lat: ${lngLat[1].toFixed(6)}<br/>Lng: ${lngLat[0].toFixed(6)}`
-            )
-          )
-          .addTo(mapInstance);
-      });
-
-      setCornerMarkers(newMarkers);
-    }
-
-
+  
+    // 💾 Save new markers to state
+    setCornerMarkers(newCornerMarkers);
   };
+  
+  
+
 
 
   return (
@@ -605,19 +611,50 @@ const Dashboard = () => {
           <Grid container spacing={2} sx={{ height: '100%' }}>
             {/* Map - Full Left Side */}
             <Grid item xs={12} md={6}>
-            <div id="screenshot-container" style={{ width: '100%', height: '100%' }}>
-  <Box ref={mapRef} sx={{ width: '100%', height: '100%', borderRadius: 2 }} />
-</div>
+              <div id="screenshot-container" style={{ width: '100%', height: '100%', position: 'relative' }}>
+                {/* Map container */}
+                <Box
+                  ref={mapRef}
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: 2,
+                    position: 'relative',
+                  }}
+                />
 
+                {/* 🔄 MUI Loading Spinner Overlay */}
+                {loading && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      zIndex: 1000,
+                      width: '100%',
+                      height: '100%',
+                      bgcolor: 'rgba(255, 255, 255, 0.6)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <CircularProgress size={120} thickness={3} color="primary" />
+                  </Box>
+                )}
+              </div>
+
+              {/* Print Button */}
               <Button
                 variant="contained"
                 color="primary"
                 onClick={handlePrintReport}
-                sx={{ mb: 1 }}
+                sx={{ mt: 1 }}
               >
                 🖨️ Print Report
               </Button>
 
+              {/* Plot Popup */}
               {clickedPlotDetails && showPlotPopup && (
                 <PlotInfoPopup
                   plot={clickedPlotDetails}
@@ -631,8 +668,8 @@ const Dashboard = () => {
                   }}
                 />
               )}
-
             </Grid>
+
 
             {/* Right Side: Chart + Legend + SpatialQuery + Blocks */}
             <Grid item xs={12} md={6}>
@@ -767,6 +804,7 @@ const Dashboard = () => {
                           setGeojsonData={setGeojsonData}
                           setFullGeojsonBackup={setFullGeojsonBackup}
                           setClickedPlotDetails={setClickedPlotDetails}
+                          setLoading={setLoading}
                         />
                       )}
                     </CardContent>

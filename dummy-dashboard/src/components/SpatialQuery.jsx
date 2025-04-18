@@ -4,7 +4,7 @@ import mapboxgl from 'mapbox-gl';
 import './SpatialQuery.css';
 import AllSocietiesPopup from './popups/AllSocietiesPopup';
 
-const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFullGeojsonBackup,setClickedPlotDetails }) => {
+const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFullGeojsonBackup,setClickedPlotDetails,setLoading  }) => {
   const [districts, setDistricts] = useState([]);
   const [tehsils, setTehsils] = useState([]);
   const [towns, setTowns] = useState([]);
@@ -80,24 +80,26 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
 
   const handleShow = async () => {
     if (!map) return;
-
+  
     const params = {};
     if (selectedDistrict) params.district = selectedDistrict;
     if (selectedTehsil) params.tehsil = selectedTehsil;
     if (selectedTown) params.town_name = selectedTown;
     if (selectedBlock) params.block = selectedBlock;
     if (selectedPlot) params.plot_no = selectedPlot;
-
+  
     try {
+      setLoading?.(true); // ⏳ Show loader
+  
       const res = await axios.get('https://api.nespaklrms.com/api/all-soc-geojson/', { params });
       let geojson = res.data;
-
+  
       // Backup full geojson for reset
       if (setFullGeojsonBackup) {
         setFullGeojsonBackup(geojson);
       }
-
-      // Apply filter from chart click
+  
+      // Apply filter from chart/legend
       if (landuseFilter) {
         geojson = {
           ...geojson,
@@ -107,22 +109,24 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
         };
         console.log("🎯 Filter applied from chart:", landuseFilter, "Features:", geojson.features.length);
       }
-
+  
+      // Update state
       if (setGeojsonData) {
         setGeojsonData(geojson);
       }
-
-      // Render on map
+  
+      // Remove old layers
       if (map.getLayer(LAYER_ID)) {
         map.removeLayer(LAYER_ID);
         map.removeSource(LAYER_ID);
       }
-
+  
+      // Add GeoJSON source and layer
       map.addSource(LAYER_ID, {
         type: 'geojson',
         data: geojson,
       });
-
+  
       map.addLayer({
         id: LAYER_ID,
         type: 'fill',
@@ -138,7 +142,8 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
           'fill-outline-color': '#333'
         }
       });
-
+  
+      // Zoom to bounds
       const bounds = new mapboxgl.LngLatBounds();
       geojson.features.forEach((f) => {
         const geom = f.geometry;
@@ -148,40 +153,18 @@ const SpatialQuery = ({ map, geojsonData, setGeojsonData, landuseFilter, setFull
           geom.coordinates.forEach(p => p[0].forEach(c => bounds.extend(c)));
         }
       });
-
+  
       if (!bounds.isEmpty()) {
         map.fitBounds(bounds, { padding: 50, duration: 1000 });
       }
-
-      // Popup handler
-      // let activePopup = null;
-      // map.on('click', LAYER_ID, async (e) => {
-      //   const lng = e.lngLat.lng;
-      //   const lat = e.lngLat.lat;
-      //   const coordinateString = `lat=${lat}&lon=${lng}`;
-
-      //   try {
-      //     const popupRes = await fetch(`https://api.nespaklrms.com/api/society-parcel/?${coordinateString}`);
-      //     const popupData = await popupRes.json();
-
-      //     if (popupRes.ok && popupData) {
-      //       const popupHTML = AllSocietiesPopup(popupData, lat, lng);
-      //       if (activePopup) activePopup.remove();
-
-      //       activePopup = new mapboxgl.Popup({ offset: 15 })
-      //         .setLngLat([lng, lat])
-      //         .setHTML(popupHTML)
-      //         .addTo(map);
-      //     }
-        } catch (err) {
-          console.error("❌ Popup error:", err);
-        }
-      // });
-  //   } catch (err) {
-  //     console.error("❌ Fetch error:", err);
-  //   }
+  
+    } catch (err) {
+      console.error("❌ Fetch error:", err);
+    } finally {
+      setLoading?.(false); // ✅ Hide loader
+    }
   };
-
+  
   const handleClear = () => {
     if (map.getLayer(LAYER_ID)) {
       map.removeLayer(LAYER_ID);

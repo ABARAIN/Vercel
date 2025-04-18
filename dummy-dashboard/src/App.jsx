@@ -120,6 +120,22 @@ function App() {
       mapRef.current = map;
       setMapInstance(map); // Set the map instance in state
       fetchMBlockData(); // Fetch data on mount
+      const attributionControl = new mapboxgl.AttributionControl({
+        customAttribution: ''
+      });
+  
+      map.addControl(attributionControl);
+
+      map.on('load', () => {
+        const attrib = document.querySelector('.mapboxgl-ctrl-attrib');
+        if (attrib) {
+          attrib.innerHTML = `
+            <a href="https://www.nespak.com.pk/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
+              © Nespak
+            </a>
+          `;
+        }
+      });
 
       draw = new MapboxDraw({
         displayControlsDefault: false,
