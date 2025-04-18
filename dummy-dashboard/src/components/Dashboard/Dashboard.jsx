@@ -188,92 +188,117 @@ const Dashboard = () => {
       alert("No plot selected or map not ready.");
       return;
     }
-
+  
     const doc = new jsPDF();
     const { data, lat, lng } = clickedPlotDetails;
-
-    // 📸 1. Map snapshot using Mapbox canvas
+  
+    // 🖼️ Map image
     const mapCanvas = mapInstance.getCanvas();
     const mapImage = mapCanvas.toDataURL("image/png");
-
-    // 🧩 2. Demarcation data
+  
+    // 🔵 Corner markers
     const cornersData = cornerMarkers.map(marker => {
       const label = marker.getElement().innerHTML;
       const { lng, lat } = marker.getLngLat();
       return { label, lat: lat.toFixed(6), lng: lng.toFixed(6) };
     });
-
-    // 📍 3. Title
-    doc.setFontSize(16);
-    doc.text("Plot Report", 15, 15);
-
-    // 📸 4. Map snapshot
-    doc.setFontSize(12);
-    doc.text("Plot Map Screenshot", 15, 25);
-    doc.addImage(mapImage, 'PNG', 15, 30, 180, 100);
-
-    let y = 135;
-
-    // 📋 5. Plot Info
-    doc.text("Plot Details", 15, y);
-    y += 8;
-    const info = [
-      ["Town", data.town_name],
-      ["Block", data.block],
-      ["Plot No", data.plotno || data.plot_no],
-      ["Division", data.division],
-      ["District", data.district],
-      ["Tehsil", data.tehsil],
-      ["Landuse", data.landuse],
-      ["Society Type", data.society_type || data.societytyp],
-      ["Source", data.source],
-      ["Remarks", data.illegal_remarks || "-"]
-    ];
-    info.forEach(([key, val]) => {
-      doc.text(`${key}: ${val ?? "-"}`, 15, y);
-      y += 7;
-    });
-
-    // 🧱 6. Demarcation table
-    y += 8;
-    doc.text("Demarcation (Corners)", 15, y);
-    y += 6;
-    cornersData.forEach(({ label, lat, lng }) => {
-      doc.text(`${label}: Latitude ${lat}, Longitude ${lng}`, 15, y);
+  
+    // 🖼️ Logo
+    const logo = new Image();
+    logo.src = `${window.location.origin}/Nespak-logo.png`;
+  
+    logo.onload = () => {
+      doc.addImage(logo, 'PNG', 75, 10, 60, 20); // Centered
+      let y = 38; // 🔄 Space after logo
+  
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text("Plot Demarcation Report", 105, y, null, null, 'center');
+      y += 10;
+  
+      // 🗺️ Map
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'normal');
+      doc.text("Selected Plot Snapshot", 15, y);
+      y += 5;
+      doc.addImage(mapImage, 'PNG', 15, y, 180, 80);
+      y += 90;
+  
+      // 📋 Plot Info
+      doc.setFontSize(13);
+      doc.setFont(undefined, 'bold');
+      doc.text("Plot Details", 15, y);
+      y += 8;
+  
+      const info = [
+        ["Town", data.town_name],
+        ["Block", data.block],
+        ["Plot No", data.plotno || data.plot_no],
+        ["Division", data.division],
+        ["District", data.district],
+        ["Tehsil", data.tehsil],
+        ["Landuse", data.landuse],
+        ["Society Type", data.society_type || data.societytyp],
+        ["Source", data.source],
+        ["Remarks", data.illegal_remarks || "-"]
+      ];
+  
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'normal');
+      info.forEach(([k, v]) => {
+        doc.text(`${k}: ${v ?? "-"}`, 15, y);
+        y += 6;
+      });
+  
+      // 🔺 Corners
+      y += 8;
+      doc.setFontSize(13);
+      doc.setFont(undefined, 'bold');
+      doc.text("Demarcation Coordinates", 15, y);
       y += 6;
-    });
-
-    // 🗺️ 7. Landuse Legend
-    y += 6;
-    doc.text("Landuse Legend", 15, y);
-    y += 8;
-    const colorMap = {
-      "Illegal": "#e53935", "Commercial": "#000000", "Educational": "#2196f3",
-      "Encroachment": "#795548", "Graveyard": "#9c27b0", "Health Facility": "#4caf50",
-      "Nullah": "#00bcd4", "Open Space": "#cddc39", "Others": "#607d8b", "Park": "#8bc34a",
-      "Parking": "#ffc107", "Public Building": "#ff5722", "Recreational Facility": "#3f51b5",
-      "Religious": "#673ab7", "Religious Building": "#9575cd", "Residential": "#03a9f4",
-      "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd"
+  
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      cornersData.forEach(({ label, lat, lng }) => {
+        doc.text(`${label}: Latitude ${lat}, Longitude ${lng}`, 15, y);
+        y += 5;
+      });
+  
+      // 🧭 Legend
+      y += 6;
+      doc.setFontSize(13);
+      doc.setFont(undefined, 'bold');
+      doc.text("Landuse Legend", 15, y);
+      y += 6;
+  
+      const colorMap = {
+        "Illegal": "#e53935", "Commercial": "#000000", "Educational": "#2196f3",
+        "Encroachment": "#795548", "Graveyard": "#9c27b0", "Health Facility": "#4caf50",
+        "Nullah": "#00bcd4", "Open Space": "#cddc39", "Others": "#607d8b", "Park": "#8bc34a",
+        "Parking": "#ffc107", "Public Building": "#ff5722", "Recreational Facility": "#3f51b5",
+        "Religious": "#673ab7", "Religious Building": "#9575cd", "Residential": "#03a9f4",
+        "Road": "#9e9e9e", "Village": "#ff9800", "Unclassified": "#bdbdbd"
+      };
+  
+      doc.setFontSize(9);
+      Object.entries(colorMap).forEach(([label, color], i) => {
+        const row = Math.floor(i / 4);
+        const col = i % 4;
+        const boxX = 15 + col * 45;
+        const boxY = y + row * 6;
+  
+        doc.setFillColor(color);
+        doc.rect(boxX, boxY, 4, 4, "F");
+        doc.setTextColor(0, 0, 0);
+        doc.text(label, boxX + 6, boxY + 3);
+      });
+  
+      // 💾 Save
+      const plotLabel = data.plotno || data.plot_no || "Unknown";
+      doc.save(`Plot_Report_${plotLabel}.pdf`);
     };
-    const legendKeys = Object.keys(colorMap);
-    legendKeys.forEach((lu, index) => {
-      const x = 15 + (index % 4) * 50;
-      const rowY = y + Math.floor(index / 4) * 8;
-
-      // Draw color box
-      doc.setFillColor(colorMap[lu]);
-      doc.rect(x, rowY, 4, 4, "F");
-
-      // Label
-      doc.setTextColor(0, 0, 0);
-      doc.text(lu, x + 6, rowY + 3.5);
-    });
-
-    // 💾 Save file
-    const plotLabel = data.plotno || data.plot_no || "Unknown";
-    doc.save(`Plot_Report_${plotLabel}.pdf`);
   };
-
+  
 
 
 
